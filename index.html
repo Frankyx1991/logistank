@@ -79,9 +79,9 @@
       <p id="login-error" style="color: var(--error); text-align: center; display: none;"></p>
       <input type="number" id="inp-user" placeholder="Nº Conductor / Usuario">
       <input type="password" id="inp-pass" placeholder="Contraseña">
-      <button class="btn btn-primary" onclick="doLogin()">Iniciar Sesión</button>
+      <button type="button" class="btn btn-primary" onclick="doLogin()">Iniciar Sesión</button>
       <hr style="border:0; border-top:1px solid #ddd; margin: 24px 0;">
-      <button class="btn btn-secondary" onclick="doGuestLogin()">Invitado</button>
+      <button type="button" class="btn btn-secondary" onclick="doGuestLogin()">Invitado</button>
     </div>
   </div>
 
@@ -184,8 +184,8 @@
 
       <div class="card" style="background-color: #E8F5E9; margin-top: 16px;">
         <p class="info-label" style="color: #2E7D32;">📍 GEOLOCALIZACIÓN GPS</p>
-        <button class="btn btn-secondary" onclick="openMapModal()" style="margin-bottom: 8px;"><i class="material-icons">map</i> Ajustar Ubicación en Mapa</button>
-        <button class="btn btn-success" onclick="geolocateMe()" style="margin-bottom: 16px;"><i class="material-icons">gps_fixed</i> Obtener mi GPS actual</button>
+        <button type="button" class="btn btn-secondary" onclick="openMapModal()" style="margin-bottom: 8px;"><i class="material-icons">map</i> Ajustar Ubicación en Mapa</button>
+        <button type="button" class="btn btn-success" onclick="geolocateMe()" style="margin-bottom: 16px;"><i class="material-icons">gps_fixed</i> Obtener mi GPS actual</button>
         <p id="geo-status-text" style="color: gray; font-size:14px; font-weight:bold; margin:0; text-align:center;"></p>
       </div>
 
@@ -207,7 +207,7 @@
           <div id="edit-truck-draw"></div>
         </div>
       </div>
-      <div style="height: 32px;"></div><button class="btn btn-primary" onclick="saveData()">Guardar</button>
+      <div style="height: 32px;"></div><button type="button" class="btn btn-primary" onclick="saveData()">Guardar</button>
     </div>
   </div>
 
@@ -222,41 +222,37 @@
       <div class="content" style="padding:0; flex-grow:1;">
          <div class="prod-grid" id="modal-prod-grid"></div>
       </div>
-      <button class="btn btn-secondary" style="margin-top:16px;" onclick="closeModal()">Cancelar</button>
+      <button type="button" class="btn btn-secondary" style="margin-top:16px;" onclick="closeModal()">Cancelar</button>
     </div>
   </div>
 
   <div class="modal-overlay" id="modal-map">
     <div class="modal-content" style="height: 80vh;">
       <h3 style="margin-top:0; color:var(--primary);">Arrastra la chincheta</h3>
-      <div id="map-view" style="flex-grow:1; width:100%; border-radius:12px; background:#ddd; z-index:1001;"></div>
+      <div id="map-view" style="flex-grow:1; width:100%; border-radius:12px; background:#ddd; z-index:1001; min-height: 300px;"></div>
       <div style="display:flex; gap:16px; margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeMapModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveMapLocation()">Fijar</button>
+        <button type="button" class="btn btn-secondary" onclick="closeMapModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveMapLocation()">Fijar</button>
       </div>
     </div>
   </div>
 
   <script>
     // =====================================================================
-    // ESTE ES TU ENLACE CORRECTO. ¡YA ESTÁ PUESTO!
+    // ENLACE CORRECTO CONFIGURADO
     // =====================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbwVuAr7UkPyYbSJ9D3hwqgDLFFVBI64rk4IQ_Mnu7GQWkLFPQzBPjbXjtYzodB1Iex8/exec";
 
-    // LISTA FIJA DE COMBUSTIBLES (Como en Android)
     const COMBUSTIBLES_FIJOS = ["A", "A+5", "A+", "NEXA", "B", "B MAR PRO", "C", "BiEnergi 10", "95", "95+", "95 MAR SPORT", "98", "MARBIDIESEL"];
-
     const STORAGE_KEY = "logistank_user_session";
     let appState = {
       user: { id: null, nombre: null, role: null }, currentListType: '', viewingId: null,
       dataGas: [], dataRoutes: [], dataProducts: [], pendingGas: [], pendingRoutes: [],
-      currentPlacements: [], truckViewSide: 'RIGHT',
-      editLat: null, editLng: null 
+      currentPlacements: [], truckViewSide: 'RIGHT', editLat: null, editLng: null 
     };
 
     window.onload = function() {
-      initDraggable(); // Motor de arrastre encendido primero
-      
+      initDraggable(); 
       let savedData = localStorage.getItem(STORAGE_KEY);
       if(savedData) {
         try { 
@@ -271,7 +267,6 @@
     function showLoader(show) { document.getElementById('global-loader').style.display = show ? 'flex' : 'none'; }
     function cleanPhone(el) { el.value = el.value.replace(/[^0-9\s+]/g, ''); }
 
-    // --- COMUNICACIÓN CON EL SERVIDOR (FETCH API) ---
     async function apiPost(payload) {
       const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
       return await res.json();
@@ -281,7 +276,6 @@
       return await res.json();
     }
 
-    // --- AUTENTICACIÓN ---
     async function doLogin() {
       let u = document.getElementById('inp-user').value; let p = document.getElementById('inp-pass').value;
       if(!u || !p) return;
@@ -293,13 +287,12 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user));
           initDashboard();
         } else { showLoader(false); let err = document.getElementById('login-error'); err.innerText = res.message; err.style.display = 'block'; }
-      } catch(e) { showLoader(false); alert("Error de red."); }
+      } catch(e) { showLoader(false); alert("Error de red. Asegúrate de haber pegado la API_URL correcta."); }
     }
     
     function doGuestLogin() { appState.user = { id: "INV", nombre: "Invitado", role: "INVITADO" }; localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user)); initDashboard(); }
     function logout() { localStorage.removeItem(STORAGE_KEY); appState.user = { id: null, nombre: null, role: null }; document.getElementById('inp-user').value = ''; document.getElementById('inp-pass').value = ''; navTo('screen-login'); }
 
-    // --- CARGA DE DATOS ---
     async function initDashboard() {
       document.getElementById('dash-username').innerText = appState.user.nombre;
       document.getElementById('dash-role').innerText = appState.user.role;
@@ -328,25 +321,26 @@
       showLoader(false);
     }
 
-    // --- BUSCADOR ---
     function filterList() {
       let q = document.getElementById('list-search').value.toLowerCase();
       let items = document.querySelectorAll('.list-item-card');
       items.forEach(el => { el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
     }
 
-    // --- CÓDIGOS DEL EXCEL ---
+    // --- CÓDIGOS DEL EXCEL: NUEVA JERARQUÍA VISUAL ---
     function openCodes() {
       let html = ''; appState.dataProducts.forEach(p => { 
         let textoReal = p.nombreApp ? p.nombreApp : (p.nombreOficial ? p.nombreOficial : p.codigo);
-        let subtitulo = (textoReal !== p.codigo) ? `<span style="font-size:12px; opacity:0.8;">Cód: ${p.codigo}</span>` : '';
+        let displayCode = `<span style="font-size:24px; font-weight:900; letter-spacing:1px;">${p.codigo}</span>`;
+        let displayName = (textoReal !== p.codigo) ? `<span style="font-size:12px; opacity:0.9; text-transform:uppercase;">${textoReal}</span>` : '';
         let bg = (p.colorFondo === "#000000" || !p.colorFondo) ? "#424242" : p.colorFondo;
-        html += `<div style="background:${bg}; color:${p.colorTexto}; padding:16px; border-radius:12px; font-weight:bold; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:8px;">${subtitulo}<span style="font-size:16px;">${textoReal}</span></div>`; 
+        
+        html += `<div style="background:${bg}; color:${p.colorTexto}; padding:16px 8px; border-radius:12px; text-align:center; box-shadow:0 4px 8px rgba(0,0,0,0.15); display:flex; flex-direction:column; gap:4px; justify-content:center; min-height:80px;">
+          ${displayCode}${displayName}</div>`; 
       });
       document.getElementById('codes-container').innerHTML = html; navTo('screen-codes');
     }
     
-    // --- LISTAS ---
     function openGasStations() { appState.currentListType = 'GAS'; document.getElementById('list-title').innerText = "Gasolineras"; document.getElementById('list-search').value=''; renderList(appState.dataGas); navTo('screen-list'); }
     function openRoutes() { appState.currentListType = 'ROUTE'; document.getElementById('list-title').innerText = "Clientes de Ruta"; document.getElementById('list-search').value=''; renderList(appState.dataRoutes); navTo('screen-list'); }
     
@@ -356,7 +350,6 @@
       document.getElementById('list-container').innerHTML = html;
     }
 
-    // --- VISUALIZADOR INTERACTIVO Y MAPAS ---
     function openView(id) {
       appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
       let item = (isGas ? appState.dataGas : appState.dataRoutes).find(i => i.id === id);
@@ -364,7 +357,6 @@
 
       document.getElementById('view-nombre').innerText = item.nombre || '-'; document.getElementById('view-direccion').innerText = item.direccion || '-';
 
-      // GOOGLE MAPS API OFICIAL UNIVERSAL
       let btnMap = document.getElementById('btn-action-map');
       if (item.latitud && item.longitud) { 
         btnMap.href = `http://googleusercontent.com/maps.google.com/maps?q=${item.latitud},${item.longitud}`; 
@@ -402,7 +394,6 @@
 
     function setTruckViewSide(side) { appState.truckViewSide = side; document.getElementById('chip-left').className = 'chip ' + (side === 'LEFT' ? 'active' : ''); document.getElementById('chip-right').className = 'chip ' + (side === 'RIGHT' ? 'active' : ''); renderTruckViewer('BOTH'); }
 
-    // --- EDITOR ---
     function goFromViewToEdit() { openEditor(appState.viewingId); }
     
     function openEditor(id) {
@@ -447,23 +438,36 @@
       } catch(e) { showLoader(false); alert("Error al guardar"); }
     }
 
-    // --- MAPAS GPS (LEAFLET) ---
-    let map, mapMarker;
+    // --- MAPAS GPS (LEAFLET - REPARADO PARA ABRIR SIEMPRE) ---
+    let leafletMap, leafletMarker;
     function openMapModal() {
-      document.getElementById('modal-map').style.display = 'flex';
-      let lat = appState.editLat || 40.416775; let lng = appState.editLng || -3.703790;
-      
-      setTimeout(() => {
-        if(!map) {
-          map = L.map('map-view').setView([lat, lng], 16);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-          mapMarker = L.marker([lat, lng], {draggable: true}).addTo(map);
-          mapMarker.on('dragend', function(e) { appState.editLat = e.target.getLatLng().lat; appState.editLng = e.target.getLatLng().lng; });
-          map.on('click', function(e) { mapMarker.setLatLng(e.latlng); appState.editLat = e.latlng.lat; appState.editLng = e.latlng.lng; });
-        } else {
-          map.setView([lat, lng], 16); mapMarker.setLatLng([lat, lng]); map.invalidateSize();
-        }
-      }, 300);
+      try {
+        document.getElementById('modal-map').style.display = 'flex';
+        // Coordenadas predeterminadas centradas en Palma de Mallorca (Baleares)
+        let lat = appState.editLat || 39.5696; 
+        let lng = appState.editLng || 2.6502;
+        
+        setTimeout(() => {
+          if(!leafletMap) {
+            leafletMap = L.map('map-view').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
+            leafletMarker = L.marker([lat, lng], {draggable: true}).addTo(leafletMap);
+            
+            leafletMarker.on('dragend', function(e) { 
+              appState.editLat = e.target.getLatLng().lat; appState.editLng = e.target.getLatLng().lng; 
+            });
+            leafletMap.on('click', function(e) { 
+              leafletMarker.setLatLng(e.latlng); appState.editLat = e.latlng.lat; appState.editLng = e.latlng.lng; 
+            });
+          } else {
+            leafletMap.setView([lat, lng], 15); 
+            leafletMarker.setLatLng([lat, lng]); 
+            leafletMap.invalidateSize();
+          }
+        }, 400);
+      } catch(err) {
+        alert("Error iniciando el mapa: " + err);
+      }
     }
     
     function closeMapModal() { document.getElementById('modal-map').style.display = 'none'; }
@@ -479,7 +483,6 @@
       } else { alert("Tu teléfono no soporta GPS web."); }
     }
 
-    // --- CAMIÓN Y COLORES FIJOS (RESTAURADOS DE ANDROID) ---
     function getProdColor(codeStr) {
       const c = codeStr ? codeStr.toString().toUpperCase().trim() : '';
       if(c==='A') return {bg:'#FFB300', txt:'white'}; if(c==='A+5') return {bg:'#F57C00', txt:'white'};
@@ -525,7 +528,6 @@
       finalHTML += '</div>'; return finalHTML;
     }
 
-    // --- ARRASTRE TÁCTIL (DRAG & DROP) ---
     function initDraggable() {
       const container = document.body;
       let dragTarget = null, startX=0, startY=0, startNx=0, startNy=0, pIndex=-1;
@@ -561,7 +563,7 @@
       let html = ''; 
       COMBUSTIBLES_FIJOS.forEach(p => { 
         let c = getProdColor(p);
-        html += `<button class="prod-btn" style="background:${c.bg}; color:${c.txt}" onclick="addProd('${p}')">${p}</button>`; 
+        html += `<button type="button" class="prod-btn" style="background:${c.bg}; color:${c.txt}" onclick="addProd('${p}')">${p}</button>`; 
       }); 
       document.getElementById('modal-prod-grid').innerHTML = html; document.getElementById('modal-products').style.display = 'flex';
     }
@@ -580,13 +582,13 @@
       }
     });
 
-    // --- BANDEJA ADMIN ---
     function openInbox() {
       let html = '<h3 style="color:var(--primary); margin-top:0;">Estaciones Pendientes</h3>';
       if(!appState.pendingGas || appState.pendingGas.length === 0) html += '<p style="color:gray; font-size:14px;">Limpio.</p>';
-      if(appState.pendingGas) { appState.pendingGas.forEach(item => { html += `<div class="card"><p class="card-title">${item.nombre}</p><p class="card-subtitle">Por: ${item.solicitante}</p><div class="card-action"><button class="btn btn-danger" style="margin-right:8px; padding:8px;" onclick="resolvePending('GAS','${item.id}',false)">Rechazar</button><button class="btn btn-success" style="padding:8px;" onclick="resolvePending('GAS','${item.id}',true)">Aprobar</button></div></div>`; }); }
+      if(appState.pendingGas) { appState.pendingGas.forEach(item => { html += `<div class="card"><p class="card-title">${item.nombre}</p><p class="card-subtitle">Por: ${item.solicitante}</p><div class="card-action"><button type="button" class="btn btn-danger" style="margin-right:8px; padding:8px;" onclick="resolvePending('GAS','${item.id}',false)">Rechazar</button><button type="button" class="btn btn-success" style="padding:8px;" onclick="resolvePending('GAS','${item.id}',true)">Aprobar</button></div></div>`; }); }
       document.getElementById('inbox-container').innerHTML = html; navTo('screen-inbox');
     }
+    
     async function resolvePending(type, id, isApprove) {
       showLoader(true);
       try { let res = await apiPost({ action: isApprove ? 'approveChange' : 'rejectChange', type: type, id: id }); alert(res.message); await fetchAllData(); navTo('screen-main'); } catch(e) { showLoader(false); alert("Error de red"); }
