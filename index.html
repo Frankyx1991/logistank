@@ -182,11 +182,15 @@
         <input type="tel" id="edit-encargado-tel" placeholder="Móvil (Sin +34)" oninput="cleanPhone(this)" style="margin-bottom:0;">
       </div>
 
-      <div class="card" style="background-color: #E8F5E9; margin-top: 16px;">
+      <div class="card" style="margin-top: 16px;">
         <p class="info-label" style="color: #2E7D32;">📍 GEOLOCALIZACIÓN GPS</p>
         <button type="button" class="btn btn-secondary" onclick="openMapModal()" style="margin-bottom: 8px;"><i class="material-icons">map</i> Ajustar Ubicación en Mapa</button>
         <button type="button" class="btn btn-success" onclick="geolocateMe()" style="margin-bottom: 16px;"><i class="material-icons">gps_fixed</i> Obtener mi GPS actual</button>
-        <p id="geo-status-text" style="color: gray; font-size:14px; font-weight:bold; margin:0; text-align:center;"></p>
+        
+        <div id="geo-status-card" style="background-color: #E8F5E9; padding: 12px; border-radius: 8px; text-align: center; display: none;">
+          <p style="color: #2E7D32; font-weight:bold; margin:0; font-size:14px;">Coordenadas Guardadas:</p>
+          <p id="geo-status-text" style="color: gray; font-size:14px; font-weight:bold; margin:4px 0 0 0;"></p>
+        </div>
       </div>
 
       <label class="info-label" style="margin-top: 16px; display:block;">Comentarios</label>
@@ -239,12 +243,13 @@
 
   <script>
     // =====================================================================
-    // ENLACE CORRECTO CONFIGURADO
+    // ⚠️ PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT
     // =====================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbwVuAr7UkPyYbSJ9D3hwqgDLFFVBI64rk4IQ_Mnu7GQWkLFPQzBPjbXjtYzodB1Iex8/exec";
 
     const COMBUSTIBLES_FIJOS = ["A", "A+5", "A+", "NEXA", "B", "B MAR PRO", "C", "BiEnergi 10", "95", "95+", "95 MAR SPORT", "98", "MARBIDIESEL"];
     const STORAGE_KEY = "logistank_user_session";
+    
     let appState = {
       user: { id: null, nombre: null, role: null }, currentListType: '', viewingId: null,
       dataGas: [], dataRoutes: [], dataProducts: [], pendingGas: [], pendingRoutes: [],
@@ -327,7 +332,7 @@
       items.forEach(el => { el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
     }
 
-    // --- CÓDIGOS DEL EXCEL: NUEVA JERARQUÍA VISUAL ---
+    // --- CÓDIGOS DEL EXCEL: JERARQUÍA VISUAL PERFECTA ---
     function openCodes() {
       let html = ''; appState.dataProducts.forEach(p => { 
         let textoReal = p.nombreApp ? p.nombreApp : (p.nombreOficial ? p.nombreOficial : p.codigo);
@@ -396,6 +401,7 @@
 
     function goFromViewToEdit() { openEditor(appState.viewingId); }
     
+    // --- ESTA ES LA FUNCIÓN DEL EDITOR CORREGIDA ---
     function openEditor(id) {
       if(appState.user.role === 'INVITADO') { alert("Solo Lectura"); return; }
       appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
@@ -418,12 +424,15 @@
     }
 
     function updateGeoUI() {
+      let st = document.getElementById('geo-status-card'); 
       let txt = document.getElementById('geo-status-text');
       if(appState.editLat && appState.editLng) { 
-        document.getElementById('geo-status-card').style.display = 'block'; 
+        st.style.display = 'block'; 
         txt.innerText = `Lat: ${appState.editLat} | Lon: ${appState.editLng}`; 
       } 
-      else { document.getElementById('geo-status-card').style.display = 'none'; }
+      else { 
+        st.style.display = 'none'; 
+      }
     }
 
     async function saveData() {
@@ -438,12 +447,10 @@
       } catch(e) { showLoader(false); alert("Error al guardar"); }
     }
 
-    // --- MAPAS GPS (LEAFLET - REPARADO PARA ABRIR SIEMPRE) ---
     let leafletMap, leafletMarker;
     function openMapModal() {
       try {
         document.getElementById('modal-map').style.display = 'flex';
-        // Coordenadas predeterminadas centradas en Palma de Mallorca (Baleares)
         let lat = appState.editLat || 39.5696; 
         let lng = appState.editLng || 2.6502;
         
