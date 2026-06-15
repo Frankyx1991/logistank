@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LogisTank Web</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     :root { --primary: #673AB7; --surface: #FFFFFF; --bg: #F5F5F5; --text: #333333; --error: #D32F2F; --success: #388E3C; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -46,20 +49,23 @@
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .truck-container { display: flex; justify-content: center; align-items: flex-start; margin: 24px 0; }
+    /* CAMIÓN */
+    .truck-container { display: flex; justify-content: center; align-items: flex-start; margin: 24px 0; touch-action: none;}
     .side-col { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 310px;}
     .truck-wrapper { display: flex; flex-direction: column; align-items: center; }
     .truck-cab { width: 70px; height: 45px; background: #424242; border-radius: 6px; }
     .truck-hitch { width: 16px; height: 12px; background: darkgray; }
     .truck-body { width: 80px; height: 310px; background: #EEEEEE; border: 2px solid gray; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
     .tank-circle { width: 45px; height: 45px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; }
-    .prod-badge { width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 14px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: relative; }
+    .prod-badge { width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 14px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: relative; cursor: grab;}
+    .prod-badge:active { cursor: grabbing; }
     .prod-add { background: #fff; border: 2px dashed #aaa; color: #aaa; font-size: 24px; cursor: pointer; }
     
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 16px; }
-    .modal-content { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
-    .prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
-    .prod-btn { padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; color: white; }
+    /* MODALES */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 16px; }
+    .modal-content { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
+    .prod-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 16px; }
+    .prod-btn { padding: 16px; border-radius: 8px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; color: white; display:flex; justify-content:space-between; align-items:center;}
   </style>
 </head>
 <body>
@@ -104,7 +110,11 @@
       <button class="icon-btn" onclick="navTo('screen-main')"><i class="material-icons">arrow_back</i></button>
       <h1 id="list-title">Lista</h1>
     </div>
-    <div class="content" id="list-container"></div>
+    <div class="content">
+      <input type="text" id="list-search" placeholder="🔍 Buscar por nombre o dirección..." onkeyup="filterList()" style="border-radius: 24px; background: white; margin-bottom: 16px;">
+      
+      <div id="list-container"></div>
+    </div>
     <button class="fab" id="fab-add" onclick="openEditor(null)"><i class="material-icons">add</i></button>
   </div>
 
@@ -172,7 +182,17 @@
         <input type="tel" id="edit-encargado-tel" placeholder="Móvil (Sin +34)" oninput="cleanPhone(this)" style="margin-bottom:0;">
       </div>
 
-      <label class="info-label" style="margin-top: 16px; display:block;">Comentarios</label>
+      <hr style="border:0; border-top:1px solid #ddd; margin: 24px 0;">
+      <p class="info-label">📍 GEOLOCALIZACIÓN</p>
+      <button class="btn btn-secondary" onclick="openMapModal()" style="margin-bottom: 8px;"><i class="material-icons">map</i> Ajustar Ubicación en Mapa</button>
+      <button class="btn btn-success" onclick="geolocateMe()" style="margin-bottom: 16px;"><i class="material-icons">gps_fixed</i> Obtener mi GPS actual</button>
+      <div id="geo-status-card" class="card" style="background-color: #E8F5E9; display:none; padding:12px;">
+        <p style="color: #2E7D32; font-weight:bold; margin:0; font-size:14px;">Coordenadas Guardadas:</p>
+        <p id="geo-status-text" style="color: gray; margin:4px 0 0 0; font-size:12px;"></p>
+      </div>
+      <hr style="border:0; border-top:1px solid #ddd; margin: 24px 0;">
+
+      <label class="info-label" style="display:block;">Comentarios</label>
       <textarea id="edit-comentarios" rows="3" oninput="this.value = this.value.toUpperCase()"></textarea>
 
       <div id="gas-extra-fields" style="display: none; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 16px;">
@@ -186,7 +206,7 @@
         <select id="edit-zonas" onchange="renderTruckEditor()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
 
         <div class="card" style="text-align:center; margin-top:16px;">
-          <p class="info-label">DIBUJA EL ESQUEMA AQUÍ</p>
+          <p class="info-label">DIBUJA EL ESQUEMA AQUÍ (Arrastra los círculos)</p>
           <div id="edit-truck-draw"></div>
         </div>
       </div>
@@ -202,23 +222,36 @@
   <div class="modal-overlay" id="modal-products">
     <div class="modal-content">
       <h3 style="margin-top:0; color:var(--primary); text-align:center;">Selecciona Combustible</h3>
-      <div class="prod-grid" id="modal-prod-grid"></div>
+      <div class="content" style="padding:0; flex-grow:1;">
+         <div class="prod-grid" id="modal-prod-grid"></div>
+      </div>
       <button class="btn btn-secondary" style="margin-top:16px;" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-map">
+    <div class="modal-content" style="height: 80vh;">
+      <h3 style="margin-top:0; color:var(--primary);">Arrastra la chincheta</h3>
+      <div id="map-view" style="flex-grow:1; width:100%; border-radius:12px; background:#ddd;"></div>
+      <div style="display:flex; gap:16px; margin-top:16px;">
+        <button class="btn btn-secondary" onclick="closeMapModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveMapLocation()">Fijar</button>
+      </div>
     </div>
   </div>
 
   <script>
     // =====================================================================
-    // ⚠️ ATENCIÓN: PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT (EL QUE TERMINA EN /exec)
+    // ⚠️ PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT (EL QUE TERMINA EN /exec)
     // =====================================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbwVuAr7UkPyYbSJ9D3hwqgDLFFVBI64rk4IQ_Mnu7GQWkLFPQzBPjbXjtYzodB1Iex8/exec";
-
 
     const STORAGE_KEY = "logistank_user_session";
     let appState = {
       user: { id: null, nombre: null, role: null }, currentListType: '', viewingId: null,
       dataGas: [], dataRoutes: [], dataProducts: [], pendingGas: [], pendingRoutes: [],
-      currentPlacements: [], truckViewSide: 'RIGHT'
+      currentPlacements: [], truckViewSide: 'RIGHT',
+      editLat: null, editLng: null // Coordenadas temporales
     };
 
     window.onload = function() {
@@ -230,23 +263,18 @@
         } catch(e) {}
       }
       navTo('screen-login');
+      initDraggable(); // Arranca el motor de arrastre táctil del camión
     };
 
     function navTo(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
     function showLoader(show) { document.getElementById('global-loader').style.display = show ? 'flex' : 'none'; }
-    function cleanPhone(el) { el.value = el.value.replace(/[^0-9\s]/g, ''); }
+    function cleanPhone(el) { el.value = el.value.replace(/[^0-9\s+]/g, ''); }
 
     // --- COMUNICACIÓN CON EL SERVIDOR (FETCH API) ---
-    // Usamos 'text/plain' para evitar los bloqueos CORS de Google
     async function apiPost(payload) {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
       return await res.json();
     }
-
     async function apiGet(action) {
       const res = await fetch(API_URL + "?action=" + action);
       return await res.json();
@@ -263,12 +291,8 @@
           appState.user = { id: res.id, nombre: res.nombre, role: res.role };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user));
           initDashboard();
-        } else {
-          showLoader(false); let err = document.getElementById('login-error'); err.innerText = res.message; err.style.display = 'block';
-        }
-      } catch(e) {
-        showLoader(false); alert("Error de red. Asegúrate de haber pegado el enlace API_URL correcto.");
-      }
+        } else { showLoader(false); let err = document.getElementById('login-error'); err.innerText = res.message; err.style.display = 'block'; }
+      } catch(e) { showLoader(false); alert("Error de red. Revisa el enlace API_URL."); }
     }
     
     function doGuestLogin() { appState.user = { id: "INV", nombre: "Invitado", role: "INVITADO" }; localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user)); initDashboard(); }
@@ -287,14 +311,10 @@
     async function fetchAllData() {
       showLoader(true);
       try {
-        let [routes, gas, prods] = await Promise.all([
-          apiGet("getRoutes"), apiGet("getGasStations"), apiGet("getProducts")
-        ]);
+        let [routes, gas, prods] = await Promise.all([ apiGet("getRoutes"), apiGet("getGasStations"), apiGet("getProducts") ]);
         appState.dataRoutes = routes; appState.dataGas = gas; appState.dataProducts = prods;
         await checkPending();
-      } catch(e) {
-        showLoader(false); alert("Fallo al descargar datos. Comprueba tu conexión.");
-      }
+      } catch(e) { showLoader(false); alert("Fallo al descargar datos. Comprueba internet."); }
     }
 
     async function checkPending() {
@@ -307,20 +327,33 @@
       showLoader(false);
     }
 
+    // --- BUSCADOR ---
+    function filterList() {
+      let q = document.getElementById('list-search').value.toLowerCase();
+      let items = document.querySelectorAll('.list-item-card');
+      items.forEach(el => { el.style.display = el.innerText.toLowerCase().includes(q) ? 'block' : 'none'; });
+    }
+
     // --- CÓDIGOS Y LISTAS ---
     function openCodes() {
-      let html = ''; appState.dataProducts.forEach(p => { html += `<div style="background:${p.colorFondo}; color:${p.colorTexto}; padding:16px; border-radius:12px; font-weight:bold; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">${p.codigo}</div>`; });
+      let html = ''; appState.dataProducts.forEach(p => { 
+        let textoReal = p.nombreApp ? p.nombreApp : (p.nombreOficial ? p.nombreOficial : p.codigo);
+        html += `<div style="background:${p.colorFondo}; color:${p.colorTexto}; padding:16px; border-radius:12px; font-weight:bold; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:8px;">
+          <span style="font-size:12px; opacity:0.8;">Cód: ${p.codigo}</span><span style="font-size:16px;">${textoReal}</span></div>`; 
+      });
       document.getElementById('codes-container').innerHTML = html; navTo('screen-codes');
     }
-    function openGasStations() { appState.currentListType = 'GAS'; document.getElementById('list-title').innerText = "Gasolineras"; renderList(appState.dataGas); navTo('screen-list'); }
-    function openRoutes() { appState.currentListType = 'ROUTE'; document.getElementById('list-title').innerText = "Clientes de Ruta"; renderList(appState.dataRoutes); navTo('screen-list'); }
+    
+    function openGasStations() { appState.currentListType = 'GAS'; document.getElementById('list-title').innerText = "Gasolineras"; document.getElementById('list-search').value=''; renderList(appState.dataGas); navTo('screen-list'); }
+    function openRoutes() { appState.currentListType = 'ROUTE'; document.getElementById('list-title').innerText = "Clientes de Ruta"; document.getElementById('list-search').value=''; renderList(appState.dataRoutes); navTo('screen-list'); }
+    
     function renderList(listData) {
       let html = (!listData || listData.length === 0) ? '<p style="text-align:center; color:gray;">No hay datos.</p>' : '';
-      if(listData) { listData.forEach(item => { html += `<div class="card" onclick="openView('${item.id}')"><p class="card-title">${item.nombre||"Sin nombre"}</p><p class="card-subtitle">${item.direccion||""}</p></div>`; }); }
+      if(listData) { listData.forEach(item => { html += `<div class="card list-item-card" onclick="openView('${item.id}')"><p class="card-title">${item.nombre||"Sin nombre"}</p><p class="card-subtitle">${item.direccion||""}</p></div>`; }); }
       document.getElementById('list-container').innerHTML = html;
     }
 
-    // --- VISUALIZADOR INTERACTIVO ---
+    // --- VISUALIZADOR INTERACTIVO Y MAPAS ---
     function openView(id) {
       appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
       let item = (isGas ? appState.dataGas : appState.dataRoutes).find(i => i.id === id);
@@ -328,9 +361,10 @@
 
       document.getElementById('view-nombre').innerText = item.nombre || '-'; document.getElementById('view-direccion').innerText = item.direccion || '-';
 
+      // GOOGLE MAPS FIX
       let btnMap = document.getElementById('btn-action-map');
-      if (item.latitud && item.longitud) { btnMap.href = `http://googleusercontent.com/maps.google.com/maps?q=${item.latitud},${item.longitud}`; btnMap.style.display = 'flex'; } 
-      else if (item.direccion) { btnMap.href = `http://googleusercontent.com/maps.google.com/maps?q=${encodeURIComponent(item.direccion)}`; btnMap.style.display = 'flex'; } 
+      if (item.latitud && item.longitud) { btnMap.href = `https://www.google.com/maps/search/?api=1&query=${item.latitud},${item.longitud}`; btnMap.style.display = 'flex'; } 
+      else if (item.direccion) { btnMap.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.direccion)}`; btnMap.style.display = 'flex'; } 
       else { btnMap.style.display = 'none'; }
 
       let btnPhone = document.getElementById('btn-action-phone');
@@ -361,27 +395,37 @@
 
     // --- EDITOR ---
     function goFromViewToEdit() { openEditor(appState.viewingId); }
+    
     function openEditor(id) {
       if(appState.user.role === 'INVITADO') { alert("Solo Lectura"); return; }
       appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
       document.getElementById('gas-extra-fields').style.display = isGas ? 'block' : 'none'; document.getElementById('editor-title').innerText = id ? "Editar" : "Nuevo";
 
-      document.getElementById('edit-nombre').value = ''; document.getElementById('edit-direccion').value = ''; document.getElementById('edit-telefono').value = ''; document.getElementById('edit-encargado-nombre').value = ''; document.getElementById('edit-encargado-tel').value = ''; document.getElementById('edit-comentarios').value = ''; appState.currentPlacements = [];
+      document.getElementById('edit-nombre').value = ''; document.getElementById('edit-direccion').value = ''; document.getElementById('edit-telefono').value = ''; document.getElementById('edit-encargado-nombre').value = ''; document.getElementById('edit-encargado-tel').value = ''; document.getElementById('edit-comentarios').value = '';
+      appState.currentPlacements = []; appState.editLat = null; appState.editLng = null;
+      updateGeoUI();
 
       if(id) {
         let item = (isGas ? appState.dataGas : appState.dataRoutes).find(i => i.id === id);
         if(item) {
           document.getElementById('edit-nombre').value = item.nombre || ''; document.getElementById('edit-direccion').value = item.direccion || ''; document.getElementById('edit-telefono').value = item.telefono || ''; document.getElementById('edit-encargado-nombre').value = item.nombreEncargado || ''; document.getElementById('edit-encargado-tel').value = item.telefonoEncargado ? item.telefonoEncargado.replace('+34','').trim() : ''; document.getElementById('edit-comentarios').value = item.comentarios || '';
-          if(isGas) { document.getElementById('edit-marca').value = item.marca || 'OTRA'; document.getElementById('edit-lado').value = item.ladoDescarga || 'RIGHT'; document.getElementById('edit-zonas').value = item.zonasDescarga || 1; appState.currentPlacements = [...(item.productos || [])]; }
+          appState.editLat = item.latitud; appState.editLng = item.longitud; updateGeoUI();
+          if(isGas) { document.getElementById('edit-marca').value = item.marca || 'OTRA'; document.getElementById('edit-lado').value = item.ladoDescarga || 'RIGHT'; document.getElementById('edit-zonas').value = item.zonasDescarga || 1; appState.currentPlacements = JSON.parse(JSON.stringify(item.productos || [])); }
         }
       } else { if(isGas) { document.getElementById('edit-lado').value = 'RIGHT'; document.getElementById('edit-zonas').value = 1; } }
       if(isGas) renderTruckEditor();
       navTo('screen-editor');
     }
 
+    function updateGeoUI() {
+      let st = document.getElementById('geo-status-card'); let txt = document.getElementById('geo-status-text');
+      if(appState.editLat && appState.editLng) { st.style.display = 'block'; txt.innerText = `Lat: ${appState.editLat}\nLon: ${appState.editLng}`; } 
+      else { st.style.display = 'none'; }
+    }
+
     async function saveData() {
       let isGas = (appState.currentListType === 'GAS');
-      let data = { id: appState.viewingId || "", nombre: document.getElementById('edit-nombre').value.toUpperCase(), direccion: document.getElementById('edit-direccion').value.toUpperCase(), telefono: document.getElementById('edit-telefono').value, nombreEncargado: document.getElementById('edit-encargado-nombre').value.toUpperCase(), telefonoEncargado: document.getElementById('edit-encargado-tel').value ? "+34 " + document.getElementById('edit-encargado-tel').value : "", comentarios: document.getElementById('edit-comentarios').value.toUpperCase() };
+      let data = { id: appState.viewingId || "", nombre: document.getElementById('edit-nombre').value.toUpperCase(), direccion: document.getElementById('edit-direccion').value.toUpperCase(), telefono: document.getElementById('edit-telefono').value, nombreEncargado: document.getElementById('edit-encargado-nombre').value.toUpperCase(), telefonoEncargado: document.getElementById('edit-encargado-tel').value ? "+34 " + document.getElementById('edit-encargado-tel').value : "", comentarios: document.getElementById('edit-comentarios').value.toUpperCase(), latitud: appState.editLat, longitud: appState.editLng };
       if(isGas) { data.marca = document.getElementById('edit-marca').value; data.ladoDescarga = document.getElementById('edit-lado').value; data.zonasDescarga = parseInt(document.getElementById('edit-zonas').value); data.productos = appState.currentPlacements; }
       
       showLoader(true);
@@ -391,13 +435,51 @@
       } catch(e) { showLoader(false); alert("Error al guardar"); }
     }
 
-    // --- CAMIÓN Y DIBUJOS ---
-    function getProdColor(code) {
-      if(!appState.dataProducts) return { bg: 'darkgray', txt: 'white' };
-      let match = appState.dataProducts.find(p => p.codigo && p.codigo.toUpperCase() === code.toUpperCase());
+    // --- MAPAS GPS (LEAFLET) ---
+    let map, mapMarker;
+    function openMapModal() {
+      document.getElementById('modal-map').style.display = 'flex';
+      let lat = appState.editLat || 40.416775; let lng = appState.editLng || -3.703790;
+      
+      setTimeout(() => {
+        if(!map) {
+          map = L.map('map-view').setView([lat, lng], 16);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+          mapMarker = L.marker([lat, lng], {draggable: true}).addTo(map);
+          mapMarker.on('dragend', function(e) { appState.editLat = e.target.getLatLng().lat; appState.editLng = e.target.getLatLng().lng; });
+          map.on('click', function(e) { mapMarker.setLatLng(e.latlng); appState.editLat = e.latlng.lat; appState.editLng = e.latlng.lng; });
+        } else {
+          map.setView([lat, lng], 16); mapMarker.setLatLng([lat, lng]); map.invalidateSize();
+        }
+      }, 300);
+    }
+    
+    function closeMapModal() { document.getElementById('modal-map').style.display = 'none'; }
+    function saveMapLocation() { updateGeoUI(); closeMapModal(); }
+    
+    function geolocateMe() {
+      if(navigator.geolocation) {
+        showLoader(true);
+        navigator.geolocation.getCurrentPosition((pos) => {
+          appState.editLat = pos.coords.latitude; appState.editLng = pos.coords.longitude;
+          updateGeoUI(); showLoader(false); alert("Ubicación capturada correctamente.");
+        }, (err) => { showLoader(false); alert("Enciende el GPS o dale permisos al navegador."); });
+      } else { alert("Tu teléfono no soporta GPS web."); }
+    }
+
+    // --- CAMIÓN Y COLORES REALES ---
+    // Busca por Nombre o por Código para que nunca salga gris
+    function getProdColor(codeStr) {
+      if(!appState.dataProducts || !codeStr) return { bg: 'darkgray', txt: 'white' };
+      let search = codeStr.toString().toUpperCase().trim();
+      let match = appState.dataProducts.find(p => (p.codigo && p.codigo.toString().toUpperCase() === search) || (p.nombreApp && p.nombreApp.toString().toUpperCase() === search) || (p.nombreOficial && p.nombreOficial.toString().toUpperCase() === search));
       return match ? { bg: match.colorFondo, txt: match.colorTexto } : { bg: 'darkgray', txt: 'white' };
     }
-    function shortProd(code) { if(!code) return '?'; const c = code.toUpperCase(); if(c==='BIENERGI 10') return 'B10'; if(c==='95 MAR SPORT') return '95S'; if(c==='B MAR PRO') return 'BPR'; if(c==='MARBIDIESEL') return 'MBD'; if(c==='NEXA') return 'NEX'; return c; }
+    
+    function shortProd(code) {
+      if(!code) return '?'; const c = code.toUpperCase();
+      if(c==='BIENERGI 10') return 'B10'; if(c==='95 MAR SPORT') return '95S'; if(c==='B MAR PRO') return 'BPR'; if(c==='MARBIDIESEL') return 'MBD'; if(c==='NEXA') return 'NEX'; return c;
+    }
 
     function renderTruckViewer(originalSide) { let isMirrored = (originalSide === 'BOTH' && appState.truckViewSide === 'LEFT'); let displaySide = (originalSide === 'BOTH') ? appState.truckViewSide : originalSide; document.getElementById('view-side-label').innerText = displaySide === 'LEFT' ? 'IZQUIERDA' : 'DERECHA'; document.getElementById('view-truck-draw').innerHTML = buildTruckHTML(displaySide, isMirrored, false); }
     function renderTruckEditor() { let cfgSide = document.getElementById('edit-lado').value; let displaySide = (cfgSide === 'BOTH') ? 'RIGHT' : cfgSide; document.getElementById('edit-truck-draw').innerHTML = buildTruckHTML(displaySide, false, true); }
@@ -405,22 +487,70 @@
     function buildTruckHTML(side, isMirrored, isEditor) {
       let list = appState.currentPlacements || []; let drawList = isMirrored ? [...list].reverse() : list;
       let colHTML = '<div class="side-col">'; if(drawList.length > 0) colHTML += '<span style="font-size:10px; font-weight:bold;">DESCARGA</span>';
+      
       drawList.forEach((p) => {
         let color = getProdColor(p.codigoProducto); let realIndex = list.indexOf(p);
         let tx = p.nx || 0; let ty = p.ny || 0; if(isMirrored) { tx = -tx; ty = -ty; }
-        colHTML += `<div class="prod-badge" style="background:${color.bg}; color:${color.txt}; transform: translate(${tx}px, ${ty}px);" ${isEditor ? `onclick="removeProd(${realIndex})"` : ''}>${shortProd(p.codigoProducto)}</div>`;
+        // Se añade 'data-index' para la función de arrastre
+        colHTML += `<div class="prod-badge" data-index="${realIndex}" style="background:${color.bg}; color:${color.txt}; transform: translate(${tx}px, ${ty}px);" ${isEditor && appState.dragEnabled ? '' : `onclick="removeProd(${realIndex})"`}>${shortProd(p.codigoProducto)}</div>`;
       });
       if(isEditor) colHTML += `<div class="prod-badge prod-add" onclick="openProductModal()">+</div>`; colHTML += '</div>';
+
       let truckHTML = `<div class="truck-wrapper"><div class="truck-cab"></div><div class="truck-hitch"></div><div class="truck-body"><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div></div><span style="font-size:12px; font-weight:bold; color:gray; margin-top:8px;">CAMIÓN</span></div>`;
       let finalHTML = '<div class="truck-container">';
       if(side === 'LEFT') finalHTML += colHTML + '<div style="width:16px;"></div>' + truckHTML + '<div class="side-col"></div>'; else finalHTML += '<div class="side-col"></div><div style="width:16px;"></div>' + truckHTML + '<div style="width:16px;"></div>' + colHTML;
       finalHTML += '</div>'; return finalHTML;
     }
 
-    function openProductModal() { let html = ''; if(appState.dataProducts) { appState.dataProducts.forEach(p => { html += `<button class="prod-btn" style="background:${p.colorFondo}; color:${p.colorTexto}" onclick="addProd('${p.codigo}')">${p.codigo}</button>`; }); } document.getElementById('modal-prod-grid').innerHTML = html; document.getElementById('modal-products').style.display = 'flex'; }
+    // --- ARRASTRE TÁCTIL (DRAG & DROP) PARA EL EDITOR ---
+    function initDraggable() {
+      const container = document.body;
+      let dragTarget = null, startX=0, startY=0, startNx=0, startNy=0, pIndex=-1;
+
+      function onStart(e) {
+        if(!e.target.classList.contains('prod-badge') || e.target.classList.contains('prod-add')) return;
+        // Solo arrastra si estamos en editor
+        if(!document.getElementById('screen-editor').classList.contains('active')) return;
+        dragTarget = e.target;
+        pIndex = parseInt(dragTarget.getAttribute('data-index'));
+        if(isNaN(pIndex)) { dragTarget = null; return; }
+        
+        let p = appState.currentPlacements[pIndex];
+        startNx = p.nx || 0; startNy = p.ny || 0;
+        startX = e.touches ? e.touches[0].clientX : e.clientX;
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+      }
+      function onMove(e) {
+        if(!dragTarget) return;
+        e.preventDefault(); // Evita hacer scroll mientras arrastras
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let p = appState.currentPlacements[pIndex];
+        p.nx = startNx + (clientX - startX);
+        p.ny = startNy + (clientY - startY);
+        dragTarget.style.transform = `translate(${p.nx}px, ${p.ny}px)`;
+      }
+      function onEnd(e) { if(dragTarget) { dragTarget = null; } }
+
+      container.addEventListener('mousedown', onStart); container.addEventListener('touchstart', onStart, {passive:false});
+      window.addEventListener('mousemove', onMove, {passive:false}); window.addEventListener('touchmove', onMove, {passive:false});
+      window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
+    }
+
+    // --- MODAL DE PRODUCTOS ---
+    function openProductModal() {
+      let html = ''; 
+      if(appState.dataProducts) { 
+        appState.dataProducts.forEach(p => { 
+          let textoReal = p.nombreApp ? p.nombreApp : (p.nombreOficial ? p.nombreOficial : p.codigo);
+          html += `<button class="prod-btn" style="background:${p.colorFondo}; color:${p.colorTexto}" onclick="addProd('${textoReal}')"><span style="font-size:12px; opacity:0.8;">Cód: ${p.codigo}</span> <span>${textoReal}</span></button>`; 
+        }); 
+      }
+      document.getElementById('modal-prod-grid').innerHTML = html; document.getElementById('modal-products').style.display = 'flex';
+    }
     function closeModal() { document.getElementById('modal-products').style.display = 'none'; }
-    function addProd(codigo) { appState.currentPlacements.push({ codigoProducto: codigo, zonaIndex: 1, nx: 0, ny: 0 }); closeModal(); renderTruckEditor(); }
-    function removeProd(index) { appState.currentPlacements.splice(index, 1); renderTruckEditor(); }
+    function addProd(codigoStr) { appState.currentPlacements.push({ codigoProducto: codigoStr, zonaIndex: 1, nx: 0, ny: 0 }); closeModal(); renderTruckEditor(); }
+    function removeProd(index) { if(confirm("¿Borrar este combustible?")) { appState.currentPlacements.splice(index, 1); renderTruckEditor(); } }
 
     // --- BANDEJA ADMIN ---
     function openInbox() {
@@ -431,10 +561,7 @@
     }
     async function resolvePending(type, id, isApprove) {
       showLoader(true);
-      try {
-        let res = await apiPost({ action: isApprove ? 'approveChange' : 'rejectChange', type: type, id: id });
-        alert(res.message); await fetchAllData(); navTo('screen-main');
-      } catch(e) { showLoader(false); alert("Error de red"); }
+      try { let res = await apiPost({ action: isApprove ? 'approveChange' : 'rejectChange', type: type, id: id }); alert(res.message); await fetchAllData(); navTo('screen-main'); } catch(e) { showLoader(false); alert("Error de red"); }
     }
   </script>
 </body>
