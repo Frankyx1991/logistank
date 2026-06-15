@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LogisTank Web</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root { --primary: #673AB7; --surface: #FFFFFF; --bg: #F5F5F5; --text: #333333; --error: #D32F2F; --success: #388E3C; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; }
+    
+    .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; } 
+    
+    .topbar { background-color: var(--primary); color: white; display: flex; align-items: center; padding: 16px; height: 64px; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; }
+    .topbar h1 { margin: 0; font-size: 20px; font-weight: bold; flex-grow: 1; }
+    .icon-btn { background: none; border: none; color: white; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    .content { flex-grow: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px; }
+    
+    .card { background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .card-title { font-weight: bold; font-size: 18px; margin: 0 0 8px 0; }
+    .card-subtitle { color: gray; font-size: 14px; margin: 0; line-height: 1.4; }
+    .info-label { font-weight: bold; font-size: 12px; color: var(--primary); margin-bottom: 4px; text-transform: uppercase; }
+    .info-value { font-size: 16px; margin-top: 0; margin-bottom: 16px; }
+    
+    input, textarea, select { width: 100%; padding: 16px; margin-bottom: 16px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; font-family: inherit; background: var(--surface); }
+    input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+    .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; text-decoration: none; }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-secondary { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-danger { background-color: #FFEBEE; color: var(--error); border: none; }
+    .btn-success { background-color: #E8F5E9; color: var(--success); border: none; }
+    .btn-action { margin-bottom: 8px; padding: 12px; }
+    
+    .chip { padding: 8px 16px; border-radius: 20px; background: #ddd; color: #333; font-weight: bold; font-size: 14px; cursor: pointer; border: 2px solid transparent; }
+    .chip.active { background: #E8EAF6; color: var(--primary); border-color: var(--primary); }
+    
+    .fab { position: fixed; bottom: 24px; right: 24px; background-color: var(--primary); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(103, 58, 183, 0.4); cursor: pointer; z-index: 100; border: none;}
+    
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .menu-item { background: var(--surface); border-radius: 16px; padding: 24px 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    
+    #global-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; display: none; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .truck-container { display: flex; justify-content: center; align-items: flex-start; margin: 24px 0; }
+    .side-col { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 310px;}
+    .truck-wrapper { display: flex; flex-direction: column; align-items: center; }
+    .truck-cab { width: 70px; height: 45px; background: #424242; border-radius: 6px; }
+    .truck-hitch { width: 16px; height: 12px; background: darkgray; }
+    .truck-body { width: 80px; height: 310px; background: #EEEEEE; border: 2px solid gray; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
+    .tank-circle { width: 45px; height: 45px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; }
+    .prod-badge { width: 54px; height: 54px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 14px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: relative; }
+    .prod-add { background: #fff; border: 2px dashed #aaa; color: #aaa; font-size: 24px; cursor: pointer; }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 16px; }
+    .modal-content { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+    .prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+    .prod-btn { padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; color: white; }
+  </style>
+</head>
+<body>
+
+  <div id="global-loader"><div class="spinner"></div><p style="margin-top:16px; font-weight:bold; color:var(--primary);">Sincronizando...</p></div>
+
+  <div id="screen-login" class="screen active">
+    <div style="padding: 32px; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+      <h1 style="color: var(--primary); text-align: center; font-size: 32px; margin-bottom: 8px;">LogisTank</h1>
+      <p style="text-align: center; color: gray; margin-bottom: 32px;">Control Logístico (Web PWA)</p>
+      <p id="login-error" style="color: var(--error); text-align: center; display: none;"></p>
+      <input type="number" id="inp-user" placeholder="Nº Conductor / Usuario">
+      <input type="password" id="inp-pass" placeholder="Contraseña">
+      <button class="btn btn-primary" onclick="doLogin()">Iniciar Sesión</button>
+      <hr style="border:0; border-top:1px solid #ddd; margin: 24px 0;">
+      <button class="btn btn-secondary" onclick="doGuestLogin()">Invitado</button>
+    </div>
+  </div>
+
+  <div id="screen-main" class="screen">
+    <div class="topbar">
+      <h1>LogisTank Inicio</h1>
+      <button class="icon-btn" onclick="logout()"><i class="material-icons">logout</i></button>
+    </div>
+    <div class="content">
+      <div class="card" style="background-color: #E8EAF6;">
+        <p style="margin: 0; color: #3F51B5; font-size: 14px;">Sesión iniciada como:</p>
+        <h2 style="margin: 4px 0 0 0; color: #1A237E;" id="dash-username">Usuario</h2>
+        <p style="margin: 4px 0 0 0; font-weight: bold; color: var(--primary);" id="dash-role">Rol</p>
+      </div>
+      <div class="menu-grid">
+        <div class="menu-item" onclick="openGasStations()"><i class="material-icons" style="font-size:40px;color:var(--primary);">local_gas_station</i><span>Gasolineras</span></div>
+        <div class="menu-item" onclick="openRoutes()"><i class="material-icons" style="font-size:40px;color:var(--primary);">map</i><span>Rutas</span></div>
+        <div class="menu-item" onclick="openCodes()"><i class="material-icons" style="font-size:40px;color:#00838F;">palette</i><span>Códigos</span></div>
+        <div class="menu-item" id="btn-admin-inbox" style="display: none; background-color: #FFF9C4;" onclick="openInbox()"><i class="material-icons" style="font-size:40px;color:#F57F17;">notifications_active</i><span>Bandeja Admin</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-list" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="navTo('screen-main')"><i class="material-icons">arrow_back</i></button>
+      <h1 id="list-title">Lista</h1>
+    </div>
+    <div class="content" id="list-container"></div>
+    <button class="fab" id="fab-add" onclick="openEditor(null)"><i class="material-icons">add</i></button>
+  </div>
+
+  <div id="screen-codes" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="navTo('screen-main')"><i class="material-icons">arrow_back</i></button>
+      <h1>Códigos Combustible</h1>
+    </div>
+    <div class="content">
+      <div id="codes-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"></div>
+    </div>
+  </div>
+
+  <div id="screen-view" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="navTo('screen-list')"><i class="material-icons">arrow_back</i></button>
+      <h1 id="view-title">Detalles</h1>
+      <button class="icon-btn" id="btn-edit-view" onclick="goFromViewToEdit()"><i class="material-icons">edit</i></button>
+    </div>
+    <div class="content">
+      <div id="action-buttons-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+        <a id="btn-action-map" href="#" target="_blank" class="btn btn-primary btn-action" style="display:none;"><i class="material-icons">place</i> Abrir en Google Maps</a>
+        <a id="btn-action-phone" href="#" class="btn btn-action" style="background:#0288D1; color:white; display:none;"><i class="material-icons">phone</i> Llamar al Fijo</a>
+        <a id="btn-action-wa" href="#" target="_blank" class="btn btn-action" style="background:#25D366; color:white; display:none;"><i class="material-icons">chat</i> Enviar WhatsApp</a>
+        <a id="btn-action-mobile" href="#" class="btn btn-action" style="background:#4CAF50; color:white; display:none;"><i class="material-icons">smartphone</i> Llamar al Encargado</a>
+      </div>
+
+      <div class="card">
+        <p class="info-label" id="view-marca-label" style="display:none;">MARCA</p>
+        <p class="info-value" id="view-marca" style="font-weight:900; font-size:20px; display:none;"></p>
+        <p class="info-label">NOMBRE</p><p class="info-value" id="view-nombre"></p>
+        <p class="info-label">DIRECCIÓN</p><p class="info-value" id="view-direccion"></p>
+      </div>
+
+      <div class="card" id="view-truck-card" style="display:none; text-align:center;">
+        <p class="info-label" style="margin-bottom:16px;">ESQUEMA DE DESCARGA</p>
+        <div id="view-mirror-toggles" style="display:none; justify-content:center; gap:8px; margin-bottom:16px;">
+          <div class="chip" id="chip-left" onclick="setTruckViewSide('LEFT')">IZQUIERDA</div>
+          <div class="chip" id="chip-right" onclick="setTruckViewSide('RIGHT')">DERECHA</div>
+        </div>
+        <h3 id="view-side-label" style="color:var(--primary); margin-top:0;">DERECHA</h3>
+        <div id="view-truck-draw"></div>
+      </div>
+
+      <div class="card" id="view-comentarios-card">
+        <p class="info-label">COMENTARIOS / INSTRUCCIONES</p>
+        <p class="info-value" id="view-comentarios" style="color:#E65100; font-weight:bold;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-editor" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="navTo(appState.viewingId ? 'screen-view' : 'screen-list')"><i class="material-icons">close</i></button>
+      <h1 id="editor-title">Editor</h1>
+    </div>
+    <div class="content">
+      <label class="info-label">Nombre</label><input type="text" id="edit-nombre" oninput="this.value = this.value.toUpperCase()">
+      <label class="info-label">Dirección</label><input type="text" id="edit-direccion" oninput="this.value = this.value.toUpperCase()">
+      <label class="info-label">Teléfono Principal</label><input type="tel" id="edit-telefono" oninput="cleanPhone(this)">
+
+      <div class="card" style="background-color: #F3E5F5; margin-top: 16px; box-shadow:none;">
+        <p class="info-label" style="margin-top: 0;">Datos del Encargado</p>
+        <input type="text" id="edit-encargado-nombre" placeholder="Nombre" oninput="this.value = this.value.toUpperCase()">
+        <input type="tel" id="edit-encargado-tel" placeholder="Móvil (Sin +34)" oninput="cleanPhone(this)" style="margin-bottom:0;">
+      </div>
+
+      <label class="info-label" style="margin-top: 16px; display:block;">Comentarios</label>
+      <textarea id="edit-comentarios" rows="3" oninput="this.value = this.value.toUpperCase()"></textarea>
+
+      <div id="gas-extra-fields" style="display: none; margin-top: 16px; border-top: 1px solid #ddd; padding-top: 16px;">
+        <label class="info-label">Marca</label>
+        <select id="edit-marca"><option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="LOW COST">LOW COST</option><option value="OTRA">OTRA</option></select>
+        
+        <label class="info-label">Lado de Descarga Configurado</label>
+        <select id="edit-lado" onchange="renderTruckEditor()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS (Se edita la base en DERECHA)</option></select>
+
+        <label class="info-label">Zonas Físicas</label>
+        <select id="edit-zonas" onchange="renderTruckEditor()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+
+        <div class="card" style="text-align:center; margin-top:16px;">
+          <p class="info-label">DIBUJA EL ESQUEMA AQUÍ</p>
+          <div id="edit-truck-draw"></div>
+        </div>
+      </div>
+      <div style="height: 32px;"></div><button class="btn btn-primary" onclick="saveData()">Guardar</button>
+    </div>
+  </div>
+
+  <div id="screen-inbox" class="screen">
+    <div class="topbar"><button class="icon-btn" onclick="navTo('screen-main')"><i class="material-icons">arrow_back</i></button><h1>Bandeja Admin</h1></div>
+    <div class="content" id="inbox-container"></div>
+  </div>
+
+  <div class="modal-overlay" id="modal-products">
+    <div class="modal-content">
+      <h3 style="margin-top:0; color:var(--primary); text-align:center;">Selecciona Combustible</h3>
+      <div class="prod-grid" id="modal-prod-grid"></div>
+      <button class="btn btn-secondary" style="margin-top:16px;" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================================
+    // ⚠️ ATENCIÓN: PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT (EL QUE TERMINA EN /exec)
+    // =====================================================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbwVuAr7UkPyYbSJ9D3hwqgDLFFVBI64rk4IQ_Mnu7GQWkLFPQzBPjbXjtYzodB1Iex8/exec";
+
+
+    const STORAGE_KEY = "logistank_user_session";
+    let appState = {
+      user: { id: null, nombre: null, role: null }, currentListType: '', viewingId: null,
+      dataGas: [], dataRoutes: [], dataProducts: [], pendingGas: [], pendingRoutes: [],
+      currentPlacements: [], truckViewSide: 'RIGHT'
+    };
+
+    window.onload = function() {
+      let savedData = localStorage.getItem(STORAGE_KEY);
+      if(savedData) {
+        try { 
+          appState.user = JSON.parse(savedData); 
+          if(appState.user && appState.user.role) { initDashboard(); return; } 
+        } catch(e) {}
+      }
+      navTo('screen-login');
+    };
+
+    function navTo(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); }
+    function showLoader(show) { document.getElementById('global-loader').style.display = show ? 'flex' : 'none'; }
+    function cleanPhone(el) { el.value = el.value.replace(/[^0-9\s]/g, ''); }
+
+    // --- COMUNICACIÓN CON EL SERVIDOR (FETCH API) ---
+    // Usamos 'text/plain' para evitar los bloqueos CORS de Google
+    async function apiPost(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      return await res.json();
+    }
+
+    async function apiGet(action) {
+      const res = await fetch(API_URL + "?action=" + action);
+      return await res.json();
+    }
+
+    // --- AUTENTICACIÓN ---
+    async function doLogin() {
+      let u = document.getElementById('inp-user').value; let p = document.getElementById('inp-pass').value;
+      if(!u || !p) return;
+      showLoader(true);
+      try {
+        let res = await apiPost({ action: 'login', username: u, password: p });
+        if(res.success) {
+          appState.user = { id: res.id, nombre: res.nombre, role: res.role };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user));
+          initDashboard();
+        } else {
+          showLoader(false); let err = document.getElementById('login-error'); err.innerText = res.message; err.style.display = 'block';
+        }
+      } catch(e) {
+        showLoader(false); alert("Error de red. Asegúrate de haber pegado el enlace API_URL correcto.");
+      }
+    }
+    
+    function doGuestLogin() { appState.user = { id: "INV", nombre: "Invitado", role: "INVITADO" }; localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.user)); initDashboard(); }
+    function logout() { localStorage.removeItem(STORAGE_KEY); appState.user = { id: null, nombre: null, role: null }; document.getElementById('inp-user').value = ''; document.getElementById('inp-pass').value = ''; navTo('screen-login'); }
+
+    // --- CARGA DE DATOS ---
+    async function initDashboard() {
+      document.getElementById('dash-username').innerText = appState.user.nombre;
+      document.getElementById('dash-role').innerText = appState.user.role;
+      document.getElementById('btn-admin-inbox').style.display = (appState.user.role === 'ADMIN') ? 'flex' : 'none';
+      document.getElementById('fab-add').style.display = (appState.user.role === 'INVITADO') ? 'none' : 'flex';
+      navTo('screen-main');
+      await fetchAllData();
+    }
+
+    async function fetchAllData() {
+      showLoader(true);
+      try {
+        let [routes, gas, prods] = await Promise.all([
+          apiGet("getRoutes"), apiGet("getGasStations"), apiGet("getProducts")
+        ]);
+        appState.dataRoutes = routes; appState.dataGas = gas; appState.dataProducts = prods;
+        await checkPending();
+      } catch(e) {
+        showLoader(false); alert("Fallo al descargar datos. Comprueba tu conexión.");
+      }
+    }
+
+    async function checkPending() {
+      if(appState.user.role === 'ADMIN') {
+        try {
+          let [pRoutes, pGas] = await Promise.all([ apiGet("getPendingRoutes"), apiGet("getPendingGasStations") ]);
+          appState.pendingRoutes = pRoutes; appState.pendingGas = pGas;
+        } catch(e) {}
+      }
+      showLoader(false);
+    }
+
+    // --- CÓDIGOS Y LISTAS ---
+    function openCodes() {
+      let html = ''; appState.dataProducts.forEach(p => { html += `<div style="background:${p.colorFondo}; color:${p.colorTexto}; padding:16px; border-radius:12px; font-weight:bold; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">${p.codigo}</div>`; });
+      document.getElementById('codes-container').innerHTML = html; navTo('screen-codes');
+    }
+    function openGasStations() { appState.currentListType = 'GAS'; document.getElementById('list-title').innerText = "Gasolineras"; renderList(appState.dataGas); navTo('screen-list'); }
+    function openRoutes() { appState.currentListType = 'ROUTE'; document.getElementById('list-title').innerText = "Clientes de Ruta"; renderList(appState.dataRoutes); navTo('screen-list'); }
+    function renderList(listData) {
+      let html = (!listData || listData.length === 0) ? '<p style="text-align:center; color:gray;">No hay datos.</p>' : '';
+      if(listData) { listData.forEach(item => { html += `<div class="card" onclick="openView('${item.id}')"><p class="card-title">${item.nombre||"Sin nombre"}</p><p class="card-subtitle">${item.direccion||""}</p></div>`; }); }
+      document.getElementById('list-container').innerHTML = html;
+    }
+
+    // --- VISUALIZADOR INTERACTIVO ---
+    function openView(id) {
+      appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
+      let item = (isGas ? appState.dataGas : appState.dataRoutes).find(i => i.id === id);
+      if(!item) return;
+
+      document.getElementById('view-nombre').innerText = item.nombre || '-'; document.getElementById('view-direccion').innerText = item.direccion || '-';
+
+      let btnMap = document.getElementById('btn-action-map');
+      if (item.latitud && item.longitud) { btnMap.href = `http://googleusercontent.com/maps.google.com/maps?q=${item.latitud},${item.longitud}`; btnMap.style.display = 'flex'; } 
+      else if (item.direccion) { btnMap.href = `http://googleusercontent.com/maps.google.com/maps?q=${encodeURIComponent(item.direccion)}`; btnMap.style.display = 'flex'; } 
+      else { btnMap.style.display = 'none'; }
+
+      let btnPhone = document.getElementById('btn-action-phone');
+      if(item.telefono) { btnPhone.href = `tel:${item.telefono.replace(/[^0-9+]/g,'')}`; btnPhone.style.display = 'flex'; } else { btnPhone.style.display = 'none'; }
+
+      let btnWa = document.getElementById('btn-action-wa'); let btnMobile = document.getElementById('btn-action-mobile');
+      if(item.telefonoEncargado) {
+        let cleanWa = item.telefonoEncargado.replace(/[^0-9]/g, ''); if(cleanWa.length > 0 && !cleanWa.startsWith('34')) cleanWa = '34' + cleanWa;
+        btnWa.href = `https://wa.me/${cleanWa}`; btnWa.style.display = 'flex'; btnMobile.href = `tel:+${cleanWa}`; btnMobile.style.display = 'flex';
+      } else { btnWa.style.display = 'none'; btnMobile.style.display = 'none'; }
+
+      document.getElementById('view-comentarios-card').style.display = item.comentarios ? 'block' : 'none'; document.getElementById('view-comentarios').innerText = item.comentarios || '';
+      document.getElementById('btn-edit-view').style.display = (appState.user.role === 'INVITADO') ? 'none' : 'flex';
+
+      if(isGas) {
+        document.getElementById('view-marca-label').style.display = 'block'; document.getElementById('view-marca').style.display = 'block'; document.getElementById('view-marca').innerText = item.marca || '-';
+        document.getElementById('view-truck-card').style.display = 'block';
+        appState.currentPlacements = item.productos || []; appState.truckViewSide = (item.ladoDescarga === 'LEFT') ? 'LEFT' : 'RIGHT';
+        if(item.ladoDescarga === 'BOTH') { document.getElementById('view-mirror-toggles').style.display = 'flex'; setTruckViewSide('RIGHT'); } 
+        else { document.getElementById('view-mirror-toggles').style.display = 'none'; renderTruckViewer(item.ladoDescarga); }
+      } else {
+        document.getElementById('view-marca-label').style.display = 'none'; document.getElementById('view-marca').style.display = 'none'; document.getElementById('view-truck-card').style.display = 'none';
+      }
+      navTo('screen-view');
+    }
+
+    function setTruckViewSide(side) { appState.truckViewSide = side; document.getElementById('chip-left').className = 'chip ' + (side === 'LEFT' ? 'active' : ''); document.getElementById('chip-right').className = 'chip ' + (side === 'RIGHT' ? 'active' : ''); renderTruckViewer('BOTH'); }
+
+    // --- EDITOR ---
+    function goFromViewToEdit() { openEditor(appState.viewingId); }
+    function openEditor(id) {
+      if(appState.user.role === 'INVITADO') { alert("Solo Lectura"); return; }
+      appState.viewingId = id; let isGas = (appState.currentListType === 'GAS');
+      document.getElementById('gas-extra-fields').style.display = isGas ? 'block' : 'none'; document.getElementById('editor-title').innerText = id ? "Editar" : "Nuevo";
+
+      document.getElementById('edit-nombre').value = ''; document.getElementById('edit-direccion').value = ''; document.getElementById('edit-telefono').value = ''; document.getElementById('edit-encargado-nombre').value = ''; document.getElementById('edit-encargado-tel').value = ''; document.getElementById('edit-comentarios').value = ''; appState.currentPlacements = [];
+
+      if(id) {
+        let item = (isGas ? appState.dataGas : appState.dataRoutes).find(i => i.id === id);
+        if(item) {
+          document.getElementById('edit-nombre').value = item.nombre || ''; document.getElementById('edit-direccion').value = item.direccion || ''; document.getElementById('edit-telefono').value = item.telefono || ''; document.getElementById('edit-encargado-nombre').value = item.nombreEncargado || ''; document.getElementById('edit-encargado-tel').value = item.telefonoEncargado ? item.telefonoEncargado.replace('+34','').trim() : ''; document.getElementById('edit-comentarios').value = item.comentarios || '';
+          if(isGas) { document.getElementById('edit-marca').value = item.marca || 'OTRA'; document.getElementById('edit-lado').value = item.ladoDescarga || 'RIGHT'; document.getElementById('edit-zonas').value = item.zonasDescarga || 1; appState.currentPlacements = [...(item.productos || [])]; }
+        }
+      } else { if(isGas) { document.getElementById('edit-lado').value = 'RIGHT'; document.getElementById('edit-zonas').value = 1; } }
+      if(isGas) renderTruckEditor();
+      navTo('screen-editor');
+    }
+
+    async function saveData() {
+      let isGas = (appState.currentListType === 'GAS');
+      let data = { id: appState.viewingId || "", nombre: document.getElementById('edit-nombre').value.toUpperCase(), direccion: document.getElementById('edit-direccion').value.toUpperCase(), telefono: document.getElementById('edit-telefono').value, nombreEncargado: document.getElementById('edit-encargado-nombre').value.toUpperCase(), telefonoEncargado: document.getElementById('edit-encargado-tel').value ? "+34 " + document.getElementById('edit-encargado-tel').value : "", comentarios: document.getElementById('edit-comentarios').value.toUpperCase() };
+      if(isGas) { data.marca = document.getElementById('edit-marca').value; data.ladoDescarga = document.getElementById('edit-lado').value; data.zonasDescarga = parseInt(document.getElementById('edit-zonas').value); data.productos = appState.currentPlacements; }
+      
+      showLoader(true);
+      try {
+        let res = await apiPost({ action: isGas ? 'saveGasStation' : 'saveRoute', data: data, userRole: appState.user.role, username: appState.user.nombre });
+        alert(res.message); await fetchAllData(); navTo('screen-main');
+      } catch(e) { showLoader(false); alert("Error al guardar"); }
+    }
+
+    // --- CAMIÓN Y DIBUJOS ---
+    function getProdColor(code) {
+      if(!appState.dataProducts) return { bg: 'darkgray', txt: 'white' };
+      let match = appState.dataProducts.find(p => p.codigo && p.codigo.toUpperCase() === code.toUpperCase());
+      return match ? { bg: match.colorFondo, txt: match.colorTexto } : { bg: 'darkgray', txt: 'white' };
+    }
+    function shortProd(code) { if(!code) return '?'; const c = code.toUpperCase(); if(c==='BIENERGI 10') return 'B10'; if(c==='95 MAR SPORT') return '95S'; if(c==='B MAR PRO') return 'BPR'; if(c==='MARBIDIESEL') return 'MBD'; if(c==='NEXA') return 'NEX'; return c; }
+
+    function renderTruckViewer(originalSide) { let isMirrored = (originalSide === 'BOTH' && appState.truckViewSide === 'LEFT'); let displaySide = (originalSide === 'BOTH') ? appState.truckViewSide : originalSide; document.getElementById('view-side-label').innerText = displaySide === 'LEFT' ? 'IZQUIERDA' : 'DERECHA'; document.getElementById('view-truck-draw').innerHTML = buildTruckHTML(displaySide, isMirrored, false); }
+    function renderTruckEditor() { let cfgSide = document.getElementById('edit-lado').value; let displaySide = (cfgSide === 'BOTH') ? 'RIGHT' : cfgSide; document.getElementById('edit-truck-draw').innerHTML = buildTruckHTML(displaySide, false, true); }
+
+    function buildTruckHTML(side, isMirrored, isEditor) {
+      let list = appState.currentPlacements || []; let drawList = isMirrored ? [...list].reverse() : list;
+      let colHTML = '<div class="side-col">'; if(drawList.length > 0) colHTML += '<span style="font-size:10px; font-weight:bold;">DESCARGA</span>';
+      drawList.forEach((p) => {
+        let color = getProdColor(p.codigoProducto); let realIndex = list.indexOf(p);
+        let tx = p.nx || 0; let ty = p.ny || 0; if(isMirrored) { tx = -tx; ty = -ty; }
+        colHTML += `<div class="prod-badge" style="background:${color.bg}; color:${color.txt}; transform: translate(${tx}px, ${ty}px);" ${isEditor ? `onclick="removeProd(${realIndex})"` : ''}>${shortProd(p.codigoProducto)}</div>`;
+      });
+      if(isEditor) colHTML += `<div class="prod-badge prod-add" onclick="openProductModal()">+</div>`; colHTML += '</div>';
+      let truckHTML = `<div class="truck-wrapper"><div class="truck-cab"></div><div class="truck-hitch"></div><div class="truck-body"><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div><div class="tank-circle"></div></div><span style="font-size:12px; font-weight:bold; color:gray; margin-top:8px;">CAMIÓN</span></div>`;
+      let finalHTML = '<div class="truck-container">';
+      if(side === 'LEFT') finalHTML += colHTML + '<div style="width:16px;"></div>' + truckHTML + '<div class="side-col"></div>'; else finalHTML += '<div class="side-col"></div><div style="width:16px;"></div>' + truckHTML + '<div style="width:16px;"></div>' + colHTML;
+      finalHTML += '</div>'; return finalHTML;
+    }
+
+    function openProductModal() { let html = ''; if(appState.dataProducts) { appState.dataProducts.forEach(p => { html += `<button class="prod-btn" style="background:${p.colorFondo}; color:${p.colorTexto}" onclick="addProd('${p.codigo}')">${p.codigo}</button>`; }); } document.getElementById('modal-prod-grid').innerHTML = html; document.getElementById('modal-products').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal-products').style.display = 'none'; }
+    function addProd(codigo) { appState.currentPlacements.push({ codigoProducto: codigo, zonaIndex: 1, nx: 0, ny: 0 }); closeModal(); renderTruckEditor(); }
+    function removeProd(index) { appState.currentPlacements.splice(index, 1); renderTruckEditor(); }
+
+    // --- BANDEJA ADMIN ---
+    function openInbox() {
+      let html = '<h3 style="color:var(--primary); margin-top:0;">Estaciones Pendientes</h3>';
+      if(!appState.pendingGas || appState.pendingGas.length === 0) html += '<p style="color:gray; font-size:14px;">Limpio.</p>';
+      if(appState.pendingGas) { appState.pendingGas.forEach(item => { html += `<div class="card"><p class="card-title">${item.nombre}</p><p class="card-subtitle">Por: ${item.solicitante}</p><div class="card-action"><button class="btn btn-danger" style="margin-right:8px; padding:8px;" onclick="resolvePending('GAS','${item.id}',false)">Rechazar</button><button class="btn btn-success" style="padding:8px;" onclick="resolvePending('GAS','${item.id}',true)">Aprobar</button></div></div>`; }); }
+      document.getElementById('inbox-container').innerHTML = html; navTo('screen-inbox');
+    }
+    async function resolvePending(type, id, isApprove) {
+      showLoader(true);
+      try {
+        let res = await apiPost({ action: isApprove ? 'approveChange' : 'rejectChange', type: type, id: id });
+        alert(res.message); await fetchAllData(); navTo('screen-main');
+      } catch(e) { showLoader(false); alert("Error de red"); }
+    }
+  </script>
+</body>
+</html>
