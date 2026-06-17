@@ -1,0 +1,59 @@
+/* =========================================
+   ESTILOS GENERALES LOGISTANK WEB
+   ========================================= */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #F5F5F5;
+    margin: 0;
+    padding: 0;
+}
+
+/* Colores Base */
+.bg-purple { background-color: #673AB7 !important; }
+.text-purple { color: #673AB7 !important; }
+.btn-purple { background-color: #673AB7; color: white; border: none; }
+.btn-purple:hover { background-color: #512DA8; color: white; }
+
+/* Tarjetas de Lista */
+.card-station {
+    border-radius: 12px;
+    border: none;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: white;
+    position: relative;
+    padding-left: 24px; /* Espacio para la barra de color */
+}
+
+.card-station:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Barras de Colores de Marca */
+.brand-indicator {
+    width: 8px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.brand-REPSOL { background-color: #FF9800; }
+.brand-BP { background-color: #4CAF50; }
+.brand-MOEVE { background-color: #005CE6; }
+.brand-SHELL { background-color: #FFC107; }
+.brand-GALP { background-color: #FF5000; }
+.brand-DEFAULT { background-color: #673AB7; }
+
+/* Utilidades */
+.hidden { display: none !important; }
+.nav-pills .nav-link.active {
+    background-color: #673AB7 !important;
+    color: white !important;
+}
+.nav-pills .nav-link {
+    color: #673AB7;
+    font-weight: bold;
+}
