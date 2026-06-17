@@ -51,10 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loginScreen.classList.remove('hidden');
     });
 
-    // Control de las 3 pestañas principales
-    document.getElementById('tab-gas').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+    // Control de las pestañas
     document.getElementById('tab-routes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
     document.getElementById('tab-codes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
+
+    // El logo sirve como botón para volver a Gasolineras (Inicio)
+    document.getElementById('logo-home').addEventListener('click', (e) => { e.preventDefault(); switchTab(null, 'GAS'); });
 });
 
 function switchTab(tabId, tabName) {
@@ -68,12 +70,16 @@ function switchTab(tabId, tabName) {
         el.style.color = '#673AB7';
     });
     
-    // Pintamos el botón activo
-    const activeEl = document.getElementById(tabId);
-    activeEl.classList.add('active');
-    activeEl.classList.remove('text-purple');
-    activeEl.style.backgroundColor = '#673AB7';
-    activeEl.style.color = 'white';
+    // Pintamos el botón activo si existe (Rutas o Códigos)
+    if (tabId) {
+        const activeEl = document.getElementById(tabId);
+        if (activeEl) {
+            activeEl.classList.add('active');
+            activeEl.classList.remove('text-purple');
+            activeEl.style.backgroundColor = '#673AB7';
+            activeEl.style.color = 'white';
+        }
+    }
     
     // Escondemos detalles y mostramos lista
     detailsContainer.classList.add('hidden');
@@ -122,7 +128,7 @@ async function fetchData() {
         routeClients = await resRoutes.json();
         productsList = await resProducts.json();
 
-        switchTab('tab-gas', 'GAS');
+        switchTab(null, 'GAS'); // Carga gasolineras por defecto
     } catch (error) {
         listContainer.innerHTML = `<div class="alert alert-danger m-3"><b>Error de conexión:</b> ${error.message}</div>`;
     }
@@ -242,7 +248,6 @@ function renderStationDetails() {
 
     html += `<h5 class="fw-bold mt-4 mb-3 text-center">Esquema de Descarga</h5>`;
 
-    // Filtros de Lado y Zonas
     if (s.ladoDescarga === 'BOTH') {
         html += `
         <div class="d-flex justify-content-center gap-2 mb-3">
@@ -259,7 +264,6 @@ function renderStationDetails() {
         html += `</div>`;
     }
 
-    // Dibujo del Camión según matemáticas de Android
     const isMirrored = currentSideView === 'LEFT';
     const canvasHtml = getCanvasHtml(s, currentZoneView, isMirrored);
 
@@ -285,20 +289,17 @@ function renderStationDetails() {
 function getCanvasHtml(station, zone, isMirrored) {
     let html = '<div class="zone-canvas">';
     const circleSize = 48;
-    const centerY = (310 - circleSize) / 2; // Punto 0,0 exacto en el centro vertical
+    const centerY = (310 - circleSize) / 2;
 
     const placements = station.productos || [];
     const zonePlacements = placements.filter(p => p.zonaIndex === zone);
     const drawList = isMirrored ? [...zonePlacements].reverse() : zonePlacements;
 
     drawList.forEach(p => {
-        // Conversión matemática idéntica a Android
         const tx = isMirrored ? -p.nx : p.nx;
         const ty = isMirrored ? -p.ny : p.ny;
-
         const left = 7 + tx; 
         const top = centerY + ty;
-
         const prodColor = getProdColorInfoJS(p.codigoProducto);
 
         html += `
