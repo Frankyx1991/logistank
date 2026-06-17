@@ -7,21 +7,18 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen" class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px; border-radius: 24px;">
+        <div class="card shadow-lg p-4 w-100" style="max-width: 400px; border-radius: 24px;">
             <div class="text-center mb-4">
-                <h1 class="fw-black text-purple" style="font-weight: 900; color: #673AB7;">LogisTank</h1>
+                <h1 class="fw-black text-purple">LogisTank</h1>
                 <p class="text-muted">Control Logístico Web</p>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">Nº Conductor / Usuario</label>
                 <div class="input-group">
@@ -29,7 +26,6 @@
                     <input type="text" id="login-user" class="form-control" placeholder="Usuario">
                 </div>
             </div>
-            
             <div class="mb-4">
                 <label class="form-label">Contraseña</label>
                 <div class="input-group">
@@ -37,56 +33,140 @@
                     <input type="password" id="login-pass" class="form-control" placeholder="****">
                 </div>
             </div>
-            
-            <button id="btn-login" class="btn btn-purple w-100 mb-3 py-2 fw-bold" style="background-color: #673AB7; color: white;">Iniciar Sesión</button>
+            <button id="btn-login" class="btn btn-purple w-100 mb-3 py-2 fw-bold">Iniciar Sesión</button>
             <hr>
             <button id="btn-guest" class="btn btn-outline-secondary w-100 py-2">Entrar como Invitado</button>
         </div>
     </div>
 
     <div id="main-screen" class="hidden vh-100 d-flex flex-column">
-        <header class="bg-purple text-white p-3 shadow" style="background-color: #673AB7;">
+        <header class="bg-purple text-white p-3 shadow">
             <div id="app-container" class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h2 id="logo-home" class="m-0 fw-black" style="font-weight: 900; cursor: pointer;">LogisTank</h2>
-                    <small id="user-info-display">Cargando usuario...</small>
+                    <h2 id="logo-home" class="m-0 fw-black" style="cursor: pointer;">LogisTank</h2>
+                    <small id="user-info-display">Cargando...</small>
                 </div>
-                <div class="d-flex gap-2">
-                    <button id="btn-inbox" class="btn btn-warning hidden position-relative">
-                        <i class="bi bi-bell-fill"></i>
-                        <span id="badge-inbox" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger hidden">0</span>
-                    </button>
-                    <button id="btn-logout" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Salir</button>
-                </div>
+                <button id="btn-logout" class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Salir</button>
             </div>
         </header>
 
-        <main id="app-container" class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px;">
+        <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative; overflow-x: hidden;">
             
             <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded-3 shadow-sm" id="main-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-routes" href="#" style="color: #673AB7; font-weight: bold;">Rutas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-codes" href="#" style="color: #673AB7; font-weight: bold;">Códigos</a>
-                </li>
+                <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#">Gasolineras</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-routes" href="#">Rutas</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-codes" href="#">Códigos</a></li>
             </ul>
 
-            <div id="list-container">
-                <div class="text-center text-muted mt-5">
-                    <div class="spinner-border text-purple" role="status" style="color: #673AB7;"></div>
-                    <p class="mt-2">Conectando con Google Sheets...</p>
+            <div id="list-container"></div>
+
+            <div id="details-container" class="hidden pb-5"></div>
+
+            <div id="editor-gas-container" class="hidden pb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-outline-secondary" onclick="closeEditor()"><i class="bi bi-arrow-left"></i> Cancelar</button>
+                    <button id="btn-delete-gas" class="btn btn-danger hidden" onclick="deleteGasStation()"><i class="bi bi-trash"></i> Borrar</button>
+                </div>
+                
+                <div class="card shadow-sm border-0 p-3 mb-3" style="border-radius: 12px;">
+                    <h4 class="fw-bold mb-3" id="editor-gas-title">Nueva Estación</h4>
+                    
+                    <label class="form-label fw-bold mt-2">Marca</label>
+                    <select id="eg-marca" class="form-select mb-3">
+                        <option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option>
+                        <option value="BP">BP</option><option value="SHELL">SHELL</option>
+                        <option value="GALP">GALP</option><option value="LOW COST">LOW COST</option>
+                    </select>
+
+                    <label class="form-label fw-bold">Nombre de la Estación</label>
+                    <input type="text" id="eg-nombre" class="form-control mb-3 text-uppercase">
+
+                    <label class="form-label fw-bold">Dirección</label>
+                    <input type="text" id="eg-direccion" class="form-control mb-3 text-uppercase">
+
+                    <label class="form-label fw-bold">Teléfono Fijo</label>
+                    <input type="tel" id="eg-telefono" class="form-control mb-3">
+
+                    <div class="p-3 mb-3 rounded" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                        <label class="form-label fw-bold text-purple">Datos del Encargado</label>
+                        <input type="text" id="eg-encargado-nombre" class="form-control mb-2 text-uppercase" placeholder="Nombre">
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold">+34</span>
+                            <input type="tel" id="eg-encargado-tel" class="form-control" placeholder="Móvil / WhatsApp">
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold">Lado de Descarga</label>
+                    <select id="eg-lado" class="form-select mb-3" onchange="renderEditorCanvas()">
+                        <option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option>
+                    </select>
+
+                    <label class="form-label fw-bold">Zonas de Descarga</label>
+                    <input type="number" id="eg-zonas" class="form-control mb-3" min="1" max="4" value="1" onchange="renderEditorCanvas()">
+
+                    <label class="form-label fw-bold text-center w-100 mt-3">Esquema de Descarga (Arrastra los productos)</label>
+                    <div id="eg-canvas-area" class="my-3"></div>
+
+                    <label class="form-label fw-bold mt-3">Comentarios</label>
+                    <textarea id="eg-comentarios" class="form-control mb-3 text-uppercase" rows="3"></textarea>
+
+                    <button id="btn-save-gas" class="btn btn-purple w-100 py-3 fw-bold mt-2" onclick="saveGasStation()">Guardar Gasolinera</button>
                 </div>
             </div>
 
-            <div id="details-container" class="hidden">
+            <div id="editor-route-container" class="hidden pb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-outline-secondary" onclick="closeEditor()"><i class="bi bi-arrow-left"></i> Cancelar</button>
+                    <button id="btn-delete-route" class="btn btn-danger hidden" onclick="deleteRoute()"><i class="bi bi-trash"></i> Borrar</button>
+                </div>
+
+                <div class="card shadow-sm border-0 p-3" style="border-radius: 12px; border-top: 6px solid #673AB7 !important;">
+                    <h4 class="fw-bold mb-3" id="editor-route-title">Nuevo Cliente de Ruta</h4>
+                    
+                    <label class="form-label fw-bold">Nombre del Cliente</label>
+                    <input type="text" id="er-nombre" class="form-control mb-3 text-uppercase">
+
+                    <label class="form-label fw-bold">Dirección</label>
+                    <input type="text" id="er-direccion" class="form-control mb-3 text-uppercase">
+
+                    <label class="form-label fw-bold">Teléfono Fijo / Principal</label>
+                    <input type="tel" id="er-telefono" class="form-control mb-3">
+
+                    <div class="p-3 mb-3 rounded" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                        <label class="form-label fw-bold text-purple">Contacto Alternativo</label>
+                        <input type="text" id="er-encargado-nombre" class="form-control mb-2 text-uppercase" placeholder="Nombre">
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold">+34</span>
+                            <input type="tel" id="er-encargado-tel" class="form-control" placeholder="Móvil">
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold">Comentarios / Instrucciones</label>
+                    <textarea id="er-comentarios" class="form-control mb-3 text-uppercase" rows="3"></textarea>
+
+                    <button id="btn-save-route" class="btn btn-purple w-100 py-3 fw-bold mt-2" onclick="saveRoute()">Guardar Cliente</button>
+                </div>
             </div>
 
         </main>
 
-        <button id="btn-add-floating" class="btn rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4" style="width: 60px; height: 60px; font-size: 24px; background-color: #673AB7; color: white; border: none;">
+        <button id="btn-add-floating" class="btn rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4" style="width: 60px; height: 60px; font-size: 24px; background-color: #673AB7; color: white; border: none; z-index: 1000;" onclick="openEditorForCurrentTab()">
             <i class="bi bi-plus-lg"></i>
         </button>
+    </div>
+
+    <div class="modal fade" id="fuelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-purple">Añadir Combustible</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2" id="fuel-grid"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
