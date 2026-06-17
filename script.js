@@ -9,7 +9,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsn
 let currentUser = null;
 let gasStations = [];
 let routeClients = [];
-let currentTab = 'GAS'; // Puede ser 'GAS' o 'ROUTES'
+let currentTab = 'GAS'; 
 
 // Referencias a elementos del DOM
 const loginScreen = document.getElementById('login-screen');
@@ -21,7 +21,7 @@ const userInfoDisplay = document.getElementById('user-info-display');
 // INICIALIZACIÓN Y EVENTOS
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Revisar si hay una sesión guardada
+    // Revisar si hay una sesión guardada para no tener que loguear siempre
     const savedUser = localStorage.getItem('logistank_user');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
@@ -30,9 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Botón Iniciar Sesión Normal
     document.getElementById('btn-login').addEventListener('click', () => {
-        const user = document.getElementById('login-user').value;
-        const pass = document.getElementById('login-pass').value;
-        if(user && pass) login(user, pass);
+        const user = document.getElementById('login-user').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+        
+        if(user && pass) {
+            login(user, pass);
+        } else {
+            alert("Por favor, introduce usuario y contraseña.");
+        }
     });
 
     // Botón Invitado
@@ -50,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginScreen.classList.remove('hidden');
     });
 
-    // Pestañas
+    // Pestañas de navegación
     document.getElementById('tab-gas').addEventListener('click', (e) => {
         e.preventDefault();
         currentTab = 'GAS';
@@ -73,14 +78,20 @@ document.addEventListener('DOMContentLoaded', () => {
 // =========================================
 async function login(username, password) {
     const btn = document.getElementById('btn-login');
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
     btn.disabled = true;
 
     try {
+        // EL TRUCO: Añadimos headers 'text/plain' para saltarnos el bloqueo CORS del navegador web
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            },
             body: JSON.stringify({ action: 'login', username: username, password: password })
         });
+        
         const result = await response.json();
 
         if (result.success) {
@@ -88,21 +99,20 @@ async function login(username, password) {
             localStorage.setItem('logistank_user', JSON.stringify(currentUser));
             showMainScreen();
         } else {
-            alert(result.message || 'Error de inicio de sesión');
+            alert('Acceso denegado: ' + (result.message || 'Credenciales incorrectas'));
         }
     } catch (error) {
-        alert('Error de conexión con el servidor.');
+        alert('Bloqueo de seguridad del navegador o error de conexión. Detalle: ' + error.message);
     } finally {
-        btn.innerHTML = 'Iniciar Sesión';
+        btn.innerHTML = originalText;
         btn.disabled = false;
     }
 }
 
 async function fetchData() {
-    contentArea.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Sincronizando datos...</p></div>';
+    contentArea.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Descargando base de datos...</p></div>';
     
     try {
-        // Pedimos gasolineras y rutas en paralelo para ir más rápido
         const [resGas, resRoutes] = await Promise.all([
             fetch(`${SCRIPT_URL}?action=getGasStations`),
             fetch(`${SCRIPT_URL}?action=getRoutes`)
@@ -115,7 +125,7 @@ async function fetchData() {
         else renderRoutes();
 
     } catch (error) {
-        contentArea.innerHTML = '<div class="alert alert-danger">Error al cargar los datos. Revisa tu conexión.</div>';
+        contentArea.innerHTML = `<div class="alert alert-danger m-3"><b>Error:</b> No se pudo conectar con el servidor. Detalle: ${error.message}</div>`;
     }
 }
 
@@ -130,6 +140,7 @@ function showMainScreen() {
 }
 
 function getBrandColorClass(marca) {
+    if(!marca) return 'brand-DEFAULT';
     const m = marca.toUpperCase();
     if(m.includes('REPSOL')) return 'brand-REPSOL';
     if(m.includes('BP')) return 'brand-BP';
@@ -145,8 +156,8 @@ function renderGasStations() {
         return;
     }
 
-    // Orden Alfabético Estricto (Igual que en Android)
-    const sorted = [...gasStations].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    // Orden alfabético
+    const sorted = [...gasStations].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
 
     let html = '<div class="d-flex flex-column gap-3">';
     sorted.forEach(station => {
@@ -154,8 +165,8 @@ function renderGasStations() {
         html += `
             <div class="card shadow-sm card-station p-3" onclick="viewStationDetails('${station.id}')">
                 <div class="brand-indicator ${brandClass}"></div>
-                <h5 class="fw-bold mb-1 text-dark">${station.nombre}</h5>
-                <p class="mb-0 text-muted small">${station.marca} • ${station.direccion}</p>
+                <h5 class="fw-bold mb-1 text-dark">${station.nombre || 'Sin Nombre'}</h5>
+                <p class="mb-0 text-muted small">${station.marca || ''} • ${station.direccion || ''}</p>
             </div>
         `;
     });
