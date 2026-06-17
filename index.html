@@ -11,27 +11,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <style>
-        /* Aquí irá nuestro archivo style.css más adelante, por ahora ponemos la base */
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #F5F5F5;
-        }
-        .bg-purple { background-color: #673AB7 !important; }
-        .text-purple { color: #673AB7 !important; }
-        .btn-purple { background-color: #673AB7; color: white; }
-        .btn-purple:hover { background-color: #512DA8; color: white; }
-        
-        #app-container { max-width: 1200px; margin: 0 auto; }
-        .hidden { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen" class="container d-flex justify-content-center align-items-center vh-100">
         <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px; border-radius: 24px;">
             <div class="text-center mb-4">
-                <h1 class="fw-black text-purple">LogisTank</h1>
+                <h1 class="fw-black text-purple" style="font-weight: 900; color: #673AB7;">LogisTank</h1>
                 <p class="text-muted">Control Logístico Web</p>
             </div>
             
@@ -51,17 +38,17 @@
                 </div>
             </div>
             
-            <button id="btn-login" class="btn btn-purple w-100 mb-3 py-2 fw-bold">Iniciar Sesión</button>
+            <button id="btn-login" class="btn btn-purple w-100 mb-3 py-2 fw-bold" style="background-color: #673AB7; color: white;">Iniciar Sesión</button>
             <hr>
             <button id="btn-guest" class="btn btn-outline-secondary w-100 py-2">Entrar como Invitado</button>
         </div>
     </div>
 
     <div id="main-screen" class="hidden vh-100 d-flex flex-column">
-        <header class="bg-purple text-white p-3 shadow">
+        <header class="bg-purple text-white p-3 shadow" style="background-color: #673AB7;">
             <div id="app-container" class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h2 class="m-0 fw-black">LogisTank</h2>
+                    <h2 class="m-0 fw-black" style="font-weight: 900;">LogisTank</h2>
                     <small id="user-info-display">Cargando usuario...</small>
                 </div>
                 <div class="d-flex gap-2">
@@ -74,30 +61,32 @@
             </div>
         </header>
 
-        <main id="app-container" class="flex-grow-1 p-3 w-100">
+        <main id="app-container" class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px;">
             <ul class="nav nav-pills nav-fill mb-4 bg-white p-2 rounded-3 shadow-sm">
                 <li class="nav-item">
-                    <a class="nav-link active" id="tab-gas" href="#" style="background-color: #673AB7;">Gasolineras</a>
+                    <a class="nav-link active" id="tab-gas" href="#" style="background-color: #673AB7; color: white;">Gasolineras</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-purple" id="tab-routes" href="#">Rutas</a>
+                    <a class="nav-link" id="tab-routes" href="#" style="color: #673AB7; font-weight: bold;">Rutas</a>
                 </li>
             </ul>
 
             <div id="content-area">
                 <div class="text-center text-muted mt-5">
-                    <div class="spinner-border text-purple" role="status"></div>
+                    <div class="spinner-border text-purple" role="status" style="color: #673AB7;"></div>
                     <p class="mt-2">Conectando con Google Sheets...</p>
                 </div>
             </div>
         </main>
 
-        <button id="btn-add-floating" class="btn btn-purple rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4" style="width: 60px; height: 60px; font-size: 24px;">
+        <button id="btn-add-floating" class="btn rounded-circle shadow-lg position-fixed bottom-0 end-0 m-4" style="width: 60px; height: 60px; font-size: 24px; background-color: #673AB7; color: white; border: none;">
             <i class="bi bi-plus-lg"></i>
         </button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
