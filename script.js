@@ -1,5 +1,5 @@
 // =========================================
-// MOTOR PRINCIPAL LOGISTANK WEB
+// MOTOR PRINCIPAL LOGISTANK WEB (COMPLETO)
 // =========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
@@ -10,33 +10,35 @@ let routeClients = [];
 let productsList = [];
 let currentTab = 'GAS'; 
 
-// Variables para el Visor de Gasolinera
-let currentStationView = null;
-let currentZoneView = 1;
-let currentSideView = 'RIGHT';
-
+// Elementos UI
 const loginScreen = document.getElementById('login-screen');
 const mainScreen = document.getElementById('main-screen');
 const listContainer = document.getElementById('list-container');
 const detailsContainer = document.getElementById('details-container');
+const editorGasContainer = document.getElementById('editor-gas-container');
+const editorRouteContainer = document.getElementById('editor-route-container');
 const userInfoDisplay = document.getElementById('user-info-display');
-const btnAddFloating = document.getElementById('btn-add-floating'); // 👈 Referencia al botón +
+const btnAddFloating = document.getElementById('btn-add-floating');
+
+// Variables Editor Gasolinera
+let editingStationId = null;
+let editorPlacements = [];
+let editorCurrentZone = 1;
+let fuelModalInstance = null;
 
 // =========================================
-// INICIALIZACIÓN Y EVENTOS
+// INICIALIZACIÓN
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
+    fuelModalInstance = new bootstrap.Modal(document.getElementById('fuelModal'));
+    
     const savedUser = localStorage.getItem('logistank_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        showMainScreen();
-    }
+    if (savedUser) { currentUser = JSON.parse(savedUser); showMainScreen(); }
 
     document.getElementById('btn-login').addEventListener('click', () => {
-        const user = document.getElementById('login-user').value.trim();
-        const pass = document.getElementById('login-pass').value.trim();
-        if(user && pass) login(user, pass);
-        else alert("Por favor, introduce usuario y contraseña.");
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pass').value.trim();
+        if(u && p) login(u, p); else alert("Introduce credenciales.");
     });
 
     document.getElementById('btn-guest').addEventListener('click', () => {
@@ -46,52 +48,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btn-logout').addEventListener('click', () => {
-        localStorage.removeItem('logistank_user');
-        currentUser = null;
-        mainScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
+        localStorage.removeItem('logistank_user'); currentUser = null;
+        mainScreen.classList.add('hidden'); loginScreen.classList.remove('hidden');
     });
 
-    // Control de las pestañas
+    document.getElementById('tab-gas').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
     document.getElementById('tab-routes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
     document.getElementById('tab-codes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
-
-    // El logo sirve como botón para volver a Gasolineras (Inicio)
-    document.getElementById('logo-home').addEventListener('click', (e) => { e.preventDefault(); switchTab(null, 'GAS'); });
+    document.getElementById('logo-home').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
 });
+
+// =========================================
+// BLINDAJE DEL BOTÓN FLOTANTE Y NAVEGACIÓN
+// =========================================
+function updateFabVisibility() {
+    if (!currentUser || currentUser.role === 'INVITADO') {
+        btnAddFloating.style.display = 'none'; // Invitados no pueden crear
+        return;
+    }
+    
+    // Solo visible si estamos en la lista principal de GAS o ROUTES
+    const isListVisible = !listContainer.classList.contains('hidden');
+    
+    if (isListVisible && (currentTab === 'GAS' || currentTab === 'ROUTES')) {
+        btnAddFloating.style.display = 'block';
+    } else {
+        btnAddFloating.style.display = 'none';
+    }
+}
 
 function switchTab(tabId, tabName) {
     currentTab = tabName;
-    
-    // Reseteamos botones
     document.querySelectorAll('#main-tabs .nav-link').forEach(el => {
-        el.classList.remove('active');
-        el.classList.add('text-purple');
-        el.style.backgroundColor = 'transparent';
-        el.style.color = '#673AB7';
+        el.classList.remove('active'); el.classList.add('text-purple');
+        el.style.backgroundColor = 'transparent'; el.style.color = '#673AB7';
     });
     
-    // Pintamos el botón activo si existe (Rutas o Códigos)
     if (tabId) {
         const activeEl = document.getElementById(tabId);
         if (activeEl) {
-            activeEl.classList.add('active');
-            activeEl.classList.remove('text-purple');
-            activeEl.style.backgroundColor = '#673AB7';
-            activeEl.style.color = 'white';
+            activeEl.classList.add('active'); activeEl.classList.remove('text-purple');
+            activeEl.style.backgroundColor = '#673AB7'; activeEl.style.color = 'white';
         }
     }
     
-    // Escondemos detalles y mostramos lista
     detailsContainer.classList.add('hidden');
+    editorGasContainer.classList.add('hidden');
+    editorRouteContainer.classList.add('hidden');
     listContainer.classList.remove('hidden');
+    document.getElementById('main-tabs').classList.remove('hidden'); // Asegurar que las pestañas se ven
 
-    // 🌟 LÓGICA INTELIGENTE DEL BOTÓN FLOTANTE (+) 🌟
-    if (tabName === 'GAS' || tabName === 'ROUTES') {
-        btnAddFloating.classList.remove('hidden');
-    } else {
-        btnAddFloating.classList.add('hidden'); // Lo oculta en Códigos
-    }
+    updateFabVisibility();
 
     if(tabName === 'GAS') renderGasStations();
     if(tabName === 'ROUTES') renderRoutes();
@@ -99,297 +106,302 @@ function switchTab(tabId, tabName) {
 }
 
 // =========================================
-// FUNCIONES DE RED (API)
+// COMUNICACIÓN CON GOOGLE SHEETS
 // =========================================
 async function login(username, password) {
-    const btn = document.getElementById('btn-login');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
-    btn.disabled = true;
-
+    const btn = document.getElementById('btn-login'); const oText = btn.innerHTML;
+    btn.innerHTML = 'Entrando...'; btn.disabled = true;
     try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'login', username: username, password: password })
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'login', username, password })
         });
-        const result = await response.json();
+        const result = await res.json();
         if (result.success) {
             currentUser = { id: result.id || username, nombre: result.nombre, role: result.role };
             localStorage.setItem('logistank_user', JSON.stringify(currentUser));
             showMainScreen();
-        } else alert('Acceso denegado: ' + (result.message || 'Credenciales incorrectas'));
-    } catch (error) { alert('Error de conexión: ' + error.message); } 
-    finally { btn.innerHTML = originalText; btn.disabled = false; }
+        } else alert(result.message || 'Error');
+    } catch (e) { alert('Error: ' + e.message); } 
+    finally { btn.innerHTML = oText; btn.disabled = false; }
 }
 
 async function fetchData() {
     listContainer.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Descargando base de datos...</p></div>';
     try {
-        const [resGas, resRoutes, resProducts] = await Promise.all([
-            fetch(`${SCRIPT_URL}?action=getGasStations`),
-            fetch(`${SCRIPT_URL}?action=getRoutes`),
-            fetch(`${SCRIPT_URL}?action=getProducts`)
+        const [rG, rR, rP] = await Promise.all([
+            fetch(`${SCRIPT_URL}?action=getGasStations`), fetch(`${SCRIPT_URL}?action=getRoutes`), fetch(`${SCRIPT_URL}?action=getProducts`)
         ]);
-
-        gasStations = await resGas.json();
-        routeClients = await resRoutes.json();
-        productsList = await resProducts.json();
-
-        switchTab(null, 'GAS'); // Carga gasolineras por defecto
-    } catch (error) {
-        listContainer.innerHTML = `<div class="alert alert-danger m-3"><b>Error de conexión:</b> ${error.message}</div>`;
-    }
+        gasStations = await rG.json(); routeClients = await rR.json(); productsList = await rP.json();
+        switchTab('tab-gas', 'GAS');
+    } catch (e) { listContainer.innerHTML = `<div class="alert alert-danger m-3">Error: ${e.message}</div>`; }
 }
 
 // =========================================
-// RENDERIZADO DE LISTAS (GASOLINERAS, RUTAS Y CÓDIGOS)
+// RENDERIZADO DE LISTAS
 // =========================================
 function showMainScreen() {
-    loginScreen.classList.add('hidden');
-    mainScreen.classList.remove('hidden');
+    loginScreen.classList.add('hidden'); mainScreen.classList.remove('hidden');
     userInfoDisplay.textContent = `${currentUser.nombre} (${currentUser.role})`;
     fetchData();
 }
 
 function renderGasStations() {
-    if (gasStations.length === 0) { listContainer.innerHTML = '<p class="text-center text-muted mt-5">No hay gasolineras.</p>'; return; }
+    if (gasStations.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...gasStations].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-
     let html = '<div class="d-flex flex-column gap-3">';
-    sorted.forEach(station => {
-        const brandClass = getBrandColorClass(station.marca);
-        html += `
-            <div class="card shadow-sm card-station p-3" onclick="viewStationDetails('${station.id}')">
-                <div class="brand-indicator ${brandClass}"></div>
-                <h5 class="fw-bold mb-1 text-dark">${station.nombre || 'Sin Nombre'}</h5>
-                <p class="mb-0 text-muted small">${station.marca || ''} • ${station.direccion || ''}</p>
-            </div>`;
+    sorted.forEach(s => {
+        html += `<div class="card shadow-sm card-station p-3" onclick="viewStationDetails('${s.id}')">
+            <div class="brand-indicator ${getBrandColorClass(s.marca)}"></div>
+            <h5 class="fw-bold mb-1 text-dark">${s.nombre}</h5><p class="mb-0 text-muted small">${s.marca} • ${s.direccion}</p>
+        </div>`;
     });
-    html += '</div>';
-    listContainer.innerHTML = html;
+    listContainer.innerHTML = html + '</div>';
 }
 
 function renderRoutes() {
-    if (routeClients.length === 0) { listContainer.innerHTML = '<p class="text-center text-muted mt-5">No hay rutas.</p>'; return; }
+    if (routeClients.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...routeClients].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-
     let html = '<div class="d-flex flex-column gap-3">';
-    sorted.forEach(client => {
-        html += `
-            <div class="card shadow-sm card-station p-3">
-                <div class="brand-indicator brand-DEFAULT"></div>
-                <h5 class="fw-bold mb-1 text-dark">${client.nombre || 'Sin nombre'}</h5>
-                <p class="mb-0 text-muted small">${client.direccion || 'Sin dirección'}</p>
-            </div>`;
+    sorted.forEach(c => {
+        html += `<div class="card shadow-sm card-station p-3" onclick="openRouteEditor('${c.id}')">
+            <div class="brand-indicator brand-DEFAULT"></div>
+            <h5 class="fw-bold mb-1 text-dark">${c.nombre}</h5><p class="mb-0 text-muted small">${c.direccion}</p>
+        </div>`;
     });
-    html += '</div>';
-    listContainer.innerHTML = html;
+    listContainer.innerHTML = html + '</div>';
 }
 
 function renderCodes() {
-    if (productsList.length === 0) { listContainer.innerHTML = '<p class="text-center text-muted mt-5">No hay códigos.</p>'; return; }
-    
     let html = '<div class="row g-3">';
     productsList.forEach(p => {
-        let bg = p.colorFondo || '#424242';
-        let txt = p.colorTexto || '#FFFFFF';
-        let realName = p.nombreApp || p.nombreOficial || p.codigo;
-        html += `
-            <div class="col-6">
-                <div class="card shadow-sm border-0 text-center p-3" style="background-color: ${bg}; color: ${txt}; border-radius: 12px;">
-                    <h4 class="fw-black m-0">${p.codigo}</h4>
-                    ${realName !== p.codigo ? `<small style="opacity:0.9;">${realName}</small>` : ''}
-                </div>
-            </div>`;
+        html += `<div class="col-6"><div class="card border-0 text-center p-3" style="background-color: ${p.colorFondo||'#424242'}; color: ${p.colorTexto||'#FFF'}; border-radius: 12px;">
+            <h4 class="fw-black m-0">${p.codigo}</h4></div></div>`;
     });
-    html += '</div>';
-    listContainer.innerHTML = html;
+    listContainer.innerHTML = html + '</div>';
 }
 
 // =========================================
-// EL VISOR WEB DE LA GASOLINERA (CAMIÓN)
+// VISOR DE DETALLES
 // =========================================
-function viewStationDetails(id) {
-    currentStationView = gasStations.find(s => s.id === id);
-    if(!currentStationView) return;
-    
-    currentZoneView = 1;
-    currentSideView = currentStationView.ladoDescarga === 'BOTH' ? 'LEFT' : currentStationView.ladoDescarga;
+let viewSt = null; let vZone = 1; let vSide = 'RIGHT';
 
+function viewStationDetails(id) {
+    viewSt = gasStations.find(s => s.id === id); if(!viewSt) return;
+    vZone = 1; vSide = viewSt.ladoDescarga === 'BOTH' ? 'LEFT' : viewSt.ladoDescarga;
+    
     listContainer.classList.add('hidden');
     detailsContainer.classList.remove('hidden');
-    
-    // 🌟 Ocultamos el botón (+) al entrar al visor de detalles 🌟
-    btnAddFloating.classList.add('hidden'); 
-    
-    renderStationDetails();
+    document.getElementById('main-tabs').classList.add('hidden'); // Ocultar pestañas para dar espacio
+    updateFabVisibility();
+    renderStationView();
 }
-
-function changeZone(z) { currentZoneView = z; renderStationDetails(); }
-function changeSide(s) { currentSideView = s; renderStationDetails(); }
 
 function closeDetails() { 
     detailsContainer.classList.add('hidden'); 
-    listContainer.classList.remove('hidden'); 
-    currentStationView = null; 
-    
-    // 🌟 Volvemos a mostrar el botón (+) si estamos en Gasolineras o Rutas 🌟
-    if (currentTab === 'GAS' || currentTab === 'ROUTES') {
-        btnAddFloating.classList.remove('hidden');
-    }
+    listContainer.classList.remove('hidden');
+    document.getElementById('main-tabs').classList.remove('hidden');
+    viewSt = null; 
+    updateFabVisibility();
 }
 
-function renderStationDetails() {
-    const s = currentStationView;
-    const brandColor = getBrandColorHex(s.marca);
-
+function renderStationView() {
+    const s = viewSt; const bc = getBrandColorHex(s.marca);
+    let isEditBtn = currentUser.role !== 'INVITADO' ? `<button class="btn btn-warning" onclick="openGasEditor('${s.id}')"><i class="bi bi-pencil"></i></button>` : '';
+    
     let html = `
-        <button class="btn btn-outline-secondary mb-3 shadow-sm" onclick="closeDetails()">
-            <i class="bi bi-arrow-left"></i> Volver a la Lista
-        </button>
-        <div class="card shadow-sm mb-3 border-0" style="border-top: 8px solid ${brandColor}; border-radius: 12px;">
-            <div class="card-body">
-                <h5 class="fw-black mb-1" style="color:${brandColor}">${s.marca}</h5>
-                <h4 class="fw-bold text-dark">${s.nombre}</h4>
-                <p class="text-muted mb-2">${s.direccion}</p>
-                ${s.telefono ? `<p class="mb-0 text-secondary"><i class="bi bi-telephone-fill"></i> ${s.telefono}</p>` : ''}
-            </div>
-        </div>`;
+        <div class="d-flex justify-content-between mb-3">
+            <button class="btn btn-outline-secondary shadow-sm" onclick="closeDetails()"><i class="bi bi-arrow-left"></i> Volver</button>
+            ${isEditBtn}
+        </div>
+        <div class="card shadow-sm mb-3 border-0" style="border-top: 8px solid ${bc}; border-radius: 12px;">
+            <div class="card-body"><h5 class="fw-black mb-1" style="color:${bc}">${s.marca}</h5><h4 class="fw-bold">${s.nombre}</h4><p class="text-muted">${s.direccion}</p></div>
+        </div>
+        <h5 class="fw-bold mt-4 mb-3 text-center">Esquema de Descarga</h5>
+    `;
 
-    if (s.nombreEncargado || s.telefonoEncargado) {
-         html += `
-         <div class="card shadow-sm border-0 mb-3" style="background-color: rgba(103, 58, 183, 0.05); border-radius: 12px;">
-            <div class="card-body">
-                <h6 class="fw-bold text-purple mb-3">Datos del Encargado</h6>
-                ${s.nombreEncargado ? `<div class="mb-2">👤 ${s.nombreEncargado}</div>` : ''}
-                ${s.telefonoEncargado ? `<div>📱 ${s.telefonoEncargado}</div>` : ''}
-            </div>
-         </div>`;
-    }
-
-    html += `<h5 class="fw-bold mt-4 mb-3 text-center">Esquema de Descarga</h5>`;
-
-    if (s.ladoDescarga === 'BOTH') {
-        html += `
-        <div class="d-flex justify-content-center gap-2 mb-3">
-            <button class="btn btn-sm ${currentSideView==='LEFT' ? 'btn-purple' : 'btn-outline-secondary'}" onclick="changeSide('LEFT')">IZQUIERDA</button>
-            <button class="btn btn-sm ${currentSideView==='RIGHT' ? 'btn-purple' : 'btn-outline-secondary'}" onclick="changeSide('RIGHT')">DERECHA</button>
+    if(s.ladoDescarga === 'BOTH') {
+        html += `<div class="d-flex justify-content-center gap-2 mb-3">
+            <button class="btn btn-sm ${vSide==='LEFT'?'btn-purple':'btn-outline-secondary'}" onclick="vSide='LEFT';renderStationView()">IZQ</button>
+            <button class="btn btn-sm ${vSide==='RIGHT'?'btn-purple':'btn-outline-secondary'}" onclick="vSide='RIGHT';renderStationView()">DER</button>
         </div>`;
     }
-
-    if (s.zonasDescarga > 1) {
+    if(s.zonasDescarga > 1) {
         html += `<div class="d-flex justify-content-center gap-2 mb-4">`;
-        for(let i=1; i<=s.zonasDescarga; i++) {
-            html += `<button class="btn btn-sm ${i === currentZoneView ? 'btn-purple' : 'btn-outline-secondary'}" onclick="changeZone(${i})">ZONA ${i}</button>`;
-        }
+        for(let i=1; i<=s.zonasDescarga; i++) html += `<button class="btn btn-sm ${i===vZone?'btn-purple':'btn-outline-secondary'}" onclick="vZone=${i};renderStationView()">ZONA ${i}</button>`;
         html += `</div>`;
     }
 
-    const isMirrored = currentSideView === 'LEFT';
-    const canvasHtml = getCanvasHtml(s, currentZoneView, isMirrored);
-
-    html += `
-        <div class="d-flex justify-content-center align-items-center my-4" id="truck-wrapper">
-            ${isMirrored ? canvasHtml + '<div style="width:12px;"></div>' + getTruckStaticHtml() : getTruckStaticHtml() + '<div style="width:12px;"></div>' + canvasHtml}
-        </div>
-    `;
-
-    if (s.comentarios) {
-         html += `
-         <div class="card shadow-sm border-0 mb-3" style="background-color: #FFF3E0; border-radius: 12px;">
-            <div class="card-body">
-                <h6 class="fw-bold" style="color: #E65100;">Comentarios</h6>
-                <div style="color: #E65100;">${s.comentarios}</div>
-            </div>
-         </div>`;
-    }
-
+    const isMirrored = vSide === 'LEFT';
+    html += `<div class="d-flex justify-content-center align-items-center my-4">${isMirrored ? getCanvasViewerHtml(s, vZone, isMirrored) + '<div style="width:12px;"></div>' + getTruckHtml() : getTruckHtml() + '<div style="width:12px;"></div>' + getCanvasViewerHtml(s, vZone, isMirrored)}</div>`;
     detailsContainer.innerHTML = html;
 }
 
-function getCanvasHtml(station, zone, isMirrored) {
+function getCanvasViewerHtml(s, z, isM) {
     let html = '<div class="zone-canvas">';
-    const circleSize = 48;
-    const centerY = (310 - circleSize) / 2;
-
-    const placements = station.productos || [];
-    const zonePlacements = placements.filter(p => p.zonaIndex === zone);
-    const drawList = isMirrored ? [...zonePlacements].reverse() : zonePlacements;
-
-    drawList.forEach(p => {
-        const tx = isMirrored ? -p.nx : p.nx;
-        const ty = isMirrored ? -p.ny : p.ny;
-        const left = 7 + tx; 
-        const top = centerY + ty;
-        const prodColor = getProdColorInfoJS(p.codigoProducto);
-
-        html += `
-            <div class="fuel-circle" style="left: ${left}px; top: ${top}px; background-color: ${prodColor.bg}; color: ${prodColor.txt};">
-                ${prodColor.short}
-            </div>
-        `;
+    const centerY = (310 - 48) / 2;
+    const pl = (s.productos || []).filter(p => p.zonaIndex === z);
+    const draw = isM ? [...pl].reverse() : pl;
+    
+    draw.forEach(p => {
+        const tx = isM ? -p.nx : p.nx; const ty = isM ? -p.ny : p.ny;
+        const c = getProdColorInfoJS(p.codigoProducto);
+        html += `<div class="fuel-circle" style="left:${7+tx}px; top:${centerY+ty}px; background-color:${c.bg}; color:${c.txt};">${c.short}</div>`;
     });
-    html += '</div>';
-    return html;
+    return html + '</div>';
 }
 
-function getTruckStaticHtml() {
-    return `
-        <div class="d-flex flex-column align-items-center">
-            <div class="truck-head"></div>
-            <div class="truck-neck"></div>
-            <div class="truck-body">
-                <div class="truck-hatch"></div>
-                <div class="truck-hatch"></div>
-                <div class="truck-hatch"></div>
-                <div class="truck-hatch"></div>
-                <div class="truck-hatch"></div>
-            </div>
-            <div class="mt-2 text-muted fw-bold" style="font-size:12px;">CAMIÓN</div>
-        </div>
-    `;
+function getTruckHtml() {
+    return `<div class="d-flex flex-column align-items-center"><div class="truck-head"></div><div class="truck-neck"></div><div class="truck-body"><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div></div><div class="mt-2 text-muted fw-bold" style="font-size:12px;">CAMIÓN</div></div>`;
 }
 
-// Utilidades de Color
-function getBrandColorClass(marca) {
-    if(!marca) return 'brand-DEFAULT';
-    const m = marca.toUpperCase();
-    if(m.includes('REPSOL')) return 'brand-REPSOL';
-    if(m.includes('BP')) return 'brand-BP';
-    if(m.includes('MOEVE') || m.includes('CEPSA')) return 'brand-MOEVE';
-    if(m.includes('SHELL')) return 'brand-SHELL';
-    if(m.includes('GALP')) return 'brand-GALP';
-    return 'brand-DEFAULT';
+// =========================================
+// SISTEMA DE EDICIÓN Y CREACIÓN
+// =========================================
+function openEditorForCurrentTab() {
+    if(currentTab === 'GAS') openGasEditor(null);
+    if(currentTab === 'ROUTES') openRouteEditor(null);
 }
 
-function getBrandColorHex(marca) {
-    const m = (marca||'').toUpperCase();
-    if(m.includes('REPSOL')) return '#FF9800';
-    if(m.includes('BP')) return '#4CAF50';
-    if(m.includes('MOEVE') || m.includes('CEPSA')) return '#005CE6';
-    if(m.includes('SHELL')) return '#FFC107';
-    if(m.includes('GALP')) return '#FF5000';
-    return '#673AB7';
+function closeEditor() {
+    editorGasContainer.classList.add('hidden');
+    editorRouteContainer.classList.add('hidden');
+    if (viewSt) detailsContainer.classList.remove('hidden'); // Volver a detalles si veníamos de ahí
+    else listContainer.classList.remove('hidden');
+    document.getElementById('main-tabs').classList.remove('hidden');
+    updateFabVisibility();
 }
 
-function getProdColorInfoJS(code) {
-    const c = (code || '').toUpperCase().trim();
-    let bg = '#424242'; let txt = '#FFFFFF'; let short = c;
-    switch(c) {
-        case 'A': bg = '#FFB300'; break;
-        case 'A+5': bg = '#F57C00'; break;
-        case 'A+': bg = '#FF8F00'; break;
-        case 'NEXA': bg = '#00838F'; short = 'NEX'; break;
-        case 'B': bg = '#D32F2F'; break;
-        case 'B MAR PRO': bg = '#880E4F'; short = 'BPR'; break;
-        case 'C': bg = '#0288D1'; break;
-        case 'BIENERGI 10': bg = '#6A1B9A'; short = 'B10'; break;
-        case '95': bg = '#388E3C'; break;
-        case '95+': bg = '#1B5E20'; break;
-        case '95 MAR SPORT': bg = '#00E676'; txt = '#000000'; short = '95S'; break;
-        case '98': bg = '#1565C0'; break;
-        case 'MARBIDIESEL': bg = '#5D4037'; short = 'MBD'; break;
+function generateUUID() {
+    return 'web-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// --- EDITOR RUTAS ---
+function openRouteEditor(id) {
+    if(currentUser.role === 'INVITADO') return alert("Solo lectura");
+    
+    listContainer.classList.add('hidden'); detailsContainer.classList.add('hidden');
+    document.getElementById('main-tabs').classList.add('hidden');
+    editorRouteContainer.classList.remove('hidden');
+    updateFabVisibility();
+
+    const btnDel = document.getElementById('btn-delete-route');
+    if (id) {
+        editingStationId = id;
+        const c = routeClients.find(x => x.id === id);
+        document.getElementById('editor-route-title').innerText = "Editar Cliente";
+        document.getElementById('er-nombre').value = c.nombre || '';
+        document.getElementById('er-direccion').value = c.direccion || '';
+        document.getElementById('er-telefono').value = c.telefono || '';
+        document.getElementById('er-encargado-nombre').value = c.nombreEncargado || '';
+        document.getElementById('er-encargado-tel').value = (c.telefonoEncargado || '').replace('+34', '').trim();
+        document.getElementById('er-comentarios').value = c.comentarios || '';
+        if(currentUser.role === 'ADMIN') btnDel.classList.remove('hidden'); else btnDel.classList.add('hidden');
+    } else {
+        editingStationId = generateUUID();
+        document.getElementById('editor-route-title').innerText = "Nuevo Cliente de Ruta";
+        document.getElementById('er-nombre').value = ''; document.getElementById('er-direccion').value = '';
+        document.getElementById('er-telefono').value = ''; document.getElementById('er-encargado-nombre').value = '';
+        document.getElementById('er-encargado-tel').value = ''; document.getElementById('er-comentarios').value = '';
+        btnDel.classList.add('hidden');
     }
-    return { bg, txt, short };
 }
+
+async function saveRoute() {
+    const btn = document.getElementById('btn-save-route'); btn.innerHTML = 'Guardando...'; btn.disabled = true;
+    
+    let encTel = document.getElementById('er-encargado-tel').value.trim();
+    if(encTel) encTel = '+34 ' + encTel;
+
+    const data = {
+        id: editingStationId,
+        nombre: document.getElementById('er-nombre').value.toUpperCase(),
+        direccion: document.getElementById('er-direccion').value.toUpperCase(),
+        telefono: document.getElementById('er-telefono').value,
+        nombreEncargado: document.getElementById('er-encargado-nombre').value.toUpperCase(),
+        telefonoEncargado: encTel,
+        comentarios: document.getElementById('er-comentarios').value.toUpperCase()
+    };
+
+    try {
+        const res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveRoute', data: data, userRole: currentUser.role, username: currentUser.nombre }) });
+        const result = await res.json();
+        if (result.success) { alert("Guardado OK"); fetchData(); closeEditor(); } else alert("Error al guardar.");
+    } catch (e) { alert('Error: ' + e.message); } finally { btn.innerHTML = 'Guardar Cliente'; btn.disabled = false; }
+}
+
+async function deleteRoute() {
+    if(!confirm("¿Seguro que quieres borrar este cliente?")) return;
+    try {
+        const res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteRoute', id: editingStationId }) });
+        await res.json(); fetchData(); closeEditor();
+    } catch (e) { alert('Error: ' + e.message); }
+}
+
+
+// --- EDITOR GASOLINERAS ---
+function openGasEditor(id) {
+    if(currentUser.role === 'INVITADO') return alert("Solo lectura");
+
+    listContainer.classList.add('hidden'); detailsContainer.classList.add('hidden');
+    document.getElementById('main-tabs').classList.add('hidden');
+    editorGasContainer.classList.remove('hidden');
+    updateFabVisibility();
+
+    const btnDel = document.getElementById('btn-delete-gas');
+    if (id) {
+        const s = gasStations.find(x => x.id === id);
+        editingStationId = s.id; editorPlacements = JSON.parse(JSON.stringify(s.productos || []));
+        document.getElementById('editor-gas-title').innerText = "Editar Gasolinera";
+        document.getElementById('eg-marca').value = s.marca === 'CEPSA' ? 'MOEVE' : s.marca;
+        document.getElementById('eg-nombre').value = s.nombre || '';
+        document.getElementById('eg-direccion').value = s.direccion || '';
+        document.getElementById('eg-telefono').value = s.telefono || '';
+        document.getElementById('eg-encargado-nombre').value = s.nombreEncargado || '';
+        document.getElementById('eg-encargado-tel').value = (s.telefonoEncargado || '').replace('+34', '').trim();
+        document.getElementById('eg-lado').value = s.ladoDescarga || 'RIGHT';
+        document.getElementById('eg-zonas').value = s.zonasDescarga || 1;
+        document.getElementById('eg-comentarios').value = s.comentarios || '';
+        if(currentUser.role === 'ADMIN') btnDel.classList.remove('hidden'); else btnDel.classList.add('hidden');
+    } else {
+        editingStationId = generateUUID(); editorPlacements = [];
+        document.getElementById('editor-gas-title').innerText = "Nueva Estación";
+        document.getElementById('eg-marca').value = 'REPSOL'; document.getElementById('eg-nombre').value = '';
+        document.getElementById('eg-direccion').value = ''; document.getElementById('eg-telefono').value = '';
+        document.getElementById('eg-encargado-nombre').value = ''; document.getElementById('eg-encargado-tel').value = '';
+        document.getElementById('eg-lado').value = 'RIGHT'; document.getElementById('eg-zonas').value = 1;
+        document.getElementById('eg-comentarios').value = '';
+        btnDel.classList.add('hidden');
+    }
+
+    editorCurrentZone = 1;
+    buildFuelModal();
+    renderEditorCanvas();
+}
+
+// =========================================
+// MOTOR DRAG & DROP (HTML5 Pointer Events)
+// =========================================
+function renderEditorCanvas() {
+    const area = document.getElementById('eg-canvas-area');
+    const lado = document.getElementById('eg-lado').value;
+    const isM = lado === 'LEFT';
+
+    // Pestañas de zona interactivas
+    let zonasHtml = `<div class="d-flex justify-content-center gap-2 mb-3">`;
+    const totalZ = parseInt(document.getElementById('eg-zonas').value);
+    if(editorCurrentZone > totalZ) editorCurrentZone = totalZ;
+    for(let i=1; i<=totalZ; i++) {
+        zonasHtml += `<button class="btn btn-sm ${i===editorCurrentZone?'btn-purple':'btn-outline-secondary'}" onclick="editorCurrentZone=${i};renderEditorCanvas()">ZONA ${i}</button>`;
+    }
+    zonasHtml += `</div>`;
+
+    // Lienzo con elementos arrastrables
+    const centerY = (310 - 48) / 2;
+    let canvasHtml = `<div class="zone-canvas bg-light rounded" id="drop-zone" style="border: 2px dashed #ccc;">`;
+    
+    editorPlacements.forEach((p, idx) => {
+        if(p.zonaIndex !== editorCurrentZone) return;
+        const tx = isM ? -p.nx : p.nx; const ty = isM ? -p.ny : p.ny;
+        const c = getProdColorInfoJS(p.codigoProducto);
+        
