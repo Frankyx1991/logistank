@@ -8,30 +8,20 @@ body {
     padding: 0;
 }
 
-/* Colores Base */
 .bg-purple { background-color: #673AB7 !important; }
 .text-purple { color: #673AB7 !important; }
 .btn-purple { background-color: #673AB7; color: white; border: none; }
 .btn-purple:hover { background-color: #512DA8; color: white; }
 
-/* Tarjetas de Lista */
 .card-station {
     border-radius: 12px;
     border: none;
-    overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background-color: white;
+    background-color: #FFFFFF;
     position: relative;
     padding-left: 24px;
 }
 
-.card-station:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-}
-
-/* Barras de Colores de Marca */
 .brand-indicator {
     width: 8px;
     height: 100%;
@@ -47,64 +37,43 @@ body {
 .brand-GALP { background-color: #FF5000; }
 .brand-DEFAULT { background-color: #673AB7; }
 
-/* Utilidades */
 .hidden { display: none !important; }
 
 /* =========================================
-   DISEÑO DEL CAMIÓN Y DEPÓSITOS
+   CAMIÓN Y ARRASTRE (DRAG & DROP)
    ========================================= */
-.truck-container {
-    position: relative;
-}
-
 .truck-body {
-    width: 80px;
-    height: 310px;
-    background-color: #EEEEEE;
-    border: 2px solid gray;
-    border-radius: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: center;
+    width: 80px; height: 310px;
+    background-color: #EEEEEE !important; /* Forzar en modo oscuro */
+    border: 2px solid gray; border-radius: 24px;
+    display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;
 }
+.truck-head { width: 70px; height: 45px; background-color: #424242 !important; border-radius: 6px; }
+.truck-neck { width: 16px; height: 12px; background-color: gray !important; }
+.truck-hatch { width: 45px; height: 45px; border: 2px solid rgba(0,0,0,0.2); border-radius: 50%; }
 
-.truck-head {
-    width: 70px;
-    height: 45px;
-    background-color: #424242;
-    border-radius: 6px;
-}
-
-.truck-neck {
-    width: 16px;
-    height: 12px;
-    background-color: gray;
-}
-
-.truck-hatch {
-    width: 45px;
-    height: 45px;
-    border: 2px solid rgba(0,0,0,0.1);
-    border-radius: 50%;
-}
-
-.zone-canvas {
-    width: 62px;
-    height: 310px;
-    position: relative;
-}
+.zone-canvas { width: 62px; height: 310px; position: relative; }
 
 .fuel-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255,255,255,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 900;
-    font-size: 12px;
-    position: absolute;
+    width: 48px; height: 48px;
+    border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5);
+    display: flex; justify-content: center; align-items: center;
+    font-weight: 900; font-size: 12px; position: absolute;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    user-select: none;
+}
+
+/* Clases especiales para cuando estamos en modo Editor */
+.draggable {
+    touch-action: none; /* Bloquea el scroll de la web al tocar el círculo */
+    cursor: grab;
+}
+.draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.1); transition: transform 0.1s; }
+
+.btn-add-fuel {
+    width: 38px; height: 38px; border-radius: 50%;
+    background-color: white !important; border: 1.5px solid lightgray !important;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 20px; font-weight: bold; color: gray !important; cursor: pointer;
+    position: absolute; bottom: -20px; left: 12px; z-index: 10;
 }
