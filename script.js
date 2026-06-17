@@ -20,6 +20,7 @@ const mainScreen = document.getElementById('main-screen');
 const listContainer = document.getElementById('list-container');
 const detailsContainer = document.getElementById('details-container');
 const userInfoDisplay = document.getElementById('user-info-display');
+const btnAddFloating = document.getElementById('btn-add-floating'); // 👈 Referencia al botón +
 
 // =========================================
 // INICIALIZACIÓN Y EVENTOS
@@ -84,6 +85,13 @@ function switchTab(tabId, tabName) {
     // Escondemos detalles y mostramos lista
     detailsContainer.classList.add('hidden');
     listContainer.classList.remove('hidden');
+
+    // 🌟 LÓGICA INTELIGENTE DEL BOTÓN FLOTANTE (+) 🌟
+    if (tabName === 'GAS' || tabName === 'ROUTES') {
+        btnAddFloating.classList.remove('hidden');
+    } else {
+        btnAddFloating.classList.add('hidden'); // Lo oculta en Códigos
+    }
 
     if(tabName === 'GAS') renderGasStations();
     if(tabName === 'ROUTES') renderRoutes();
@@ -211,12 +219,26 @@ function viewStationDetails(id) {
 
     listContainer.classList.add('hidden');
     detailsContainer.classList.remove('hidden');
+    
+    // 🌟 Ocultamos el botón (+) al entrar al visor de detalles 🌟
+    btnAddFloating.classList.add('hidden'); 
+    
     renderStationDetails();
 }
 
 function changeZone(z) { currentZoneView = z; renderStationDetails(); }
 function changeSide(s) { currentSideView = s; renderStationDetails(); }
-function closeDetails() { detailsContainer.classList.add('hidden'); listContainer.classList.remove('hidden'); currentStationView = null; }
+
+function closeDetails() { 
+    detailsContainer.classList.add('hidden'); 
+    listContainer.classList.remove('hidden'); 
+    currentStationView = null; 
+    
+    // 🌟 Volvemos a mostrar el botón (+) si estamos en Gasolineras o Rutas 🌟
+    if (currentTab === 'GAS' || currentTab === 'ROUTES') {
+        btnAddFloating.classList.remove('hidden');
+    }
+}
 
 function renderStationDetails() {
     const s = currentStationView;
