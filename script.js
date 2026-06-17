@@ -1,5 +1,5 @@
 // =========================================
-// MOTOR PRINCIPAL LOGISTANK WEB (COMPLETO)
+// MOTOR PRINCIPAL LOGISTANK WEB (BLINDADO)
 // =========================================
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
@@ -10,7 +10,6 @@ let routeClients = [];
 let productsList = [];
 let currentTab = 'GAS'; 
 
-// Elementos UI
 const loginScreen = document.getElementById('login-screen');
 const mainScreen = document.getElementById('main-screen');
 const listContainer = document.getElementById('list-container');
@@ -20,53 +19,58 @@ const editorRouteContainer = document.getElementById('editor-route-container');
 const userInfoDisplay = document.getElementById('user-info-display');
 const btnAddFloating = document.getElementById('btn-add-floating');
 
-// Variables Editor Gasolinera
 let editingStationId = null;
 let editorPlacements = [];
 let editorCurrentZone = 1;
 let fuelModalInstance = null;
 
 // =========================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN BLINDADA
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
-    fuelModalInstance = new bootstrap.Modal(document.getElementById('fuelModal'));
-    
-    const savedUser = localStorage.getItem('logistank_user');
-    if (savedUser) { currentUser = JSON.parse(savedUser); showMainScreen(); }
+    try {
+        // Blindaje: Solo carga el modal si el HTML está actualizado
+        const modalEl = document.getElementById('fuelModal');
+        if (modalEl) fuelModalInstance = new bootstrap.Modal(modalEl);
+        
+        const savedUser = localStorage.getItem('logistank_user');
+        if (savedUser) { currentUser = JSON.parse(savedUser); showMainScreen(); }
 
-    document.getElementById('btn-login').addEventListener('click', () => {
-        const u = document.getElementById('login-user').value.trim();
-        const p = document.getElementById('login-pass').value.trim();
-        if(u && p) login(u, p); else alert("Introduce credenciales.");
-    });
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value.trim();
+            if(u && p) login(u, p); else alert("Introduce credenciales.");
+        });
 
-    document.getElementById('btn-guest').addEventListener('click', () => {
-        currentUser = { id: 'INVITADO', nombre: 'Invitado', role: 'INVITADO' };
-        localStorage.setItem('logistank_user', JSON.stringify(currentUser));
-        showMainScreen();
-    });
+        document.getElementById('btn-guest').addEventListener('click', () => {
+            currentUser = { id: 'INVITADO', nombre: 'Invitado', role: 'INVITADO' };
+            localStorage.setItem('logistank_user', JSON.stringify(currentUser));
+            showMainScreen();
+        });
 
-    document.getElementById('btn-logout').addEventListener('click', () => {
-        localStorage.removeItem('logistank_user'); currentUser = null;
-        mainScreen.classList.add('hidden'); loginScreen.classList.remove('hidden');
-    });
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            localStorage.removeItem('logistank_user'); currentUser = null;
+            if(mainScreen) mainScreen.classList.add('hidden'); 
+            if(loginScreen) loginScreen.classList.remove('hidden');
+        });
 
-    document.getElementById('tab-gas').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
-    document.getElementById('tab-routes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
-    document.getElementById('tab-codes').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
-    document.getElementById('logo-home').addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+        document.getElementById('tab-gas')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+        document.getElementById('tab-routes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
+        document.getElementById('tab-codes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
+        document.getElementById('logo-home')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+
+    } catch (e) {
+        console.error("Error inicializando la app:", e);
+        alert("La página está cargando una versión antigua. Por favor, borra la caché del navegador.");
+    }
 });
 
-// =========================================
-// BLINDAJE DEL BOTÓN FLOTANTE Y NAVEGACIÓN
-// =========================================
 function updateFabVisibility() {
+    if(!btnAddFloating) return;
     if (!currentUser || currentUser.role === 'INVITADO') {
-        btnAddFloating.style.display = 'none';
-        return;
+        btnAddFloating.style.display = 'none'; return;
     }
-    const isListVisible = !listContainer.classList.contains('hidden');
+    const isListVisible = listContainer && !listContainer.classList.contains('hidden');
     if (isListVisible && (currentTab === 'GAS' || currentTab === 'ROUTES')) {
         btnAddFloating.style.display = 'block';
     } else {
@@ -89,11 +93,13 @@ function switchTab(tabId, tabName) {
         }
     }
     
-    detailsContainer.classList.add('hidden');
-    editorGasContainer.classList.add('hidden');
-    editorRouteContainer.classList.add('hidden');
-    listContainer.classList.remove('hidden');
-    document.getElementById('main-tabs').classList.remove('hidden');
+    if(detailsContainer) detailsContainer.classList.add('hidden');
+    if(editorGasContainer) editorGasContainer.classList.add('hidden');
+    if(editorRouteContainer) editorRouteContainer.classList.add('hidden');
+    if(listContainer) listContainer.classList.remove('hidden');
+    
+    const tabsEl = document.getElementById('main-tabs');
+    if(tabsEl) tabsEl.classList.remove('hidden');
 
     updateFabVisibility();
 
@@ -112,9 +118,6 @@ async function login(username, password) {
     btn.disabled = true;
 
     try {
-        console.log("Enviando petición de login...");
-        
-        // MODO NO-CORS para saltar el escudo del navegador web
         await fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -122,46 +125,35 @@ async function login(username, password) {
             body: JSON.stringify({ action: 'login', username: username, password: password })
         });
         
-        console.log("Petición enviada. Forzando entrada...");
-        
-        // Al usar no-cors no podemos leer si la contraseña es correcta o no,
-        // así que forzamos la entrada. Si la URL está mal, fallará al descargar los datos.
         currentUser = { id: username, nombre: username, role: 'ADMIN' };
         localStorage.setItem('logistank_user', JSON.stringify(currentUser));
         showMainScreen();
-
     } catch (error) {
-        console.error("Error capturado:", error);
-        alert('Error de red: ' + error.message);
+        alert('Error de red al conectar con Google. Revisa tu conexión.');
     } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        btn.innerHTML = originalText; btn.disabled = false;
     }
 }
 
 async function fetchData() {
-    listContainer.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Descargando base de datos...</p></div>';
+    if(!listContainer) return;
+    listContainer.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Descargando datos...</p></div>';
     try {
         const [rG, rR, rP] = await Promise.all([
             fetch(`${SCRIPT_URL}?action=getGasStations`), 
             fetch(`${SCRIPT_URL}?action=getRoutes`), 
             fetch(`${SCRIPT_URL}?action=getProducts`)
         ]);
+        
         gasStations = await rG.json(); 
         routeClients = await rR.json(); 
         productsList = await rP.json();
         switchTab('tab-gas', 'GAS');
     } catch (e) { 
-        console.error(e);
-        listContainer.innerHTML = `<div class="alert alert-danger m-3 text-start">
-            <b>⛔ Bloqueo de Seguridad de Google</b><br><br>
-            La web no puede descargar los datos. Para arreglarlo:<br>
-            1. Ve a tu Google Apps Script.<br>
-            2. Pulsa en <b>Implementar > Gestionar implementaciones</b>.<br>
-            3. Dale al lápiz de editar.<br>
-            4. En "Quién tiene acceso", cámbialo a <b>"Cualquier persona"</b> (Anyone).<br>
-            5. Pulsa Implementar.<br><br>
-            <i>Detalle técnico: ${e.message}</i>
+        listContainer.innerHTML = `<div class="alert alert-danger m-3">
+            <b>⛔ Bloqueo de Google</b><br><br>
+            Asegúrate de haber puesto "Cualquier persona" en las opciones de implementación de Apps Script.<br>
+            <i>Detalle: ${e.message}</i>
         </div>`; 
     }
 }
@@ -170,12 +162,14 @@ async function fetchData() {
 // RENDERIZADO DE LISTAS
 // =========================================
 function showMainScreen() {
-    loginScreen.classList.add('hidden'); mainScreen.classList.remove('hidden');
-    userInfoDisplay.textContent = `${currentUser.nombre} (${currentUser.role})`;
+    if(loginScreen) loginScreen.classList.add('hidden'); 
+    if(mainScreen) mainScreen.classList.remove('hidden');
+    if(userInfoDisplay) userInfoDisplay.textContent = `${currentUser.nombre} (${currentUser.role})`;
     fetchData();
 }
 
 function renderGasStations() {
+    if(!listContainer) return;
     if (gasStations.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...gasStations].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     let html = '<div class="d-flex flex-column gap-3">';
@@ -189,6 +183,7 @@ function renderGasStations() {
 }
 
 function renderRoutes() {
+    if(!listContainer) return;
     if (routeClients.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...routeClients].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     let html = '<div class="d-flex flex-column gap-3">';
@@ -202,6 +197,7 @@ function renderRoutes() {
 }
 
 function renderCodes() {
+    if(!listContainer) return;
     if (productsList.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     let html = '<div class="row g-3">';
     productsList.forEach(p => {
@@ -220,22 +216,27 @@ function viewStationDetails(id) {
     viewSt = gasStations.find(s => s.id === id); if(!viewSt) return;
     vZone = 1; vSide = viewSt.ladoDescarga === 'BOTH' ? 'LEFT' : viewSt.ladoDescarga;
     
-    listContainer.classList.add('hidden');
-    detailsContainer.classList.remove('hidden');
-    document.getElementById('main-tabs').classList.add('hidden');
+    if(listContainer) listContainer.classList.add('hidden');
+    if(detailsContainer) detailsContainer.classList.remove('hidden');
+    const tabs = document.getElementById('main-tabs');
+    if(tabs) tabs.classList.add('hidden');
+    
     updateFabVisibility();
     renderStationView();
 }
 
 function closeDetails() { 
-    detailsContainer.classList.add('hidden'); 
-    listContainer.classList.remove('hidden');
-    document.getElementById('main-tabs').classList.remove('hidden');
+    if(detailsContainer) detailsContainer.classList.add('hidden'); 
+    if(listContainer) listContainer.classList.remove('hidden');
+    const tabs = document.getElementById('main-tabs');
+    if(tabs) tabs.classList.remove('hidden');
+    
     viewSt = null; 
     updateFabVisibility();
 }
 
 function renderStationView() {
+    if(!detailsContainer) return;
     const s = viewSt; const bc = getBrandColorHex(s.marca);
     let isEditBtn = currentUser.role !== 'INVITADO' ? `<button class="btn btn-warning" onclick="openGasEditor('${s.id}')"><i class="bi bi-pencil"></i></button>` : '';
     
@@ -294,31 +295,35 @@ function openEditorForCurrentTab() {
 }
 
 function closeEditor() {
-    editorGasContainer.classList.add('hidden');
-    editorRouteContainer.classList.add('hidden');
-    if (viewSt) detailsContainer.classList.remove('hidden'); 
-    else listContainer.classList.remove('hidden');
-    document.getElementById('main-tabs').classList.remove('hidden');
+    if(editorGasContainer) editorGasContainer.classList.add('hidden');
+    if(editorRouteContainer) editorRouteContainer.classList.add('hidden');
+    if (viewSt) {
+        if(detailsContainer) detailsContainer.classList.remove('hidden'); 
+    } else {
+        if(listContainer) listContainer.classList.remove('hidden');
+        const tabs = document.getElementById('main-tabs');
+        if(tabs) tabs.classList.remove('hidden');
+    }
     updateFabVisibility();
 }
 
-function generateUUID() {
-    return 'web-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
+function generateUUID() { return 'web-' + Math.random().toString(36).substring(2, 15); }
 
 // --- EDITOR RUTAS ---
 function openRouteEditor(id) {
     if(currentUser.role === 'INVITADO') return alert("Solo lectura");
     
-    listContainer.classList.add('hidden'); detailsContainer.classList.add('hidden');
-    document.getElementById('main-tabs').classList.add('hidden');
-    editorRouteContainer.classList.remove('hidden');
+    if(listContainer) listContainer.classList.add('hidden'); 
+    if(detailsContainer) detailsContainer.classList.add('hidden');
+    const tabs = document.getElementById('main-tabs');
+    if(tabs) tabs.classList.add('hidden');
+    
+    if(editorRouteContainer) editorRouteContainer.classList.remove('hidden');
     updateFabVisibility();
 
     const btnDel = document.getElementById('btn-delete-route');
     if (id) {
-        editingStationId = id;
-        const c = routeClients.find(x => x.id === id);
+        editingStationId = id; const c = routeClients.find(x => x.id === id);
         document.getElementById('editor-route-title').innerText = "Editar Cliente";
         document.getElementById('er-nombre').value = c.nombre || '';
         document.getElementById('er-direccion').value = c.direccion || '';
@@ -326,55 +331,54 @@ function openRouteEditor(id) {
         document.getElementById('er-encargado-nombre').value = c.nombreEncargado || '';
         document.getElementById('er-encargado-tel').value = (c.telefonoEncargado || '').replace('+34', '').trim();
         document.getElementById('er-comentarios').value = c.comentarios || '';
-        if(currentUser.role === 'ADMIN') btnDel.classList.remove('hidden'); else btnDel.classList.add('hidden');
+        if(currentUser.role === 'ADMIN' && btnDel) btnDel.classList.remove('hidden'); 
+        else if(btnDel) btnDel.classList.add('hidden');
     } else {
         editingStationId = generateUUID();
         document.getElementById('editor-route-title').innerText = "Nuevo Cliente de Ruta";
         document.getElementById('er-nombre').value = ''; document.getElementById('er-direccion').value = '';
         document.getElementById('er-telefono').value = ''; document.getElementById('er-encargado-nombre').value = '';
         document.getElementById('er-encargado-tel').value = ''; document.getElementById('er-comentarios').value = '';
-        btnDel.classList.add('hidden');
+        if(btnDel) btnDel.classList.add('hidden');
     }
 }
 
 async function saveRoute() {
     const btn = document.getElementById('btn-save-route'); btn.innerHTML = 'Guardando...'; btn.disabled = true;
-    
     let encTel = document.getElementById('er-encargado-tel').value.trim();
     if(encTel) encTel = '+34 ' + encTel;
 
     const data = {
-        id: editingStationId,
-        nombre: document.getElementById('er-nombre').value.toUpperCase(),
-        direccion: document.getElementById('er-direccion').value.toUpperCase(),
-        telefono: document.getElementById('er-telefono').value,
-        nombreEncargado: document.getElementById('er-encargado-nombre').value.toUpperCase(),
-        telefonoEncargado: encTel,
+        id: editingStationId, nombre: document.getElementById('er-nombre').value.toUpperCase(),
+        direccion: document.getElementById('er-direccion').value.toUpperCase(), telefono: document.getElementById('er-telefono').value,
+        nombreEncargado: document.getElementById('er-encargado-nombre').value.toUpperCase(), telefonoEncargado: encTel,
         comentarios: document.getElementById('er-comentarios').value.toUpperCase()
     };
 
     try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveRoute', data: data, userRole: currentUser.role, username: currentUser.nombre }) });
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveRoute', data: data, userRole: currentUser.role, username: currentUser.nombre }) });
         alert("Petición de guardado enviada."); fetchData(); closeEditor();
     } catch (e) { alert('Error: ' + e.message); } finally { btn.innerHTML = 'Guardar Cliente'; btn.disabled = false; }
 }
 
 async function deleteRoute() {
-    if(!confirm("¿Seguro que quieres borrar este cliente?")) return;
+    if(!confirm("¿Borrar cliente?")) return;
     try {
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteRoute', id: editingStationId }) });
         alert("Petición de borrado enviada."); fetchData(); closeEditor();
     } catch (e) { alert('Error: ' + e.message); }
 }
 
-
 // --- EDITOR GASOLINERAS ---
 function openGasEditor(id) {
     if(currentUser.role === 'INVITADO') return alert("Solo lectura");
 
-    listContainer.classList.add('hidden'); detailsContainer.classList.add('hidden');
-    document.getElementById('main-tabs').classList.add('hidden');
-    editorGasContainer.classList.remove('hidden');
+    if(listContainer) listContainer.classList.add('hidden'); 
+    if(detailsContainer) detailsContainer.classList.add('hidden');
+    const tabs = document.getElementById('main-tabs');
+    if(tabs) tabs.classList.add('hidden');
+    
+    if(editorGasContainer) editorGasContainer.classList.remove('hidden');
     updateFabVisibility();
 
     const btnDel = document.getElementById('btn-delete-gas');
@@ -391,7 +395,7 @@ function openGasEditor(id) {
         document.getElementById('eg-lado').value = s.ladoDescarga || 'RIGHT';
         document.getElementById('eg-zonas').value = s.zonasDescarga || 1;
         document.getElementById('eg-comentarios').value = s.comentarios || '';
-        if(currentUser.role === 'ADMIN') btnDel.classList.remove('hidden'); else btnDel.classList.add('hidden');
+        if(currentUser.role === 'ADMIN' && btnDel) btnDel.classList.remove('hidden'); else if(btnDel) btnDel.classList.add('hidden');
     } else {
         editingStationId = generateUUID(); editorPlacements = [];
         document.getElementById('editor-gas-title').innerText = "Nueva Estación";
@@ -400,19 +404,8 @@ function openGasEditor(id) {
         document.getElementById('eg-encargado-nombre').value = ''; document.getElementById('eg-encargado-tel').value = '';
         document.getElementById('eg-lado').value = 'RIGHT'; document.getElementById('eg-zonas').value = 1;
         document.getElementById('eg-comentarios').value = '';
-        btnDel.classList.add('hidden');
+        if(btnDel) btnDel.classList.add('hidden');
     }
 
     editorCurrentZone = 1;
-    buildFuelModal();
-    renderEditorCanvas();
-}
-
-function renderEditorCanvas() {
-    const area = document.getElementById('eg-canvas-area');
-    const lado = document.getElementById('eg-lado').value;
-    const isM = lado === 'LEFT';
-
-    let zonasHtml = `<div class="d-flex justify-content-center gap-2 mb-3">`;
-    const totalZ = parseInt(document.getElementById('eg-zonas').value);
-    if(editorCurrentZone > totalZ) editorC
+    buildFuelModal()
