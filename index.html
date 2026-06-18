@@ -6,13 +6,13 @@
     <title>LogisTank Web</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
         body { background-color: #121212; color: #FFF; font-family: 'Roboto', sans-serif; margin:0; padding:0; }
         .bg-purple { background-color: #673AB7 !important; }
         .text-purple { color: #D1C4E9 !important; }
         .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
-        .btn-purple:hover { background-color: #512DA8; color: white; }
         .btn-danger { background-color: #DC3545; color: white; border: none; border-radius: 8px; }
         
         .form-control, .form-select { background-color: #1E1E1E; color: white; border: 1px solid #333; }
@@ -36,18 +36,14 @@
         .zone-canvas { width: 62px; height: 310px; position: relative; }
         .fuel-circle { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; position: absolute; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none; }
         .draggable { touch-action: none; cursor: grab; }
-        .draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.1); }
         .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-
-        #pantalla-login { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
-        #pantalla-app { display: none; flex-direction: column; min-height: 100vh; }
     </style>
 </head>
 <body>
 
     <div id="consola-errores" style="display: none; background-color: #8b0000; color: white; padding: 15px; width: 100%; font-family: monospace; font-size: 12px; position: fixed; top: 0; z-index: 9999;"></div>
 
-    <div id="pantalla-login">
+    <div id="pantalla-login" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
         <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
             <div class="text-center mb-4">
                 <h1 class="fw-black text-purple" style="font-weight: 900;">LogisTank</h1>
@@ -61,14 +57,14 @@
         </div>
     </div>
 
-    <div id="pantalla-app">
+    <div id="pantalla-app" style="display: none; flex-direction: column; min-height: 100vh;">
         <header class="bg-purple text-white p-3 shadow-sm">
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
                     <h3 class="m-0 fw-black" style="cursor: pointer;" onclick="irPestana('GAS')">LogisTank</h3>
                     <small id="nombre-usuario">Cargando...</small>
                 </div>
-                <button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold">Salir</button>
+                <button onclick="cerrarSesion()" class="btn btn-danger btn-sm px-3 py-2 fw-bold">Salir</button>
             </div>
         </header>
         
@@ -138,26 +134,46 @@
         var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
         
         var usuarioActual = null;
-        var bdGasolineras = []; var bdRutas = []; var bdCodigos = [];
+        var bdGasolineras = []; 
+        var bdRutas = []; 
+        var bdCodigos = [];
         var pestanaActual = 'GAS';
         
-        var gasolineraVista = null; var ladoVista = 'RIGHT'; var zonaVista = 1;
-        var idEdicion = null; var productosEdicion = []; var zonaActivaEditor = 1;
+        var gasolineraVista = null; 
+        var ladoVista = 'RIGHT'; 
+        var zonaVista = 1;
+        var idEdicion = null; 
+        var productosEdicion = []; 
+        var zonaActivaEditor = 1;
 
-        // INICIO
+        // --- ARRANQUE ---
+        window.onload = function() {
+            try {
+                var saved = localStorage.getItem('logistank_user');
+                if(saved) {
+                    usuarioActual = JSON.parse(saved);
+                    mostrarApp(usuarioActual.nombre, usuarioActual.role);
+                }
+            } catch(e) {}
+        };
+
         function mostrarApp(nombre, rol) {
-            usuarioActual = { nombre: nombre, role: rol };
+            if(!usuarioActual) { usuarioActual = { nombre: nombre, role: rol }; }
             document.getElementById('pantalla-login').style.display = 'none';
             document.getElementById('pantalla-app').style.display = 'flex';
             document.getElementById('nombre-usuario').innerText = nombre + " (" + rol + ")";
             descargarBaseDatos();
         }
 
-        function entrarInvitado() { mostrarApp("Invitado", "INVITADO"); }
+        function entrarInvitado() {
+            usuarioActual = { nombre: 'Invitado', role: 'INVITADO' };
+            try { localStorage.setItem('logistank_user', JSON.stringify(usuarioActual)); } catch(e){}
+            mostrarApp("Invitado", "INVITADO");
+        }
 
         function hacerLogin() {
-            var u = document.getElementById('login-user').value;
-            var p = document.getElementById('login-pass').value;
+            var u = document.getElementById('login-user').value.trim();
+            var p = document.getElementById('login-pass').value.trim();
             if(u === "" || p === "") { alert("Escribe tu usuario y contraseña"); return; }
             
             var btn = document.getElementById('btn-login');
@@ -170,13 +186,27 @@
             })
             .then(function(res) { return res.json(); })
             .then(function(datos) {
-                if(datos.success) { mostrarApp(datos.nombre, datos.role); } 
-                else { alert("Usuario o contraseña incorrectos."); btn.innerText = "Iniciar Sesión"; btn.disabled = false; }
+                if(datos.success) { 
+                    usuarioActual = { nombre: datos.nombre, role: datos.role };
+                    try { localStorage.setItem('logistank_user', JSON.stringify(usuarioActual)); } catch(e){}
+                    mostrarApp(datos.nombre, datos.role); 
+                } else { 
+                    alert("Credenciales incorrectas."); 
+                    btn.innerText = "Iniciar Sesión"; btn.disabled = false; 
+                }
             })
-            .catch(function() { alert("Fallo de conexión."); btn.innerText = "Iniciar Sesión"; btn.disabled = false; });
+            .catch(function(e) { 
+                alert("Fallo de conexión."); 
+                btn.innerText = "Iniciar Sesión"; btn.disabled = false; 
+            });
         }
 
-        // DESCARGA
+        function cerrarSesion() {
+            try { localStorage.removeItem('logistank_user'); } catch(e){}
+            location.reload();
+        }
+
+        // --- DESCARGA ---
         function descargarBaseDatos() {
             var zona = document.getElementById('zona-listas');
             zona.innerHTML = '<div class="text-center mt-5"><p class="text-white">Descargando datos...</p></div>';
@@ -187,13 +217,17 @@
                 fetch(URL_API + '?action=getProducts').then(function(r) { return r.json(); })
             ])
             .then(function(resultados) {
-                bdGasolineras = resultados[0]; bdRutas = resultados[1]; bdCodigos = resultados[2];
+                bdGasolineras = resultados[0]; 
+                bdRutas = resultados[1]; 
+                bdCodigos = resultados[2];
                 irPestana('GAS');
             })
-            .catch(function() { zona.innerHTML = '<div class="alert alert-danger text-center mt-5">Error descargando datos.</div>'; });
+            .catch(function(e) { 
+                zona.innerHTML = '<div class="alert alert-danger text-center mt-5">Error descargando datos.</div>'; 
+            });
         }
 
-        // PESTAÑAS Y LISTAS
+        // --- PESTAÑAS Y LISTAS ---
         function ocultarSecciones() {
             document.getElementById('zona-listas').style.display = 'none';
             document.getElementById('zona-visor').style.display = 'none';
@@ -203,7 +237,10 @@
 
         function irPestana(pestana) {
             pestanaActual = pestana;
-            document.getElementById('tab-gas').className = 'nav-link'; document.getElementById('tab-routes').className = 'nav-link'; document.getElementById('tab-codes').className = 'nav-link';
+            document.getElementById('tab-gas').className = 'nav-link'; 
+            document.getElementById('tab-routes').className = 'nav-link'; 
+            document.getElementById('tab-codes').className = 'nav-link';
+            
             if(pestana === 'GAS') document.getElementById('tab-gas').className = 'nav-link active';
             if(pestana === 'RUTAS') document.getElementById('tab-routes').className = 'nav-link active';
             if(pestana === 'CODIGOS') document.getElementById('tab-codes').className = 'nav-link active';
@@ -215,7 +252,9 @@
             var fab = document.getElementById('btn-fab');
             if(usuarioActual.role !== 'INVITADO' && (pestana === 'GAS' || pestana === 'RUTAS')) {
                 fab.style.display = 'flex';
-            } else { fab.style.display = 'none'; }
+            } else { 
+                fab.style.display = 'none'; 
+            }
 
             if(pestana === 'GAS') pintarGasolineras();
             if(pestana === 'RUTAS') pintarRutas();
@@ -227,7 +266,10 @@
             var lista = bdGasolineras.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
             for(var i=0; i<lista.length; i++) {
                 var s = lista[i];
-                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')"><div class="brand-indicator ' + obtenerClaseColor(s.marca) + '"></div><h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5><small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small></div>';
+                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')">' +
+                        '<div class="brand-indicator ' + obtenerClaseColor(s.marca) + '"></div>' +
+                        '<h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5>' +
+                        '<small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small></div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay gasolineras</p>';
         }
@@ -237,7 +279,10 @@
             var lista = bdRutas.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
             for(var i=0; i<lista.length; i++) {
                 var c = lista[i];
-                html += '<div class="card card-station" onclick="abrirEditorRuta(\'' + c.id + '\')"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5><small style="color:#aaa;">' + (c.direccion || '') + '</small></div>';
+                html += '<div class="card card-station" onclick="abrirEditorRuta(\'' + c.id + '\')">' +
+                        '<div class="brand-indicator brand-DEFAULT"></div>' +
+                        '<h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5>' +
+                        '<small style="color:#aaa;">' + (c.direccion || '') + '</small></div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay rutas</p>';
         }
@@ -246,17 +291,24 @@
             var html = '<div class="row g-2">';
             for(var i=0; i<bdCodigos.length; i++) {
                 var p = bdCodigos[i];
-                html += '<div class="col-6"><div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo || '#333333') + '; color:' + (p.colorTexto || '#FFFFFF') + '; border-radius: 12px;"><h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4></div></div>';
+                html += '<div class="col-6">' +
+                        '<div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo || '#333333') + '; color:' + (p.colorTexto || '#FFFFFF') + '; border-radius: 12px;">' +
+                        '<h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4></div></div>';
             }
             document.getElementById('zona-listas').innerHTML = html + '</div>';
         }
 
-        // VISOR
+        // --- VISOR DE GASOLINERA ---
         function abrirVisor(id) {
             gasolineraVista = null;
-            for(var i=0; i<bdGasolineras.length; i++) { if(bdGasolineras[i].id === id) { gasolineraVista = bdGasolineras[i]; break; } }
+            for(var i=0; i<bdGasolineras.length; i++) { 
+                if(bdGasolineras[i].id === id) { gasolineraVista = bdGasolineras[i]; break; } 
+            }
             if(!gasolineraVista) return;
-            zonaVista = 1; ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
+            
+            zonaVista = 1; 
+            ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
+            
             ocultarSecciones();
             document.getElementById('main-tabs').style.display = 'none';
             document.getElementById('btn-fab').style.display = 'none';
@@ -265,29 +317,10 @@
         }
 
         function dibujarVisor() {
-            var s = gasolineraVista; var hex = obtenerHexColor(s.marca);
+            var s = gasolineraVista; 
+            var hex = obtenerHexColor(s.marca);
             var btnEditar = usuarioActual.role !== 'INVITADO' ? '<button class="btn btn-warning btn-sm fw-bold" onclick="abrirEditorGas(\'' + s.id + '\')">Editar</button>' : '';
+            
             var html = '<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="irPestana(\'GAS\')">← Volver a la Lista</button>' + btnEditar + '</div>';
             html += '<div class="card card-station p-3" style="border-top: 6px solid ' + hex + '; cursor: default;"><small style="color:' + hex + '; font-weight:bold;">' + s.marca + '</small><h4 class="text-white fw-bold m-0">' + s.nombre + '</h4><small style="color:#aaa;">' + s.direccion + '</small></div>';
-            html += '<h5 class="fw-bold mt-4 mb-3 text-center text-white">Esquema de Descarga</h5>';
-
-            if(s.ladoDescarga === 'BOTH') {
-                html += '<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm ' + (ladoVista === 'LEFT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'LEFT\')">IZQ</button><button class="btn btn-sm ' + (ladoVista === 'RIGHT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'RIGHT\')">DER</button></div>';
-            }
-            if(s.zonasDescarga > 1) {
-                html += '<div class="d-flex justify-content-center gap-2 mb-4">';
-                for(var i = 1; i <= s.zonasDescarga; i++) html += '<button class="btn btn-sm ' + (i === zonaVista ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarZonaVisor(' + i + ')">ZONA ' + i + '</button>';
-                html += '</div>';
-            }
-
-            var isMirrored = (ladoVista === 'LEFT');
-            var lienzoHTML = generarLienzoProductos(s.productos || [], zonaVista, isMirrored);
-            var camionHTML = generarCamionHTML();
-
-            html += '<div class="d-flex justify-content-center align-items-center my-4">';
-            if(isMirrored) { html += lienzoHTML + '<div style="width:16px;"></div>' + camionHTML; } else { html += camionHTML + '<div style="width:16px;"></div>' + lienzoHTML; }
-            html += '</div>';
-            document.getElementById('zona-visor').innerHTML = html;
-        }
-
-        function cambiarLadoVisor(lad
+            html += '<h5 class="fw-bold 
