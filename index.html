@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogisTank Web</title>
+    <title>LogisTank</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,20 +14,19 @@
         .bg-purple { background-color: #673AB7 !important; }
         .text-purple { color: #D1C4E9 !important; }
         .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
-        .btn-purple:hover { background-color: #512DA8; color: white; }
+        .btn-danger { background-color: #DC3545; color: white; border: none; border-radius: 8px; }
         
         .form-control, .form-select, .input-group-text { background-color: #1E1E1E; color: white; border: 1px solid #333; }
         .form-control:focus, .form-select:focus { background-color: #1E1E1E; color: white; border-color: #673AB7; box-shadow: none; }
-        .form-control::placeholder { color: #888; }
         
-        .card-station { border-radius: 12px; border: none; background-color: #1E1E1E; position: relative; padding-left: 20px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;}
+        .card-station { border-radius: 12px; border: none; background-color: #1E1E1E; position: relative; padding-left: 20px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
         .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
         .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; }
         
         .nav-pills { padding: 0; margin-bottom: 16px; gap: 8px; }
-        .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; }
+        .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; text-decoration: none; text-align: center; }
         .nav-pills .nav-link.active { background-color: #673AB7 !important; color: white !important; }
         
         .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
@@ -37,63 +36,71 @@
         .zone-canvas { width: 62px; height: 310px; position: relative; }
         .fuel-circle { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; position: absolute; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none; }
         .draggable { touch-action: none; cursor: grab; }
-        .draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.1); }
-        .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
-
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .custom-modal { background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px; }
+        .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; }
     </style>
 </head>
 <body>
 
-    <div id="screen-login" class="container d-flex flex-column justify-content-center align-items-center vh-100">
-        <div class="card shadow-lg p-4 w-100" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
-            <div class="text-center mb-4">
-                <h1 class="fw-black text-purple" style="color: #D1C4E9; font-weight: 900;">LogisTank</h1>
-                <p class="text-muted">Control Logístico Web</p>
+    <div id="consola-errores" style="display: none; background-color: #8b0000; color: white; padding: 15px; position: fixed; top: 0; width: 100%; z-index: 9999; font-family: monospace; font-size: 12px;"></div>
+
+    <script>
+        // Si hay cualquier fallo antiguo, lo cazaremos aquí
+        window.onerror = function(msg, url, line) {
+            var c = document.getElementById('consola-errores');
+            c.style.display = 'block';
+            c.innerHTML += "<b>FALLO LÍNEA " + line + ":</b> " + msg + "<br>";
+            return false;
+        };
+    </script>
+
+    <div id="screen-login" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
+        <div class="container">
+            <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
+                <div class="text-center mb-4">
+                    <h1 class="fw-black text-purple" style="color: #D1C4E9; font-weight: 900;">LogisTank</h1>
+                    <p class="text-muted">Control Logístico Web</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white fw-bold">Usuario</label>
+                    <input type="text" id="login-user" class="form-control py-3" placeholder="Ej: 88">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-white fw-bold">Contraseña</label>
+                    <input type="password" id="login-pass" class="form-control py-3" placeholder="****">
+                </div>
+                
+                <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
+                <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
+                <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
             </div>
-            <div class="mb-3">
-                <label class="form-label text-white fw-bold">Nº Conductor / Usuario</label>
-                <input type="text" id="login-user" class="form-control py-3" placeholder="Ej: 88">
-            </div>
-            <div class="mb-4">
-                <label class="form-label text-white fw-bold">Contraseña</label>
-                <input type="password" id="login-pass" class="form-control py-3" placeholder="****">
-            </div>
-            
-            <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
-            <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
-            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
         </div>
     </div>
 
-    <div id="screen-main" class="d-none flex-column min-vh-100">
+    <div id="screen-main" style="display: none; flex-direction: column; min-height: 100vh;">
         <header class="bg-purple text-white p-3 shadow-sm">
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
                     <h3 class="m-0 fw-black" style="font-weight: 900; cursor: pointer;" onclick="irPestana('GAS')">LogisTank</h3>
                     <small id="user-info-display" style="opacity: 0.9;">Cargando...</small>
                 </div>
-                <button onclick="cerrarSesion()" class="btn btn-danger btn-sm px-3 py-2 fw-bold"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                <button onclick="cerrarSesion()" class="btn btn-danger btn-sm px-3 py-2 fw-bold">Salir</button>
             </div>
         </header>
 
         <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative;">
-            
-            <ul class="nav nav-pills nav-fill" id="main-tabs">
-                <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
-                <li class="nav-item"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('ROUTES')">Rutas</a></li>
-                <li class="nav-item"><a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODES')">Códigos</a></li>
+            <ul class="nav nav-pills nav-fill" id="main-tabs" style="display: flex;">
+                <li class="nav-item" style="flex:1;"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
+                <li class="nav-item" style="flex:1;"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('ROUTES')">Rutas</a></li>
+                <li class="nav-item" style="flex:1;"><a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODES')">Códigos</a></li>
             </ul>
 
-            <div id="zona-listas" class="mt-3"></div>
-            
-            <div id="zona-visor" class="d-none pb-5 mt-2"></div>
+            <div id="zona-listas" class="mt-3" style="display: block;"></div>
+            <div id="zona-visor" style="display: none; padding-bottom: 80px;" class="mt-2"></div>
 
-            <div id="zona-editor-gas" class="d-none pb-5 mt-2">
+            <div id="zona-editor-gas" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between mb-3">
                     <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
-                    <button id="btn-delete-gas" class="btn btn-danger d-none" onclick="borrarGasolinera()"><i class="bi bi-trash"></i> Borrar</button>
+                    <button id="btn-delete-gas" class="btn btn-danger" style="display: none;" onclick="borrarGasolinera()">Borrar</button>
                 </div>
                 <div class="card card-station p-3" style="cursor: default;">
                     <h4 class="fw-bold mb-3 text-white" id="title-editor-gas">Nueva Estación</h4>
@@ -107,17 +114,16 @@
                     <select id="eg-lado" class="form-select mb-3" onchange="dibujarCamionEditor()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option></select>
                     <label class="form-label text-muted">Zonas de Descarga (1 a 4)</label>
                     <input type="number" id="eg-zonas" class="form-control mb-3" min="1" max="4" value="1" onchange="dibujarCamionEditor()">
-                    
                     <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema de Descarga</h5>
                     <div id="eg-canvas-area" class="my-3"></div>
-                    <button onclick="guardarGasolinera()" id="btn-save-gas" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Estación</button>
+                    <button onclick="guardarGasolinera()" id="btn-save-gas" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
                 </div>
             </div>
             
-            <div id="zona-editor-ruta" class="d-none pb-5 mt-2">
+            <div id="zona-editor-ruta" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between mb-3">
                     <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
-                    <button id="btn-delete-route" class="btn btn-danger d-none" onclick="borrarRuta()"><i class="bi bi-trash"></i> Borrar</button>
+                    <button id="btn-delete-route" class="btn btn-danger" style="display: none;" onclick="borrarRuta()">Borrar</button>
                 </div>
                 <div class="card card-station p-3" style="cursor: default;">
                     <h4 class="fw-bold mb-3 text-white" id="title-editor-ruta">Nuevo Cliente</h4>
@@ -125,16 +131,16 @@
                     <input type="text" id="er-nombre" class="form-control mb-3 text-uppercase">
                     <label class="form-label text-muted">Dirección</label>
                     <input type="text" id="er-direccion" class="form-control mb-3 text-uppercase">
-                    <button onclick="guardarRuta()" id="btn-save-route" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Cliente</button>
+                    <button onclick="guardarRuta()" id="btn-save-route" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
                 </div>
             </div>
         </main>
 
-        <button id="btn-add-floating" onclick="abrirEditorNuevo()" class="d-none shadow-lg" style="position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; font-weight: 300; justify-content: center; align-items: center; z-index: 1000;">+</button>
+        <button id="btn-add-floating" onclick="abrirEditorNuevo()" class="shadow-lg" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; font-weight: 300; justify-content: center; align-items: center; z-index: 1000;">+</button>
     </div>
 
-    <div id="custom-modal" class="custom-modal-overlay d-none">
-        <div class="custom-modal shadow-lg">
+    <div id="capa-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div class="shadow-lg" style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
             <div class="d-flex justify-content-between mb-3">
                 <h5 class="text-white fw-bold m-0">Añadir Combustible</h5>
                 <span onclick="cerrarModal()" style="color: white; font-size: 20px; cursor: pointer;">✕</span>
@@ -144,18 +150,17 @@
     </div>
 
     <script>
-        const URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
+        var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
 
-        let usuarioActual = null;
-        let bdGasolineras = []; let bdRutas = []; let bdCodigos = [];
-        let pestanaActual = 'GAS';
-        let gasVista = null; let ladoVista = 'RIGHT'; let zonaVista = 1;
-        let idEdicion = null; let productosEdicion = []; let zonaActivaEditor = 1;
+        var usuarioActual = null;
+        var bdGasolineras = []; var bdRutas = []; var bdCodigos = [];
+        var pestanaActual = 'GAS';
+        var gasVista = null; var ladoVista = 'RIGHT'; var zonaVista = 1;
+        var idEdicion = null; var productosEdicion = []; var zonaActivaEditor = 1;
 
-        // --- 1. ARRANQUE SEGURO ---
         window.onload = function() {
             try {
-                let saved = localStorage.getItem('logistank_user');
+                var saved = localStorage.getItem('logistank_user');
                 if(saved) {
                     usuarioActual = JSON.parse(saved);
                     mostrarApp();
@@ -163,51 +168,40 @@
             } catch(e) {}
         };
 
-        // --- 2. EL BOTÓN QUE CAMBIA DE PANTALLA ---
-        function mostrarApp() {
-            // AQUÍ ESTABA EL ERROR: Destruimos la clase que apilaba las pantallas
-            document.getElementById('screen-login').classList.remove('d-flex');
-            document.getElementById('screen-login').classList.add('d-none');
-            
-            // Y mostramos la app
-            document.getElementById('screen-main').classList.remove('d-none');
-            document.getElementById('screen-main').classList.add('d-flex');
-            
-            document.getElementById('user-info-display').innerText = usuarioActual.nombre + " (" + usuarioActual.role + ")";
-            descargarBaseDatos();
-        }
-
-        // --- 3. INICIO DE SESIÓN ---
         function entrarInvitado() {
             usuarioActual = { nombre: 'Invitado', role: 'INVITADO' };
             try { localStorage.setItem('logistank_user', JSON.stringify(usuarioActual)); } catch(e){}
             mostrarApp();
         }
 
-        async function hacerLogin() {
-            let u = document.getElementById('login-user').value.trim();
-            let p = document.getElementById('login-pass').value.trim();
-            if(!u || !p) return alert("Escribe tu usuario y contraseña");
+        function hacerLogin() {
+            var u = document.getElementById('login-user').value.trim();
+            var p = document.getElementById('login-pass').value.trim();
+            if(u === "" || p === "") { alert("Escribe tu usuario y contraseña"); return; }
             
-            let btn = document.getElementById('btn-login');
+            var btn = document.getElementById('btn-login');
             btn.innerText = "Conectando..."; btn.disabled = true;
 
-            try {
-                let peticion = await fetch(URL_API, {
-                    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'login', username: u, password: p })
-                });
-                let respuesta = await peticion.json();
-
-                if(respuesta.success) {
-                    usuarioActual = { nombre: respuesta.nombre, role: respuesta.role };
+            fetch(URL_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'login', username: u, password: p })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(datos) {
+                if(datos.success) {
+                    usuarioActual = { nombre: datos.nombre, role: datos.role };
                     try { localStorage.setItem('logistank_user', JSON.stringify(usuarioActual)); } catch(e){}
                     mostrarApp();
                 } else {
                     alert("Credenciales incorrectas.");
                 }
-            } catch(e) { alert("Fallo de conexión."); } 
-            finally { btn.innerText = "Iniciar Sesión"; btn.disabled = false; }
+                btn.innerText = "Iniciar Sesión"; btn.disabled = false;
+            })
+            .catch(function(e) {
+                alert("Fallo de conexión.");
+                btn.innerText = "Iniciar Sesión"; btn.disabled = false;
+            });
         }
 
         function cerrarSesion() {
@@ -215,41 +209,60 @@
             location.reload();
         }
 
-        // --- 4. DESCARGAR Y PINTAR DATOS ---
-        async function descargarBaseDatos() {
-            let zona = document.getElementById('zona-listas');
+        function mostrarApp() {
+            document.getElementById('screen-login').style.display = 'none';
+            document.getElementById('screen-main').style.display = 'flex';
+            document.getElementById('user-info-display').innerText = usuarioActual.nombre + " (" + usuarioActual.role + ")";
+            descargarBaseDatos();
+        }
+
+        function descargarBaseDatos() {
+            var zona = document.getElementById('zona-listas');
             zona.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple mb-2"></div><p class="text-white">Conectando con Google Sheets...</p></div>';
             
-            try {
-                let [rG, rR, rP] = await Promise.all([ fetch(URL_API + '?action=getGasStations'), fetch(URL_API + '?action=getRoutes'), fetch(URL_API + '?action=getProducts') ]);
-                bdGasolineras = await rG.json(); bdRutas = await rR.json(); bdCodigos = await rP.json();
+            Promise.all([
+                fetch(URL_API + '?action=getGasStations').then(function(r){return r.json();}),
+                fetch(URL_API + '?action=getRoutes').then(function(r){return r.json();}),
+                fetch(URL_API + '?action=getProducts').then(function(r){return r.json();})
+            ])
+            .then(function(resultados) {
+                bdGasolineras = resultados[0];
+                bdRutas = resultados[1];
+                bdCodigos = resultados[2];
                 irPestana('GAS');
-            } catch(e) { zona.innerHTML = '<div class="alert alert-danger mx-3 mt-4 text-center">Fallo de red al descargar datos.</div>'; }
+            })
+            .catch(function(e) {
+                zona.innerHTML = '<div class="alert alert-danger mx-3 mt-4 text-center">Fallo de red al descargar datos.</div>';
+            });
         }
 
         function ocultarSecciones() {
-            document.getElementById('zona-listas').classList.add('d-none');
-            document.getElementById('zona-visor').classList.add('d-none');
-            document.getElementById('zona-editor-gas').classList.add('d-none');
-            document.getElementById('zona-editor-ruta').classList.add('d-none');
+            document.getElementById('zona-listas').style.display = 'none';
+            document.getElementById('zona-visor').style.display = 'none';
+            document.getElementById('zona-editor-gas').style.display = 'none';
+            document.getElementById('zona-editor-ruta').style.display = 'none';
         }
 
         function irPestana(p) {
             pestanaActual = p;
-            document.getElementById('tab-gas').className = 'nav-link'; document.getElementById('tab-routes').className = 'nav-link'; document.getElementById('tab-codes').className = 'nav-link';
+            document.getElementById('tab-gas').className = 'nav-link';
+            document.getElementById('tab-routes').className = 'nav-link';
+            document.getElementById('tab-codes').className = 'nav-link';
+            
             if(p === 'GAS') document.getElementById('tab-gas').className = 'nav-link active';
             if(p === 'ROUTES') document.getElementById('tab-routes').className = 'nav-link active';
             if(p === 'CODES') document.getElementById('tab-codes').className = 'nav-link active';
 
             ocultarSecciones();
-            document.getElementById('main-tabs').classList.remove('d-none');
-            document.getElementById('main-tabs').classList.add('d-flex');
-            document.getElementById('zona-listas').classList.remove('d-none');
+            document.getElementById('main-tabs').style.display = 'flex';
+            document.getElementById('zona-listas').style.display = 'block';
 
-            let fab = document.getElementById('btn-add-floating');
+            var fab = document.getElementById('btn-add-floating');
             if(usuarioActual.role !== 'INVITADO' && (p === 'GAS' || p === 'ROUTES')) {
-                fab.classList.remove('d-none'); fab.classList.add('d-flex');
-            } else { fab.classList.add('d-none'); fab.classList.remove('d-flex'); }
+                fab.style.display = 'flex';
+            } else {
+                fab.style.display = 'none';
+            }
 
             if(p === 'GAS') pintarGasolineras();
             if(p === 'ROUTES') pintarRutas();
@@ -257,48 +270,62 @@
         }
 
         function pintarGasolineras() {
-            let lista = [...bdGasolineras].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||'')); let html = '';
-            for(let i=0; i<lista.length; i++) {
-                let s = lista[i]; html += `<div class="card card-station p-3 shadow-sm" onclick="abrirVisor('${s.id}')"><div class="brand-indicator ${claseColor(s.marca)}"></div><h5 class="fw-bold mb-0 text-white">${s.nombre}</h5><small style="color:#aaa;">${s.marca} • ${s.direccion}</small></div>`;
+            var lista = bdGasolineras.slice().sort(function(a,b) { return (a.nombre||'').localeCompare(b.nombre||''); });
+            var html = '';
+            for(var i=0; i<lista.length; i++) {
+                var s = lista[i];
+                html += '<div class="card card-station p-3 shadow-sm" onclick="abrirVisor(\'' + s.id + '\')">' +
+                        '<div class="brand-indicator ' + claseColor(s.marca) + '"></div>' +
+                        '<h5 class="fw-bold mb-0 text-white">' + s.nombre + '</h5>' +
+                        '<small style="color:#aaa;">' + s.marca + ' • ' + s.direccion + '</small>' +
+                        '</div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay gasolineras</p>';
         }
 
         function pintarRutas() {
-            let lista = [...bdRutas].sort((a,b) => (a.nombre||'').localeCompare(b.nombre||'')); let html = '';
-            for(let i=0; i<lista.length; i++) {
-                let c = lista[i]; html += `<div class="card card-station p-3 shadow-sm" onclick="abrirEditorRuta('${c.id}')"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold mb-0 text-white">${c.nombre}</h5><small style="color:#aaa;">${c.direccion}</small></div>`;
+            var lista = bdRutas.slice().sort(function(a,b) { return (a.nombre||'').localeCompare(b.nombre||''); });
+            var html = '';
+            for(var i=0; i<lista.length; i++) {
+                var c = lista[i];
+                html += '<div class="card card-station p-3 shadow-sm" onclick="abrirEditorRuta(\'' + c.id + '\')">' +
+                        '<div class="brand-indicator brand-DEFAULT"></div>' +
+                        '<h5 class="fw-bold mb-0 text-white">' + c.nombre + '</h5>' +
+                        '<small style="color:#aaa;">' + c.direccion + '</small>' +
+                        '</div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay rutas</p>';
         }
 
         function pintarCodigos() {
-            let html = '<div class="row g-2">';
-            for(let i=0; i<bdCodigos.length; i++) {
-                let p = bdCodigos[i]; html += `<div class="col-6"><div class="card border-0 p-3 text-center" style="background-color:${p.colorFondo||'#333'}; color:${p.colorTexto||'#fff'}; border-radius:12px;"><h4 class="fw-black m-0">${p.codigo}</h4></div></div>`;
+            var html = '<div class="row g-2">';
+            for(var i=0; i<bdCodigos.length; i++) {
+                var p = bdCodigos[i];
+                html += '<div class="col-6"><div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo||'#333') + '; color:' + (p.colorTexto||'#fff') + '; border-radius:12px;">' +
+                        '<h4 class="fw-black m-0">' + p.codigo + '</h4>' +
+                        '</div></div>';
             }
             document.getElementById('zona-listas').innerHTML = html + '</div>';
         }
 
-        // --- 5. VISOR ---
         function abrirVisor(id) {
-            gasVista = null; for(let i=0; i<bdGasolineras.length; i++) { if(bdGasolineras[i].id === id) gasVista = bdGasolineras[i]; }
+            gasVista = null;
+            for(var i=0; i<bdGasolineras.length; i++) {
+                if(bdGasolineras[i].id === id) { gasVista = bdGasolineras[i]; break; }
+            }
             if(!gasVista) return;
             
-            zonaVista = 1; ladoVista = gasVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasVista.ladoDescarga;
+            zonaVista = 1;
+            ladoVista = gasVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasVista.ladoDescarga;
+            
             ocultarSecciones();
-            document.getElementById('main-tabs').classList.add('d-none'); document.getElementById('main-tabs').classList.remove('d-flex');
-            document.getElementById('btn-add-floating').classList.add('d-none'); document.getElementById('btn-add-floating').classList.remove('d-flex');
-            document.getElementById('zona-visor').classList.remove('d-none');
+            document.getElementById('main-tabs').style.display = 'none';
+            document.getElementById('btn-add-floating').style.display = 'none';
+            document.getElementById('zona-visor').style.display = 'block';
+            
             dibujarVisor();
         }
 
         function dibujarVisor() {
-            let s = gasVista; let hex = colorHex(s.marca);
-            let btnEditar = usuarioActual.role !== 'INVITADO' ? `<button class="btn btn-warning btn-sm fw-bold" onclick="abrirEditorGas('${s.id}')">Editar</button>` : '';
-            
-            let html = `<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="irPestana('GAS')">← Volver</button>${btnEditar}</div>`;
-            html += `<div class="card card-station p-3 cursor-default" style="border-top: 6px solid ${hex}; cursor:default;"><small style="color:${hex}; font-weight:bold;">${s.marca}</small><h4 class="text-white fw-bold m-0">${s.nombre}</h4><small style="color:#aaa;">${s.direccion}</small></div>`;
-            html += `<h5 class="fw-bold mt-4 mb-3 text-center text-white">Esquema de Descarga</h5>`;
-            
-            if(s.ladoDescarga === 'BOTH') html += `<div class="d-flex justify-con
+            var s = gasVista; var hex = colorHex(s.marca);
+            var btnEditar = usuarioActual.role !== 'INVITADO' ? '<button class
