@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogisTank - Paso 3</title>
+    <title>LogisTank - Visor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #121212; color: #FFF; font-family: sans-serif; margin: 0; padding: 0; }
         .bg-purple { background-color: #673AB7 !important; }
-        .text-purple { color: #D1C4E9 !important; }
         .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
         .form-control { background-color: #1E1E1E; color: white; border: 1px solid #333; }
         .form-control:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
@@ -16,15 +15,10 @@
         .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 12px; position: relative; padding: 15px 15px 15px 25px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;}
         .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         
-        /* Colores de marca */
-        .brand-REPSOL { background-color: #FF9800; } 
-        .brand-BP { background-color: #4CAF50; }
-        .brand-MOEVE { background-color: #005CE6; } 
-        .brand-SHELL { background-color: #FFC107; }
-        .brand-GALP { background-color: #FF5000; } 
-        .brand-DEFAULT { background-color: #673AB7; }
+        .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
+        .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
+        .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; }
         
-        /* Pestañas */
         .nav-pills { gap: 8px; margin-bottom: 16px; padding: 0; display: flex; }
         .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; flex: 1; text-align: center; text-decoration: none;}
         .nav-pills .nav-link.active { background-color: #673AB7 !important; color: white !important; }
@@ -41,20 +35,13 @@
 <body>
 
     <div id="consola-errores" style="display: none; background-color: #8b0000; color: white; padding: 15px; width: 100%; font-family: monospace; font-size: 14px; position: fixed; top: 0; z-index: 9999; font-weight: bold;"></div>
-    <script>
-        window.onerror = function(msg, url, line) {
-            var caja = document.getElementById('consola-errores');
-            caja.style.display = 'block';
-            caja.innerHTML += "FALLO SINTAXIS LÍNEA " + line + ": " + msg + "<br>";
-            return false;
-        };
-    </script>
 
     <div id="pantalla-login" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
         <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
             <div class="text-center mb-4">
                 <h1 class="fw-bold" style="color: #D1C4E9;">LogisTank</h1>
-                <p class="text-muted">Paso 3: Visor Sin Comillas</p>
+                
+                <p style="color: #4CAF50; font-weight: bold; font-size: 18px;">¡NUEVO VISOR CARGADO!</p>
             </div>
             
             <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Usuario">
@@ -62,12 +49,11 @@
             
             <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
             <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
-            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Invitado</button>
+            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
         </div>
     </div>
 
     <div id="pantalla-app" style="display: none; flex-direction: column; min-height: 100vh;">
-        
         <header class="bg-purple text-white p-3">
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
@@ -79,29 +65,26 @@
         </header>
 
         <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px;">
-            
             <ul class="nav nav-pills" id="main-tabs" style="display: flex;">
-                <li class="nav-item">
-                    <a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-routes" href="#" onclick="irPestana('RUTAS')">Rutas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODIGOS')">Códigos</a>
-                </li>
+                <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('RUTAS')">Rutas</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODIGOS')">Códigos</a></li>
             </ul>
 
             <div id="zona-listas" class="mt-3" style="display: block;"></div>
-
             <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
-
         </main>
     </div>
 
     <script>
+        window.onerror = function(msg, url, line) {
+            var caja = document.getElementById('consola-errores');
+            caja.style.display = 'block';
+            caja.innerHTML += "FALLO LÍNEA " + line + ": " + msg + "<br>";
+            return false;
+        };
+
         var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
-        
         var usuarioActual = null;
         var bdGasolineras = [];
         var bdRutas = [];
@@ -210,7 +193,6 @@
                 var m = s.marca || '';
                 var d = s.direccion || '';
 
-                // AQUI ESTÁ EL TRUCO MAGISTRAL: "this.id" EVITA LAS COMILLAS
                 html += '<div class="card card-station" onclick="abrirVisor(this.id)" id="' + s.id + '">';
                 html += '<div class="brand-indicator ' + claseCol + '"></div>';
                 html += '<h5 style="font-weight: bold; margin: 0; color: white;">' + n + '</h5>';
@@ -316,7 +298,6 @@
                 var claseIzq = (ladoVista === 'LEFT') ? 'btn-purple' : 'btn-outline-light';
                 var claseDer = (ladoVista === 'RIGHT') ? 'btn-purple' : 'btn-outline-light';
                 
-                // MÁS TRUCOS "this.value" PARA EVITAR COMILLAS
                 html += '<div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">';
                 html += '<button class="btn btn-sm ' + claseIzq + '" onclick="cambiarLado(this.value)" value="LEFT">IZQUIERDA</button>';
                 html += '<button class="btn btn-sm ' + claseDer + '" onclick="cambiarLado(this.value)" value="RIGHT">DERECHA</button>';
@@ -415,4 +396,11 @@
             return 'brand-DEFAULT';
         }
 
-        function obtenerHe
+        function obtenerHexColor(marca) {
+            var m = (marca || '').toUpperCase();
+            if (m.indexOf('REPSOL') > -1) return '#FF9800';
+            if (m.indexOf('BP') > -1) return '#4CAF50';
+            if (m.indexOf('MOEVE') > -1 || m.indexOf('CEPSA') > -1) return '#005CE6';
+            if (m.indexOf('SHELL') > -1) return '#FFC107';
+            if (m.indexOf('GALP') > -1) return '#FF5000';
+         
