@@ -220,4 +220,28 @@ var d={id:eId,marca:document.getElementById('eg-marca').value,nombre:document.ge
 fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveGasStation',data:d,userRole:user.r,username:user.n})}).then(function(){alert("Guardado");dDat();cEd()}).catch(function(){alert("Fallo")}).finally(function(){b.innerText='Guardar';b.disabled=false});
 }
 function gRut(){
-var b=docu
+var b=document.getElementById('btn-s-rut'); b.innerText='Guardando...'; b.disabled=true;
+var d={id:eId,nombre:document.getElementById('er-nom').value.toUpperCase(),direccion:document.getElementById('er-dir').value.toUpperCase()};
+fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveRoute',data:d,userRole:user.r,username:user.n})}).then(function(){alert("Guardado");dDat();cEd()}).catch(function(){alert("Fallo")}).finally(function(){b.innerText='Guardar';b.disabled=false});
+}
+function bGas(){if(!confirm("¿Borrar?"))return; fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'deleteGasStation',id:eId})}).then(function(){alert("Borrado");vGas=null;dDat();cEd()})}
+function bRut(){if(!confirm("¿Borrar?"))return; fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'deleteRoute',id:eId})}).then(function(){alert("Borrado");dDat();cEd()})}
+
+function gC(){return '<div class="d-flex flex-column align-items-center"><div class="truck-head"></div><div class="truck-neck"></div><div class="truck-body"><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div></div></div>'}
+function gL(p,z,m){
+var h='<div class="zone-canvas">', l=[]; for(var i=0;i<p.length;i++){if(p[i].zonaIndex===z)l.push(p[i])} if(m)l.reverse();
+for(var j=0;j<l.length;j++){var t=l[j], tx=m?-t.nx:t.nx, ty=m?-t.ny:t.ny, c=gComb(t.codigoProducto); h+='<div class="fuel-circle" style="left:'+(7+tx)+'px;top:'+(131+ty)+'px;background:'+c.b+';color:'+c.t+'">'+c.s+'</div>';}
+return h+'</div>';
+}
+function gCol(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return 'brand-REPSOL';if(x.includes('BP'))return 'brand-BP';if(x.includes('MOEVE')||x.includes('CEPSA'))return 'brand-MOEVE';if(x.includes('SHELL'))return 'brand-SHELL';if(x.includes('GALP'))return 'brand-GALP';return 'brand-DEFAULT'}
+function gHx(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return '#FF9800';if(x.includes('BP'))return '#4CAF50';if(x.includes('MOEVE')||x.includes('CEPSA'))return '#005CE6';if(x.includes('SHELL'))return '#FFC107';if(x.includes('GALP'))return '#FF5000';return '#673AB7'}
+function gComb(c){
+var n=(c||'').toUpperCase().trim(), b='#424242', t='#FFF', s=n;
+switch(n){case 'A':b='#FFB300';break;case 'A+5':b='#F57C00';break;case 'A+':b='#FF8F00';break;case 'NEXA':b='#00838F';s='NEX';break;case 'B':b='#D32F2F';break;case 'B MAR PRO':b='#880E4F';s='BPR';break;case 'C':b='#0288D1';break;case 'BIENERGI 10':b='#6A1B9A';s='B10';break;case '95':b='#388E3C';break;case '95+':b='#1B5E20';break;case '95 MAR SPORT':b='#00E676';t='#000';s='95S';break;case '98':b='#1565C0';break;case 'MARBIDIESEL':b='#5D4037';s='MBD';break;}
+return {b:b,t:t,s:s};
+}
+document.getElementById('lbl-paso').innerText = "Paso 4: Editores Seguros";
+document.getElementById('lbl-paso').style.color = "#4CAF50";
+</script>
+</body>
+</html>
