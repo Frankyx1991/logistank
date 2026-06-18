@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogisTank - Visor</title>
+    <title>LogisTank - Paso 3</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #121212; color: #FFF; font-family: sans-serif; margin: 0; padding: 0; }
         .bg-purple { background-color: #673AB7 !important; }
+        .text-purple { color: #D1C4E9 !important; }
         .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
         .form-control { background-color: #1E1E1E; color: white; border: 1px solid #333; }
         .form-control:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
@@ -15,15 +16,18 @@
         .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 12px; position: relative; padding: 15px 15px 15px 25px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;}
         .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         
-        .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
-        .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
-        .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; }
+        .brand-REPSOL { background-color: #FF9800; } 
+        .brand-BP { background-color: #4CAF50; }
+        .brand-MOEVE { background-color: #005CE6; } 
+        .brand-SHELL { background-color: #FFC107; }
+        .brand-GALP { background-color: #FF5000; } 
+        .brand-DEFAULT { background-color: #673AB7; }
         
         .nav-pills { gap: 8px; margin-bottom: 16px; padding: 0; display: flex; }
         .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; flex: 1; text-align: center; text-decoration: none;}
         .nav-pills .nav-link.active { background-color: #673AB7 !important; color: white !important; }
 
-        /* Gráficos del camión */
+        /* CSS DEL CAMIÓN */
         .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
         .truck-head { width: 70px; height: 45px; background-color: #555555; border-radius: 6px; }
         .truck-neck { width: 16px; height: 12px; background-color: gray; }
@@ -40,8 +44,7 @@
         <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
             <div class="text-center mb-4">
                 <h1 class="fw-bold" style="color: #D1C4E9;">LogisTank</h1>
-                
-                <p style="color: #4CAF50; font-weight: bold; font-size: 18px;">¡NUEVO VISOR CARGADO!</p>
+                <p class="text-muted">Paso 3: Motor Blindado</p>
             </div>
             
             <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Usuario">
@@ -58,162 +61,181 @@
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
                     <h3 class="m-0 fw-bold">LogisTank</h3>
-                    <small id="nombre-usuario">Cargando...</small>
+                    <small id="mensaje-bienvenida">Cargando...</small>
                 </div>
-                <button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="background-color: #DC3545; border:none; border-radius:6px; color:white;">Salir</button>
+                <button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="border-radius: 6px;">Salir</button>
             </div>
         </header>
 
         <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px;">
-            <ul class="nav nav-pills" id="main-tabs" style="display: flex;">
+            <ul class="nav nav-pills" id="main-tabs">
                 <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
                 <li class="nav-item"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('RUTAS')">Rutas</a></li>
                 <li class="nav-item"><a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODIGOS')">Códigos</a></li>
             </ul>
 
-            <div id="zona-listas" class="mt-3" style="display: block;"></div>
+            <div id="zona-listas" class="mt-3"></div>
+            
             <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
         </main>
     </div>
 
     <script>
-        window.onerror = function(msg, url, line) {
+        // Función maestra para pintar errores en la pantalla
+        function logError(mensaje) {
             var caja = document.getElementById('consola-errores');
             caja.style.display = 'block';
-            caja.innerHTML += "FALLO LÍNEA " + line + ": " + msg + "<br>";
+            caja.innerHTML += "⚠️ " + mensaje + "<br>";
+        }
+
+        window.onerror = function(msg, url, line) {
+            logError("FALLO GLOBAL LÍNEA " + line + ": " + msg);
             return false;
         };
 
         var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
-        var usuarioActual = null;
         var bdGasolineras = [];
         var bdRutas = [];
         var bdCodigos = [];
-        
+
         var gasolineraVista = null;
         var ladoVista = 'RIGHT';
         var zonaVista = 1;
 
+        // ==================== LOGIN ====================
         function mostrarApp(nombre, rol) {
-            usuarioActual = { nombre: nombre, role: rol };
-            document.getElementById('pantalla-login').style.display = 'none';
-            document.getElementById('pantalla-app').style.display = 'flex';
-            document.getElementById('nombre-usuario').innerText = nombre + " (" + rol + ")";
-            descargarDatos();
+            try {
+                document.getElementById('pantalla-login').style.display = 'none';
+                document.getElementById('pantalla-app').style.display = 'flex';
+                document.getElementById('mensaje-bienvenida').innerText = nombre + " (" + rol + ")";
+                descargarDatos();
+            } catch(e) {
+                logError("Error en mostrarApp: " + e.message);
+            }
         }
 
         function entrarInvitado() {
-            mostrarApp("Invitado", "INVITADO");
+            try {
+                mostrarApp("Invitado", "INVITADO");
+            } catch(e) {
+                logError("Error en entrarInvitado: " + e.message);
+            }
         }
 
         function hacerLogin() {
-            var u = document.getElementById('login-user').value.trim();
-            var p = document.getElementById('login-pass').value.trim();
-            
-            if (u === "" || p === "") { alert("Escribe tu usuario y contraseña"); return; }
-            
-            var btn = document.getElementById('btn-login');
-            btn.innerText = "Conectando...";
-            btn.disabled = true;
+            try {
+                var u = document.getElementById('login-user').value.trim();
+                var p = document.getElementById('login-pass').value.trim();
+                if (u === "" || p === "") { alert("Escribe tu usuario y contraseña"); return; }
+                
+                var btn = document.getElementById('btn-login');
+                btn.innerText = "Conectando...";
+                btn.disabled = true;
 
-            fetch(URL_API, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'login', username: u, password: p })
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(datos) {
-                if (datos.success) {
-                    mostrarApp(datos.nombre, datos.role);
-                } else {
-                    alert("Credenciales incorrectas.");
+                fetch(URL_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'login', username: u, password: p })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(datos) {
+                    if (datos.success) {
+                        mostrarApp(datos.nombre, datos.role);
+                    } else {
+                        alert("Credenciales incorrectas.");
+                        btn.innerText = "Iniciar Sesión";
+                        btn.disabled = false;
+                    }
+                })
+                .catch(function(e) {
+                    alert("Fallo de red conectando con Google Sheets.");
                     btn.innerText = "Iniciar Sesión";
                     btn.disabled = false;
-                }
-            })
-            .catch(function(e) {
-                alert("Fallo de conexión con Google Sheets.");
-                btn.innerText = "Iniciar Sesión";
-                btn.disabled = false;
-            });
+                });
+            } catch(e) {
+                logError("Error en hacerLogin: " + e.message);
+            }
         }
 
+        // ==================== DESCARGA DATOS ====================
         function descargarDatos() {
-            var zona = document.getElementById('zona-listas');
-            zona.innerHTML = '<div class="text-center mt-5"><p style="color: white;">Descargando datos...</p></div>';
+            try {
+                var zona = document.getElementById('zona-listas');
+                zona.innerHTML = '<div class="text-center mt-5"><p style="color: white;">Descargando datos...</p></div>';
 
-            Promise.all([
-                fetch(URL_API + '?action=getGasStations').then(function(r) { return r.json(); }),
-                fetch(URL_API + '?action=getRoutes').then(function(r) { return r.json(); }),
-                fetch(URL_API + '?action=getProducts').then(function(r) { return r.json(); })
-            ])
-            .then(function(resultados) {
-                bdGasolineras = resultados[0];
-                bdRutas = resultados[1];
-                bdCodigos = resultados[2];
-                irPestana('GAS');
-            })
-            .catch(function(error) {
-                zona.innerHTML = '<div class="text-center mt-5" style="color: red;">Error al descargar datos.</div>';
-            });
+                Promise.all([
+                    fetch(URL_API + '?action=getGasStations').then(function(r) { return r.json(); }),
+                    fetch(URL_API + '?action=getRoutes').then(function(r) { return r.json(); }),
+                    fetch(URL_API + '?action=getProducts').then(function(r) { return r.json(); })
+                ])
+                .then(function(resultados) {
+                    bdGasolineras = resultados[0];
+                    bdRutas = resultados[1];
+                    bdCodigos = resultados[2];
+                    irPestana('GAS');
+                })
+                .catch(function(error) {
+                    zona.innerHTML = '<div class="text-center mt-5" style="color: red;">Error al descargar datos.</div>';
+                });
+            } catch(e) {
+                logError("Error en descargarDatos: " + e.message);
+            }
         }
 
+        // ==================== NAVEGACIÓN PESTAÑAS ====================
         function irPestana(p) {
-            document.getElementById('tab-gas').className = 'nav-link';
-            document.getElementById('tab-routes').className = 'nav-link';
-            document.getElementById('tab-codes').className = 'nav-link';
+            try {
+                document.getElementById('tab-gas').className = 'nav-link';
+                document.getElementById('tab-routes').className = 'nav-link';
+                document.getElementById('tab-codes').className = 'nav-link';
 
-            if (p === 'GAS') document.getElementById('tab-gas').className = 'nav-link active';
-            if (p === 'RUTAS') document.getElementById('tab-routes').className = 'nav-link active';
-            if (p === 'CODIGOS') document.getElementById('tab-codes').className = 'nav-link active';
+                if (p === 'GAS') document.getElementById('tab-gas').className = 'nav-link active';
+                if (p === 'RUTAS') document.getElementById('tab-routes').className = 'nav-link active';
+                if (p === 'CODIGOS') document.getElementById('tab-codes').className = 'nav-link active';
 
-            document.getElementById('zona-visor').style.display = 'none';
-            document.getElementById('main-tabs').style.display = 'flex';
-            document.getElementById('zona-listas').style.display = 'block';
+                document.getElementById('zona-visor').style.display = 'none';
+                document.getElementById('main-tabs').style.display = 'flex';
+                document.getElementById('zona-listas').style.display = 'block';
 
-            if (p === 'GAS') pintarGasolineras();
-            if (p === 'RUTAS') pintarRutas();
-            if (p === 'CODIGOS') pintarCodigos();
+                if (p === 'GAS') pintarGasolineras();
+                if (p === 'RUTAS') pintarRutas();
+                if (p === 'CODIGOS') pintarCodigos();
+            } catch(e) {
+                logError("Error en irPestana: " + e.message);
+            }
         }
 
         function pintarGasolineras() {
-            var html = '';
-            var zona = document.getElementById('zona-listas');
-            
-            var lista = bdGasolineras.slice().sort(function(a, b) {
-                var nomA = a.nombre || '';
-                var nomB = b.nombre || '';
-                return nomA.localeCompare(nomB);
-            });
+            try {
+                var html = '';
+                var lista = bdGasolineras.slice().sort(function(a, b) {
+                    var nomA = a.nombre || ''; var nomB = b.nombre || ''; return nomA.localeCompare(nomB);
+                });
 
-            for (var i = 0; i < lista.length; i++) {
-                var s = lista[i];
-                var claseCol = obtenerClaseColor(s.marca);
-                var n = s.nombre || 'Sin Nombre';
-                var m = s.marca || '';
-                var d = s.direccion || '';
+                for (var i = 0; i < lista.length; i++) {
+                    var s = lista[i];
+                    var claseCol = obtenerClaseColor(s.marca);
+                    var n = s.nombre || 'Sin Nombre';
+                    var m = s.marca || '';
+                    var d = s.direccion || '';
 
-                html += '<div class="card card-station" onclick="abrirVisor(this.id)" id="' + s.id + '">';
-                html += '<div class="brand-indicator ' + claseCol + '"></div>';
-                html += '<h5 style="font-weight: bold; margin: 0; color: white;">' + n + '</h5>';
-                html += '<small style="color: #aaa;">' + m + ' • ' + d + '</small>';
-                html += '</div>';
-            }
-
-            if (html === '') {
-                zona.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 40px;">No hay gasolineras</p>';
-            } else {
-                zona.innerHTML = html;
+                    html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')">';
+                    html += '<div class="brand-indicator ' + claseCol + '"></div>';
+                    html += '<h5 style="font-weight: bold; margin: 0; color: white;">' + n + '</h5>';
+                    html += '<small style="color: #aaa;">' + m + ' • ' + d + '</small>';
+                    html += '</div>';
+                }
+                document.getElementById('zona-listas').innerHTML = html || '<p style="text-align: center; color: #aaa; margin-top: 40px;">No hay gasolineras</p>';
+            } catch(e) {
+                logError("Error en pintarGasolineras: " + e.message);
             }
         }
 
         function pintarRutas() {
             var html = '';
-            var zona = document.getElementById('zona-listas');
             var lista = bdRutas.slice().sort(function(a, b) {
-                return (a.nombre || '').localeCompare(b.nombre || '');
+                var nomA = a.nombre || ''; var nomB = b.nombre || ''; return nomA.localeCompare(nomB);
             });
-
             for (var i = 0; i < lista.length; i++) {
                 var c = lista[i];
                 html += '<div class="card card-station">';
@@ -222,53 +244,44 @@
                 html += '<small style="color: #aaa;">' + (c.direccion || '') + '</small>';
                 html += '</div>';
             }
-            zona.innerHTML = html || '<p style="text-align: center; color: #aaa; margin-top: 40px;">No hay rutas</p>';
+            document.getElementById('zona-listas').innerHTML = html || '<p style="text-align: center; color: #aaa; margin-top: 40px;">No hay rutas</p>';
         }
 
         function pintarCodigos() {
             var html = '<div class="row" style="display: flex; flex-wrap: wrap; margin: -4px;">';
-            var zona = document.getElementById('zona-listas');
-
             for (var i = 0; i < bdCodigos.length; i++) {
                 var p = bdCodigos[i];
                 var cBg = p.colorFondo || '#333333';
                 var cTxt = p.colorTexto || '#FFFFFF';
-                
                 html += '<div style="width: 50%; padding: 4px; box-sizing: border-box;">';
                 html += '<div style="background-color: ' + cBg + '; color: ' + cTxt + '; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">';
                 html += '<h4 style="font-weight: 900; margin: 0;">' + (p.codigo || '??') + '</h4>';
                 html += '</div></div>';
             }
             html += '</div>';
-            zona.innerHTML = html;
+            document.getElementById('zona-listas').innerHTML = html;
         }
 
-        // ===============================================
-        // VISOR DEL CAMIÓN
-        // ===============================================
-        
+        // ==================== VISOR DEL CAMIÓN ====================
         function abrirVisor(id) {
-            gasolineraVista = null;
-            for (var i = 0; i < bdGasolineras.length; i++) {
-                if (bdGasolineras[i].id === id) {
-                    gasolineraVista = bdGasolineras[i];
-                    break;
+            try {
+                gasolineraVista = null;
+                for (var i = 0; i < bdGasolineras.length; i++) {
+                    if (bdGasolineras[i].id === id) { gasolineraVista = bdGasolineras[i]; break; }
                 }
+                if (!gasolineraVista) return;
+
+                zonaVista = 1;
+                ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
+
+                document.getElementById('zona-listas').style.display = 'none';
+                document.getElementById('main-tabs').style.display = 'none';
+                document.getElementById('zona-visor').style.display = 'block';
+
+                dibujarVisor();
+            } catch(e) {
+                logError("Error en abrirVisor: " + e.message);
             }
-            if (!gasolineraVista) return;
-
-            zonaVista = 1;
-            if (gasolineraVista.ladoDescarga === 'BOTH') {
-                ladoVista = 'LEFT';
-            } else {
-                ladoVista = gasolineraVista.ladoDescarga;
-            }
-
-            document.getElementById('zona-listas').style.display = 'none';
-            document.getElementById('main-tabs').style.display = 'none';
-            document.getElementById('zona-visor').style.display = 'block';
-
-            dibujarVisor();
         }
 
         function cerrarVisor() {
@@ -278,129 +291,93 @@
         }
 
         function dibujarVisor() {
-            var s = gasolineraVista;
-            var hex = obtenerHexColor(s.marca);
-            var html = '';
-            
-            html += '<div style="display:flex; margin-bottom: 15px;">';
-            html += '<button class="btn btn-outline-light btn-sm" onclick="cerrarVisor()">← Volver a Listas</button>';
-            html += '</div>';
-
-            html += '<div class="card card-station" style="border-top: 6px solid ' + hex + '; cursor: default;">';
-            html += '<small style="color:' + hex + '; font-weight:bold;">' + (s.marca || '') + '</small>';
-            html += '<h4 style="color: white; font-weight: bold; margin: 0;">' + (s.nombre || '') + '</h4>';
-            html += '<small style="color:#aaa;">' + (s.direccion || '') + '</small>';
-            html += '</div>';
-
-            html += '<h5 style="color: white; font-weight: bold; text-align: center; margin-top: 25px; margin-bottom: 15px;">Esquema de Descarga</h5>';
-
-            if (s.ladoDescarga === 'BOTH') {
-                var claseIzq = (ladoVista === 'LEFT') ? 'btn-purple' : 'btn-outline-light';
-                var claseDer = (ladoVista === 'RIGHT') ? 'btn-purple' : 'btn-outline-light';
+            try {
+                var s = gasolineraVista;
+                var hex = obtenerHexColor(s.marca);
+                var html = '';
                 
-                html += '<div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">';
-                html += '<button class="btn btn-sm ' + claseIzq + '" onclick="cambiarLado(this.value)" value="LEFT">IZQUIERDA</button>';
-                html += '<button class="btn btn-sm ' + claseDer + '" onclick="cambiarLado(this.value)" value="RIGHT">DERECHA</button>';
+                html += '<div style="display:flex; margin-bottom: 15px;">';
+                html += '<button class="btn btn-outline-light btn-sm" onclick="cerrarVisor()">← Volver a Listas</button>';
                 html += '</div>';
-            }
 
-            if (s.zonasDescarga > 1) {
-                html += '<div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">';
-                for (var i = 1; i <= s.zonasDescarga; i++) {
-                    var claseZona = (i === zonaVista) ? 'btn-purple' : 'btn-outline-light';
-                    html += '<button class="btn btn-sm ' + claseZona + '" onclick="cambiarZona(this.value)" value="' + i + '">ZONA ' + i + '</button>';
+                html += '<div class="card card-station" style="border-top: 6px solid ' + hex + '; cursor: default;">';
+                html += '<small style="color:' + hex + '; font-weight:bold;">' + (s.marca || '') + '</small>';
+                html += '<h4 style="color: white; font-weight: bold; margin: 0;">' + (s.nombre || '') + '</h4>';
+                html += '<small style="color:#aaa;">' + (s.direccion || '') + '</small>';
+                html += '</div>';
+
+                html += '<h5 style="color: white; font-weight: bold; text-align: center; margin-top: 25px; margin-bottom: 15px;">Esquema de Descarga</h5>';
+
+                if (s.ladoDescarga === 'BOTH') {
+                    var claseIzq = (ladoVista === 'LEFT') ? 'btn-purple' : 'btn-outline-light';
+                    var claseDer = (ladoVista === 'RIGHT') ? 'btn-purple' : 'btn-outline-light';
+                    html += '<div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 15px;">';
+                    html += '<button class="btn btn-sm ' + claseIzq + '" onclick="cambiarLado(\'LEFT\')">IZQUIERDA</button>';
+                    html += '<button class="btn btn-sm ' + claseDer + '" onclick="cambiarLado(\'RIGHT\')">DERECHA</button>';
+                    html += '</div>';
+                }
+
+                if (s.zonasDescarga > 1) {
+                    html += '<div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">';
+                    for (var i = 1; i <= s.zonasDescarga; i++) {
+                        var claseZona = (i === zonaVista) ? 'btn-purple' : 'btn-outline-light';
+                        html += '<button class="btn btn-sm ' + claseZona + '" onclick="cambiarZona(' + i + ')">ZONA ' + i + '</button>';
+                    }
+                    html += '</div>';
+                }
+
+                var isMirrored = (ladoVista === 'LEFT');
+                var productosZona = obtenerLienzoDeProductos(s.productos || [], zonaVista, isMirrored);
+                var dibujoCamion = generarDibujoCamion();
+
+                html += '<div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">';
+                if (isMirrored) {
+                    html += productosZona + '<div style="width: 16px;"></div>' + dibujoCamion;
+                } else {
+                    html += dibujoCamion + '<div style="width: 16px;"></div>' + productosZona;
                 }
                 html += '</div>';
+
+                document.getElementById('zona-visor').innerHTML = html;
+            } catch(e) {
+                logError("Error en dibujarVisor: " + e.message);
             }
-
-            var isMirrored = (ladoVista === 'LEFT');
-            var productosZona = obtenerLienzoDeProductos(s.productos || [], zonaVista, isMirrored);
-            var dibujoCamion = generarDibujoCamion();
-
-            html += '<div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">';
-            
-            if (isMirrored) {
-                html += productosZona + '<div style="width: 16px;"></div>' + dibujoCamion;
-            } else {
-                html += dibujoCamion + '<div style="width: 16px;"></div>' + productosZona;
-            }
-            
-            html += '</div>';
-
-            document.getElementById('zona-visor').innerHTML = html;
         }
 
-        function cambiarLado(lado) {
-            ladoVista = lado;
-            dibujarVisor();
-        }
+        function cambiarLado(lado) { ladoVista = lado; dibujarVisor(); }
+        function cambiarZona(zona) { zonaVista = zona; dibujarVisor(); }
 
-        function cambiarZona(zonaStr) {
-            zonaVista = parseInt(zonaStr);
-            dibujarVisor();
-        }
-
+        // ==================== DIBUJOS DEL CAMIÓN ====================
         function generarDibujoCamion() {
             var html = '';
             html += '<div style="display: flex; flex-direction: column; align-items: center;">';
             html += '<div class="truck-head"></div>';
             html += '<div class="truck-neck"></div>';
             html += '<div class="truck-body">';
-            html += '<div class="truck-hatch"></div>';
-            html += '<div class="truck-hatch"></div>';
-            html += '<div class="truck-hatch"></div>';
-            html += '<div class="truck-hatch"></div>';
-            html += '<div class="truck-hatch"></div>';
+            html += '<div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div>';
             html += '</div></div>';
             return html;
         }
 
         function obtenerLienzoDeProductos(productos, indiceZona, isMirrored) {
             var html = '<div class="zone-canvas">';
-            
             var listaFiltrada = [];
             for (var i = 0; i < productos.length; i++) {
-                if (productos[i].zonaIndex === indiceZona) {
-                    listaFiltrada.push(productos[i]);
-                }
+                if (productos[i].zonaIndex === indiceZona) { listaFiltrada.push(productos[i]); }
             }
-
-            if (isMirrored) {
-                listaFiltrada.reverse();
-            }
+            if (isMirrored) { listaFiltrada.reverse(); }
 
             for (var j = 0; j < listaFiltrada.length; j++) {
                 var p = listaFiltrada[j];
                 var tx = isMirrored ? -p.nx : p.nx;
                 var ty = isMirrored ? -p.ny : p.ny;
-                var colorInfo = obtenerColorCombustible(p.codigoProducto);
+                var cInfo = obtenerColorCombustible(p.codigoProducto);
 
                 var px = 7 + tx;
                 var py = 131 + ty;
 
-                html += '<div class="fuel-circle" style="left: ' + px + 'px; top: ' + py + 'px; background-color: ' + colorInfo.bg + '; color: ' + colorInfo.txt + ';">';
-                html += colorInfo.short + '</div>';
+                html += '<div class="fuel-circle" style="left: ' + px + 'px; top: ' + py + 'px; background-color: ' + cInfo.bg + '; color: ' + cInfo.txt + ';">';
+                html += cInfo.short + '</div>';
             }
-
             html += '</div>';
-            return html;
-        }
-
-        function obtenerClaseColor(marca) {
-            var m = (marca || '').toUpperCase();
-            if (m.indexOf('REPSOL') > -1) return 'brand-REPSOL';
-            if (m.indexOf('BP') > -1) return 'brand-BP';
-            if (m.indexOf('MOEVE') > -1 || m.indexOf('CEPSA') > -1) return 'brand-MOEVE';
-            if (m.indexOf('SHELL') > -1) return 'brand-SHELL';
-            if (m.indexOf('GALP') > -1) return 'brand-GALP';
-            return 'brand-DEFAULT';
-        }
-
-        function obtenerHexColor(marca) {
-            var m = (marca || '').toUpperCase();
-            if (m.indexOf('REPSOL') > -1) return '#FF9800';
-            if (m.indexOf('BP') > -1) return '#4CAF50';
-            if (m.indexOf('MOEVE') > -1 || m.indexOf('CEPSA') > -1) return '#005CE6';
-            if (m.indexOf('SHELL') > -1) return '#FFC107';
-            if (m.indexOf('GALP') > -1) return '#FF5000';
-         
+ 
