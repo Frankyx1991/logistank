@@ -1,247 +1,748 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LogisTank - Paso 4</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body{background:#121212;color:#FFF;font-family:sans-serif;margin:0;padding:0}
-.bg-purple{background:#673AB7!important}
-.btn-purple{background:#673AB7;color:#fff;border:none;font-weight:bold}
-.btn-danger{background:#DC3545;color:#fff;border:none;border-radius:8px}
-.form-control, .form-select{background:#1E1E1E;color:#fff;border:1px solid #333}
-.form-control:focus, .form-select:focus{border-color:#673AB7;box-shadow:none;background:#1E1E1E;color:#fff}
-.card-station{background:#1E1E1E;border-radius:12px;margin-bottom:12px;position:relative;padding:15px 15px 15px 25px;border:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:pointer}
-.brand-indicator{width:8px;height:100%;position:absolute;left:0;top:0;border-top-left-radius:12px;border-bottom-left-radius:12px}
-.brand-REPSOL{background:#FF9800} .brand-BP{background:#4CAF50} .brand-MOEVE{background:#005CE6} .brand-SHELL{background:#FFC107} .brand-GALP{background:#FF5000} .brand-DEFAULT{background:#673AB7}
-.nav-pills{gap:8px;margin-bottom:16px;padding:0;display:flex}
-.nav-pills .nav-link{background:#1E1E1E;color:#D1C4E9;font-weight:bold;border-radius:8px;padding:12px;flex:1;text-align:center;text-decoration:none}
-.nav-pills .nav-link.active{background:#673AB7!important;color:#fff!important}
-.truck-body{width:80px;height:310px;background:#333;border:2px solid #555;border-radius:24px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center}
-.truck-head{width:70px;height:45px;background:#555;border-radius:6px}
-.truck-neck{width:16px;height:12px;background:gray}
-.truck-hatch{width:45px;height:45px;border:2px solid rgba(255,255,255,0.1);border-radius:50%}
-.zone-canvas{width:62px;height:310px;position:relative}
-.fuel-circle{width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);display:flex;justify-content:center;align-items:center;font-weight:900;font-size:12px;position:absolute;box-shadow:0 4px 6px rgba(0,0,0,0.5);user-select:none}
-.draggable{touch-action:none;cursor:grab}
-.btn-add-fuel{width:48px;height:48px;border-radius:50%;background:#673AB7;border:none;display:flex;justify-content:center;align-items:center;font-size:24px;font-weight:bold;color:white;cursor:pointer;position:absolute;bottom:-20px;left:7px;z-index:10;box-shadow:0 4px 8px rgba(0,0,0,0.5)}
-#p-login{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh}
-#p-app{display:none;flex-direction:column;min-height:100vh}
-#c-err{display:none;background:#f00;color:#fff;padding:20px;width:100%;font-family:monospace;font-size:14px;position:fixed;top:0;z-index:9999;border-bottom:5px solid #000;box-shadow:0 5px 15px rgba(0,0,0,0.5)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LogisTank - Final</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #FFF; font-family: sans-serif; margin: 0; padding: 0; }
+        .bg-purple { background-color: #673AB7 !important; }
+        .text-purple { color: #D1C4E9 !important; }
+        .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
+        .btn-danger { background-color: #DC3545; color: white; border: none; font-weight: bold; }
+        
+        .form-control, .form-select { background-color: #1E1E1E; color: white; border: 1px solid #333; }
+        .form-control:focus, .form-select:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
+        
+        .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 12px; position: relative; padding: 15px 15px 15px 25px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;}
+        .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        
+        .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
+        .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
+        .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; }
+        
+        .nav-pills { gap: 8px; margin-bottom: 16px; padding: 0; display: flex; }
+        .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; flex: 1; text-align: center; text-decoration: none;}
+        .nav-pills .nav-link.active { background-color: #673AB7 !important; color: white !important; }
+        
+        /* Camión y Lienzo */
+        .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
+        .truck-head { width: 70px; height: 45px; background-color: #555555; border-radius: 6px; }
+        .truck-neck { width: 16px; height: 12px; background-color: gray; }
+        .truck-hatch { width: 45px; height: 45px; border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; }
+        .zone-canvas { width: 62px; height: 310px; position: relative; }
+        .fuel-circle { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; position: absolute; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none; }
+        .draggable { touch-action: none; cursor: grab; }
+        .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+    </style>
 </head>
 <body>
-<div id="c-err"><strong>🚨 ERRORES:</strong><br><br></div>
-<script>window.onerror=function(m,o,l){var c=document.getElementById('c-err');c.style.display='block';c.innerHTML+="Fallo LÍNEA "+l+": "+m+"<br>";return false;};</script>
 
-<div id="p-login">
-<div class="card shadow-lg p-4 w-100 mx-auto" style="max-width:400px;border-radius:24px;background:#1E1E1E;border:none">
-<div class="text-center mb-4"><h1 class="fw-bold" style="color:#D1C4E9">LogisTank</h1><p style="color:#aaa;font-weight:bold" id="lbl-paso">Esperando al código...</p></div>
-<input type="text" id="l-usr" class="form-control mb-3 py-3" placeholder="Usuario">
-<input type="password" id="l-pwd" class="form-control mb-4 py-3" placeholder="Contraseña">
-<button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
-<div style="border-top:1px solid #333;margin:16px 0"></div>
-<button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Invitado</button>
-</div></div>
+    <div id="c-err" style="display:none; background:#ff0000; color:white; padding:15px; width:100%; font-family:monospace; font-size:14px; position:fixed; top:0; z-index:9999; border-bottom:4px solid black;">
+        <strong>🚨 DETECTOR DE ERRORES:</strong><br><br>
+    </div>
 
-<div id="p-app">
-<header class="bg-purple text-white p-3"><div class="d-flex justify-content-between align-items-center mx-auto" style="max-width:1200px"><div><h3 class="m-0 fw-bold" onclick="ir('GAS')">LogisTank</h3><small id="lbl-usr">Cargando...</small></div><button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="border-radius:6px">Salir</button></div></header>
-<main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width:1200px">
-<ul class="nav nav-pills" id="tabs"><li class="nav-item"><a class="nav-link active" id="t-gas" href="#" onclick="ir('GAS')">Gasolineras</a></li><li class="nav-item"><a class="nav-link" id="t-rut" href="#" onclick="ir('RUTAS')">Rutas</a></li><li class="nav-item"><a class="nav-link" id="t-cod" href="#" onclick="ir('CODIGOS')">Códigos</a></li></ul>
+    <script>
+        function logError(mensaje) {
+            var caja = document.getElementById("c-err");
+            caja.style.display = "block";
+            caja.innerHTML += "⚠️ " + mensaje + "<br>";
+        }
+        window.onerror = function(mensaje, origen, linea) {
+            logError("Fallo en LÍNEA " + linea + ": " + mensaje);
+            return false;
+        };
+    </script>
 
-<div id="z-list" class="mt-3"></div>
-<div id="z-vis" style="display:none;padding-bottom:50px"></div>
+    <div id="pantalla-login" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
+        <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
+            <div class="text-center mb-4">
+                <h1 class="fw-bold" style="color: #D1C4E9;">LogisTank</h1>
+                <p style="color: #aaa; font-weight: bold;">Control Logístico Web</p>
+            </div>
+            
+            <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Usuario">
+            <input type="password" id="login-pass" class="form-control mb-4 py-3" placeholder="Contraseña">
+            
+            <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
+            <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
+            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
+        </div>
+    </div>
 
-<div id="z-ed-gas" style="display:none;padding-bottom:80px" class="mt-2">
-<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light" onclick="cEd()">← Volver</button><button id="b-del-gas" class="btn btn-danger" style="display:none" onclick="bGas()">Borrar</button></div>
-<div class="card card-station" style="cursor:default"><h4 class="fw-bold mb-3 text-white" id="ttl-e-g">Nueva Estación</h4>
-<select id="eg-marca" class="form-select mb-3"><option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option></select>
-<input type="text" id="eg-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
-<input type="text" id="eg-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
-<select id="eg-lad" class="form-select mb-3" onchange="dCamEd()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option></select>
-<input type="number" id="eg-zon" class="form-control mb-3" min="1" max="4" value="1" onchange="dCamEd()">
-<h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema</h5><div id="eg-canv" class="my-3"></div>
-<button onclick="gGas()" id="btn-s-gas" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
-</div></div>
+    <div id="pantalla-app" style="display: none; flex-direction: column; min-height: 100vh;">
+        
+        <header class="bg-purple text-white p-3">
+            <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
+                <div>
+                    <h3 class="m-0 fw-bold" onclick="irPestana('GAS')" style="cursor: pointer;">LogisTank</h3>
+                    <small id="nombre-usuario" style="opacity: 0.8;">Cargando...</small>
+                </div>
+                <button onclick="abrirAjustes()" class="btn btn-outline-light btn-sm px-3 py-2 fw-bold" style="border-radius:6px; border: 1px solid rgba(255,255,255,0.5);">
+                    ⚙️ Ajustes
+                </button>
+            </div>
+        </header>
 
-<div id="z-ed-rut" style="display:none;padding-bottom:80px" class="mt-2">
-<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light" onclick="cEd()">← Volver</button><button id="b-del-rut" class="btn btn-danger" style="display:none" onclick="bRut()">Borrar</button></div>
-<div class="card card-station" style="cursor:default"><h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
-<input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
-<input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
-<button onclick="gRut()" id="btn-s-rut" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
-</div></div>
-</main>
+        <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative;">
+            <ul class="nav nav-pills" id="main-tabs" style="display: flex;">
+                <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('RUTAS')">Rutas</a></li>
+                <li class="nav-item"><a class="nav-link" id="tab-codes" href="#" onclick="irPestana('CODIGOS')">Códigos</a></li>
+            </ul>
 
-<button id="btn-fab" onclick="aEdN()" class="shadow-lg" style="display:none;position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:#673AB7;color:#fff;border:none;font-size:32px;justify-content:center;align-items:center;z-index:1000">+</button>
-</div>
+            <div id="zona-listas" class="mt-3" style="display: block;"></div>
+            <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
 
-<div id="m-comb" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center">
-<div style="background:#1E1E1E;width:90%;max-width:400px;border-radius:16px;padding:20px"><div class="d-flex justify-content-between mb-3"><h5 class="text-white fw-bold m-0">Añadir</h5><span onclick="cMod()" style="color:white;font-size:20px;cursor:pointer">X</span></div><div class="row m-0" id="g-comb"></div></div></div>
+            <div id="zona-editor-gas" style="display: none; padding-bottom: 80px;" class="mt-2">
+                <div class="d-flex justify-content-between mb-3">
+                    <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
+                    <button id="b-del-gas" class="btn btn-danger" style="display: none;" onclick="bGas()">Borrar</button>
+                </div>
+                <div class="card card-station" style="cursor: default;">
+                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-g">Nueva Estación</h4>
+                    
+                    <label class="form-label text-muted">Marca</label>
+                    <select id="eg-marca" class="form-select mb-3">
+                        <option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option>
+                    </select>
+                    
+                    <label class="form-label text-muted">Nombre</label>
+                    <input type="text" id="eg-nom" class="form-control mb-3 text-uppercase">
+                    
+                    <label class="form-label text-muted">Dirección</label>
+                    <input type="text" id="eg-dir" class="form-control mb-3 text-uppercase">
+                    
+                    <label class="form-label text-muted">Lado de Descarga</label>
+                    <select id="eg-lad" class="form-select mb-3" onchange="dCamEd()">
+                        <option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option>
+                    </select>
+                    
+                    <label class="form-label text-muted">Zonas de Descarga (1 a 4)</label>
+                    <input type="number" id="eg-zon" class="form-control mb-3" min="1" max="4" value="1" onchange="dCamEd()">
+                    
+                    <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema</h5>
+                    <div id="eg-canv" class="my-3"></div>
+                    
+                    <button id="btn-s-gas" onclick="gGas()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Estación</button>
+                </div>
+            </div>
 
-<script>
-var URL_API="https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
-var user=null, bdG=[], bdR=[], bdC=[], pst='GAS';
-var vGas=null, vLad='RIGHT', vZon=1;
-var eId=null, ePr=[], eZon=1;
+            <div id="zona-editor-ruta" style="display: none; padding-bottom: 80px;" class="mt-2">
+                <div class="d-flex justify-content-between mb-3">
+                    <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
+                    <button id="b-del-rut" class="btn btn-danger" style="display: none;" onclick="bRut()">Borrar</button>
+                </div>
+                <div class="card card-station" style="cursor: default;">
+                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
+                    <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
+                    <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+                    <button id="btn-s-rut" onclick="gRut()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Cliente</button>
+                </div>
+            </div>
+        </main>
 
-window.onload=function(){try{var s=localStorage.getItem('lt_usr');if(s){user=JSON.parse(s);mApp(user.n,user.r)}}catch(e){}};
+        <button id="btn-fab" onclick="aEdN()" class="shadow-lg" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; justify-content: center; align-items: center; z-index: 1000;">+</button>
+    </div>
 
-function mApp(n,r){
-user={n:n,r:r}; document.getElementById('p-login').style.display='none'; document.getElementById('p-app').style.display='flex'; document.getElementById('lbl-usr').innerText=n+" ("+r+")"; dDat();
-}
-function entrarInvitado(){ mApp("Invitado","INVITADO"); }
-function hacerLogin(){
-var u=document.getElementById('l-usr').value.trim(), p=document.getElementById('l-pwd').value.trim();
-if(!u||!p)return alert("Faltan datos");
-var b=document.getElementById('btn-login'); b.innerText="Conectando..."; b.disabled=true;
-fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',username:u,password:p})})
-.then(function(r){return r.json()}).then(function(d){
-if(d.success){try{localStorage.setItem('lt_usr',JSON.stringify({n:d.nombre,r:d.role}))}catch(e){} mApp(d.nombre,d.role);}else{alert("Incorrecto");b.innerText="Iniciar Sesión";b.disabled=false}})
-.catch(function(){alert("Fallo de red");b.innerText="Iniciar Sesión";b.disabled=false});
-}
+    <div id="m-comb" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="text-white fw-bold m-0">Añadir Producto</h5>
+                <span onclick="cMod()" style="color: white; font-size: 20px; cursor: pointer;">✕</span>
+            </div>
+            <div class="row m-0" id="g-comb"></div>
+        </div>
+    </div>
 
-function dDat(){
-var z=document.getElementById('z-list'); z.innerHTML='<div class="text-center mt-5">Descargando datos...</div>';
-Promise.all([fetch(URL_API+'?action=getGasStations').then(function(r){return r.json()}),fetch(URL_API+'?action=getRoutes').then(function(r){return r.json()}),fetch(URL_API+'?action=getProducts').then(function(r){return r.json()})])
-.then(function(res){bdG=res[0];bdR=res[1];bdC=res[2];ir('GAS')}).catch(function(){z.innerHTML='Error al descargar'});
-}
+    <div id="modal-ajustes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
+            <div class="d-flex justify-content-between mb-4">
+                <h4 class="text-white fw-bold m-0">Ajustes</h4>
+                <span onclick="cerrarAjustes()" style="color: white; font-size: 24px; cursor: pointer;">✕</span>
+            </div>
+            
+            <label class="form-label text-muted fw-bold">Cambiar mi Contraseña</label>
+            <input type="password" id="nueva-pass" class="form-control mb-3 py-2" placeholder="Escribe tu nueva contraseña">
+            <button class="btn btn-warning w-100 fw-bold mb-4" onclick="cambiarMiContrasena(this)">Guardar Contraseña</button>
+            
+            <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
+            
+            <button class="btn btn-danger w-100 py-3 fs-5" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
 
-function oc(){document.getElementById('z-list').style.display='none';document.getElementById('z-vis').style.display='none';document.getElementById('z-ed-gas').style.display='none';document.getElementById('z-ed-rut').style.display='none';}
+    <script>
+        var URL_API = "https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
+        
+        var user = null;
+        var bdG = []; var bdR = []; var bdC = [];
+        var pst = "GAS";
+        var vGas = null; var vLad = "RIGHT"; var vZon = 1;
+        var eId = null; var ePr = []; var eZon = 1;
 
-function ir(p){
-pst=p; document.getElementById('t-gas').className='nav-link'; document.getElementById('t-rut').className='nav-link'; document.getElementById('t-cod').className='nav-link';
-if(p==='GAS')document.getElementById('t-gas').className='nav-link active'; if(p==='RUTAS')document.getElementById('t-rut').className='nav-link active'; if(p==='CODIGOS')document.getElementById('t-cod').className='nav-link active';
-oc(); document.getElementById('tabs').style.display='flex'; document.getElementById('z-list').style.display='block';
-var f=document.getElementById('btn-fab'); if(user.r!=='INVITADO'&&(p==='GAS'||p==='RUTAS'))f.style.display='flex'; else f.style.display='none';
-if(p==='GAS')pG(); if(p==='RUTAS')pR(); if(p==='CODIGOS')pC();
-}
+        // 1. MEMORIA Y ARRANQUE AUTOMÁTICO
+        window.onload = function() {
+            try {
+                // Buscamos si el móvil tiene la sesión guardada del día anterior
+                var guardado = localStorage.getItem('logistank_sesion');
+                if (guardado) {
+                    var datosUser = JSON.parse(guardado);
+                    mostrarApp(datosUser.n, datosUser.r);
+                }
+            } catch(e) {
+                logError("Fallo al leer la memoria: " + e.message);
+            }
+        };
 
-function pG(){
-var h='', l=bdG.slice().sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'')});
-for(var i=0;i<l.length;i++){ var s=l[i], c=gCol(s.marca); h+='<div class="card card-station" onclick="aVis(this.id)" id="'+s.id+'"><div class="brand-indicator '+c+'"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.marca||'')+' • '+(s.direccion||'')+'</small></div>';}
-document.getElementById('z-list').innerHTML=h||'<p class="text-center text-muted">Vacio</p>';
-}
-function pR(){
-var h='', l=bdR.slice().sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'')});
-for(var i=0;i<l.length;i++){ var s=l[i]; h+='<div class="card card-station" onclick="aEdR(this.id)" id="'+s.id+'"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.direccion||'')+'</small></div>';}
-document.getElementById('z-list').innerHTML=h||'<p class="text-center text-muted">Vacio</p>';
-}
-function pC(){
-var h='<div class="row m-0">';
-for(var i=0;i<bdC.length;i++){ var p=bdC[i]; h+='<div class="col-6 p-1"><div style="background:'+(p.colorFondo||'#333')+';color:'+(p.colorTexto||'#FFF')+';border-radius:12px;padding:15px;text-align:center"><h4 class="fw-bold m-0">'+(p.codigo||'')+'</h4></div></div>';}
-document.getElementById('z-list').innerHTML=h+'</div>';
-}
+        function mostrarApp(nombre, rol) {
+            user = { n: nombre, r: rol };
+            document.getElementById("pantalla-login").style.display = "none";
+            document.getElementById("pantalla-app").style.display = "flex";
+            document.getElementById("nombre-usuario").innerText = nombre + " (" + rol + ")";
+            descargarDatos();
+        }
 
-function aVis(id){
-vGas=null; for(var i=0;i<bdG.length;i++){if(bdG[i].id===id){vGas=bdG[i];break}} if(!vGas)return;
-vZon=1; vLad=vGas.ladoDescarga==='BOTH'?'LEFT':vGas.ladoDescarga;
-oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-vis').style.display='block'; dVis();
-}
-function cVis(){ir(pst);}
-function dVis(){
-var s=vGas, hx=gHx(s.marca), h='';
-var bE=user.r!=='INVITADO'?'<button class="btn btn-warning btn-sm fw-bold" onclick="aEdG(\''+s.id+'\')">Editar</button>':'';
-h+='<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="cVis()">← Volver</button>'+bE+'</div>';
-h+='<div class="card card-station" style="border-top:6px solid '+hx+'"><small style="color:'+hx+';font-weight:bold">'+(s.marca||'')+'</small><h4 class="text-white fw-bold m-0">'+(s.nombre||'')+'</h4><small class="text-muted">'+(s.direccion||'')+'</small></div>';
-h+='<h5 class="text-center text-white fw-bold my-3">Esquema</h5>';
-if(s.ladoDescarga==='BOTH') h+='<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm '+(vLad==='LEFT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="LEFT">IZQ</button><button class="btn btn-sm '+(vLad==='RIGHT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="RIGHT">DER</button></div>';
-if(s.zonasDescarga>1){ h+='<div class="d-flex justify-content-center gap-2 mb-3">'; for(var i=1;i<=s.zonasDescarga;i++){h+='<button class="btn btn-sm '+(i===vZon?'btn-purple':'btn-outline-light')+'" onclick="cZon(this.value)" value="'+i+'">ZONA '+i+'</button>';} h+='</div>';}
-var iM=(vLad==='LEFT'), pZ=gL(s.productos||[],vZon,iM), dC=gC();
-h+='<div class="d-flex justify-content-center align-items-center mt-4">'+(iM?pZ+'<div style="width:16px"></div>'+dC:dC+'<div style="width:16px"></div>'+pZ)+'</div>';
-document.getElementById('z-vis').innerHTML=h;
-}
-function cLad(l){vLad=l;dVis()} function cZon(z){vZon=parseInt(z);dVis()}
+        // 2. INICIO DE SESIÓN
+        function entrarInvitado() {
+            try {
+                // Guardamos en memoria que entró como invitado
+                localStorage.setItem('logistank_sesion', JSON.stringify({ n: "Invitado", r: "INVITADO" }));
+            } catch(e) {}
+            mostrarApp("Invitado", "INVITADO");
+        }
 
-function aEdN(){if(pst==='GAS')aEdG(); else if(pst==='RUTAS')aEdR();}
-function cEd(){if(vGas)aVis(vGas.id);else ir(pst);}
+        function hacerLogin() {
+            var u = document.getElementById("login-user").value.trim();
+            var p = document.getElementById("login-pass").value.trim();
+            if (u === "" || p === "") { alert("Faltan datos por rellenar."); return; }
+            
+            var btn = document.getElementById("btn-login");
+            btn.innerText = "Conectando..."; btn.disabled = true;
 
-function aEdG(id){
-oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-ed-gas').style.display='block';
-var bd=document.getElementById('b-del-gas');
-if(id){
-var s=null; for(var i=0;i<bdG.length;i++){if(bdG[i].id===id){s=bdG[i];break}} eId=s.id; ePr=JSON.parse(JSON.stringify(s.productos||[]));
-document.getElementById('ttl-e-g').innerText="Editar Gasolinera"; document.getElementById('eg-marca').value=s.marca; document.getElementById('eg-nom').value=s.nombre; document.getElementById('eg-dir').value=s.direccion; document.getElementById('eg-lad').value=s.ladoDescarga; document.getElementById('eg-zon').value=s.zonasDescarga;
-if(user.r==='ADMIN')bd.style.display='block'; else bd.style.display='none';
-}else{
-eId='w-'+Math.random().toString(36).substr(2,9); ePr=[];
-document.getElementById('ttl-e-g').innerText="Nueva Estación"; document.getElementById('eg-marca').value='REPSOL'; document.getElementById('eg-nom').value=''; document.getElementById('eg-dir').value=''; document.getElementById('eg-lad').value='RIGHT'; document.getElementById('eg-zon').value=1; bd.style.display='none';
-}
-eZon=1; gBotC(); dCamEd();
-}
+            fetch(URL_API, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "login", username: u, password: p })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(datos) {
+                if (datos.success) {
+                    // Guardamos la sesión en el teléfono para no pedirla al recargar
+                    try {
+                        localStorage.setItem('logistank_sesion', JSON.stringify({ n: datos.nombre, r: datos.role }));
+                    } catch(e) {}
+                    
+                    mostrarApp(datos.nombre, datos.role);
+                } else {
+                    alert("Usuario o contraseña incorrectos.");
+                    btn.innerText = "Iniciar Sesión"; btn.disabled = false;
+                }
+            })
+            .catch(function(e) {
+                alert("Fallo de red conectando con Google.");
+                btn.innerText = "Iniciar Sesión"; btn.disabled = false;
+            });
+        }
 
-function aEdR(id){
-if(user.r==='INVITADO')return alert("Lectura"); oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-ed-rut').style.display='block';
-var bd=document.getElementById('b-del-rut');
-if(id){
-var c=null; for(var i=0;i<bdR.length;i++){if(bdR[i].id===id){c=bdR[i];break}} eId=id; document.getElementById('ttl-e-r').innerText="Editar Cliente"; document.getElementById('er-nom').value=c.nombre; document.getElementById('er-dir').value=c.direccion;
-if(user.r==='ADMIN')bd.style.display='block'; else bd.style.display='none';
-}else{
-eId='w-'+Math.random().toString(36).substr(2,9); document.getElementById('ttl-e-r').innerText="Nuevo Cliente"; document.getElementById('er-nom').value=''; document.getElementById('er-dir').value=''; bd.style.display='none';
-}
-}
+        // 3. AJUSTES (CERRAR SESIÓN Y CONTRASEÑA)
+        function abrirAjustes() {
+            document.getElementById("modal-ajustes").style.display = "flex";
+        }
+        function cerrarAjustes() {
+            document.getElementById("modal-ajustes").style.display = "none";
+        }
 
-function dCamEd(){
-var a=document.getElementById('eg-canv'), iM=document.getElementById('eg-lad').value==='LEFT', tZ=parseInt(document.getElementById('eg-zon').value); if(eZon>tZ)eZon=tZ;
-var zh='<div class="d-flex justify-content-center gap-2 mb-3">'; for(var i=1;i<=tZ;i++){zh+='<button class="btn btn-sm '+(i===eZon?'btn-purple':'btn-outline-light')+'" onclick="eZon='+i+';dCamEd()">ZONA '+i+'</button>';} zh+='</div>';
-var ch='<div class="zone-canvas" style="background:#222;border-radius:12px;border:2px dashed #444">';
-for(var j=0;j<ePr.length;j++){
-var p=ePr[j]; if(p.zonaIndex!==eZon)continue; var tx=iM?-p.nx:p.nx, ty=iM?-p.ny:p.ny, ci=gComb(p.codigoProducto);
-ch+='<div class="fuel-circle draggable shadow" data-idx="'+j+'" style="left:'+(7+tx)+'px;top:'+(131+ty)+'px;background:'+ci.b+';color:'+ci.t+'">'+ci.s+'</div>';
-}
-ch+='<button class="btn-add-fuel shadow" onclick="aMod()">+</button></div>';
-var dc=gC(), ce=iM?ch+'<div style="width:16px"></div>'+dc:dc+'<div style="width:16px"></div>'+ch;
-a.innerHTML=zh+'<div class="d-flex justify-content-center align-items-center">'+ce+'</div>'; actArr(iM);
-}
+        function cerrarSesion() {
+            try {
+                // Borramos la memoria y recargamos la página entera
+                localStorage.removeItem('logistank_sesion');
+            } catch(e) {}
+            location.reload();
+        }
 
-function actArr(iM){
-var c=document.querySelectorAll('.draggable');
-for(var i=0;i<c.length;i++){
-var cr=c[i];
-cr.onpointerdown=function(e){var id=parseInt(this.getAttribute('data-idx'));this.setAttribute('d-dg','1');this.setAttribute('d-sx',e.clientX);this.setAttribute('d-sy',e.clientY);this.setAttribute('d-ox',ePr[id].nx);this.setAttribute('d-oy',ePr[id].ny);this.setPointerCapture(e.pointerId)};
-cr.onpointermove=function(e){if(this.getAttribute('d-dg')!=='1')return;var id=parseInt(this.getAttribute('data-idx')), dx=e.clientX-parseFloat(this.getAttribute('d-sx')), dy=e.clientY-parseFloat(this.getAttribute('d-sy'));ePr[id].nx=parseFloat(this.getAttribute('d-ox'))+(iM?-dx:dx);ePr[id].ny=parseFloat(this.getAttribute('d-oy'))+(iM?-dy:dy);this.style.left=(7+(iM?-ePr[id].nx:ePr[id].nx))+'px';this.style.top=(131+(iM?-ePr[id].ny:ePr[id].ny))+'px'};
-cr.onpointerup=function(e){this.setAttribute('d-dg','0');this.releasePointerCapture(e.pointerId)};
-cr.ondblclick=function(){var id=parseInt(this.getAttribute('data-idx'));if(confirm("¿Quitar?")){ePr.splice(id,1);dCamEd()}};
-}
-}
+        function cambiarMiContrasena(btn) {
+            if (user.r === 'INVITADO') return alert("Los invitados no tienen contraseña.");
+            
+            var nuevaPass = document.getElementById("nueva-pass").value.trim();
+            if (nuevaPass === "") return alert("Escribe una contraseña primero.");
+            
+            btn.innerText = "Guardando..."; btn.disabled = true;
 
-function gBotC(){
-var l=["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"], h='';
-for(var i=0;i<l.length;i++){var f=l[i], c=gComb(f);h+='<div class="col-6 p-1"><button class="btn w-100 fw-bold shadow-sm" style="background:'+c.b+';color:'+c.t+';border-radius:8px" onclick="addP(\''+f+'\')">'+f+'</button></div>';}
-document.getElementById('g-comb').innerHTML=h;
-}
-function aMod(){document.getElementById('m-comb').style.display='flex'} function cMod(){document.getElementById('m-comb').style.display='none'}
-function addP(c){var cnt=0;for(var i=0;i<ePr.length;i++){if(ePr[i].zonaIndex===eZon)cnt++;} ePr.push({codigoProducto:c,zonaIndex:eZon,nx:0,ny:(cnt*56)-100});cMod();dCamEd()}
+            fetch(URL_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'changePassword', username: user.n, newPassword: nuevaPass })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(datos) {
+                alert("Contraseña cambiada con éxito. Ya puedes usarla la próxima vez.");
+                document.getElementById("nueva-pass").value = "";
+                cerrarAjustes();
+            })
+            .catch(function(e) {
+                // NOTA: Si en Google Apps Script no has programado la función 'changePassword',
+                // saltará este error. Avisame y te paso el trozo de código para el Excel.
+                alert("Fallo al cambiar la contraseña. Asegúrate de que el Google Script soporta la orden.");
+            })
+            .finally(function() {
+                btn.innerText = "Guardar Contraseña"; btn.disabled = false;
+            });
+        }
 
-function gGas(){
-var b=document.getElementById('btn-s-gas'); b.innerText='Guardando...'; b.disabled=true;
-var d={id:eId,marca:document.getElementById('eg-marca').value,nombre:document.getElementById('eg-nom').value.toUpperCase(),direccion:document.getElementById('eg-dir').value.toUpperCase(),ladoDescarga:document.getElementById('eg-lad').value,zonasDescarga:parseInt(document.getElementById('eg-zon').value),productos:ePr};
-fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveGasStation',data:d,userRole:user.r,username:user.n})}).then(function(){alert("Guardado");dDat();cEd()}).catch(function(){alert("Fallo")}).finally(function(){b.innerText='Guardar';b.disabled=false});
-}
-function gRut(){
-var b=document.getElementById('btn-s-rut'); b.innerText='Guardando...'; b.disabled=true;
-var d={id:eId,nombre:document.getElementById('er-nom').value.toUpperCase(),direccion:document.getElementById('er-dir').value.toUpperCase()};
-fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveRoute',data:d,userRole:user.r,username:user.n})}).then(function(){alert("Guardado");dDat();cEd()}).catch(function(){alert("Fallo")}).finally(function(){b.innerText='Guardar';b.disabled=false});
-}
-function bGas(){if(!confirm("¿Borrar?"))return; fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'deleteGasStation',id:eId})}).then(function(){alert("Borrado");vGas=null;dDat();cEd()})}
-function bRut(){if(!confirm("¿Borrar?"))return; fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'deleteRoute',id:eId})}).then(function(){alert("Borrado");dDat();cEd()})}
+        // 4. DESCARGA
+        function descargarDatos() {
+            var zona = document.getElementById("zona-listas");
+            zona.innerHTML = "<div class='text-center mt-5 text-white'>Conectando con la base de datos...</div>";
 
-function gC(){return '<div class="d-flex flex-column align-items-center"><div class="truck-head"></div><div class="truck-neck"></div><div class="truck-body"><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div></div></div>'}
-function gL(p,z,m){
-var h='<div class="zone-canvas">', l=[]; for(var i=0;i<p.length;i++){if(p[i].zonaIndex===z)l.push(p[i])} if(m)l.reverse();
-for(var j=0;j<l.length;j++){var t=l[j], tx=m?-t.nx:t.nx, ty=m?-t.ny:t.ny, c=gComb(t.codigoProducto); h+='<div class="fuel-circle" style="left:'+(7+tx)+'px;top:'+(131+ty)+'px;background:'+c.b+';color:'+c.t+'">'+c.s+'</div>';}
-return h+'</div>';
-}
-function gCol(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return 'brand-REPSOL';if(x.includes('BP'))return 'brand-BP';if(x.includes('MOEVE')||x.includes('CEPSA'))return 'brand-MOEVE';if(x.includes('SHELL'))return 'brand-SHELL';if(x.includes('GALP'))return 'brand-GALP';return 'brand-DEFAULT'}
-function gHx(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return '#FF9800';if(x.includes('BP'))return '#4CAF50';if(x.includes('MOEVE')||x.includes('CEPSA'))return '#005CE6';if(x.includes('SHELL'))return '#FFC107';if(x.includes('GALP'))return '#FF5000';return '#673AB7'}
-function gComb(c){
-var n=(c||'').toUpperCase().trim(), b='#424242', t='#FFF', s=n;
-switch(n){case 'A':b='#FFB300';break;case 'A+5':b='#F57C00';break;case 'A+':b='#FF8F00';break;case 'NEXA':b='#00838F';s='NEX';break;case 'B':b='#D32F2F';break;case 'B MAR PRO':b='#880E4F';s='BPR';break;case 'C':b='#0288D1';break;case 'BIENERGI 10':b='#6A1B9A';s='B10';break;case '95':b='#388E3C';break;case '95+':b='#1B5E20';break;case '95 MAR SPORT':b='#00E676';t='#000';s='95S';break;case '98':b='#1565C0';break;case 'MARBIDIESEL':b='#5D4037';s='MBD';break;}
-return {b:b,t:t,s:s};
-}
-document.getElementById('lbl-paso').innerText = "Paso 4: Editores Seguros";
-document.getElementById('lbl-paso').style.color = "#4CAF50";
-</script>
+            Promise.all([
+                fetch(URL_API + "?action=getGasStations").then(function(r) { return r.json(); }),
+                fetch(URL_API + "?action=getRoutes").then(function(r) { return r.json(); }),
+                fetch(URL_API + "?action=getProducts").then(function(r) { return r.json(); })
+            ])
+            .then(function(res) {
+                bdG = res[0]; bdR = res[1]; bdC = res[2];
+                irPestana("GAS");
+            })
+            .catch(function(e) {
+                zona.innerHTML = "<div class='text-center mt-5 text-danger'>Error al descargar los datos.</div>";
+            });
+        }
+
+        // 5. NAVEGACIÓN Y LISTAS
+        function ocultarTodo() {
+            document.getElementById("zona-listas").style.display = "none";
+            document.getElementById("zona-visor").style.display = "none";
+            document.getElementById("zona-editor-gas").style.display = "none";
+            document.getElementById("zona-editor-ruta").style.display = "none";
+        }
+
+        function irPestana(p) {
+            pst = p;
+            document.getElementById("tab-gas").className = "nav-link"; 
+            document.getElementById("tab-routes").className = "nav-link"; 
+            document.getElementById("tab-codes").className = "nav-link";
+            
+            if (p === "GAS") document.getElementById("tab-gas").className = "nav-link active";
+            if (p === "RUTAS") document.getElementById("tab-routes").className = "nav-link active";
+            if (p === "CODIGOS") document.getElementById("tab-codes").className = "nav-link active";
+
+            ocultarTodo();
+            document.getElementById("main-tabs").style.display = "flex";
+            document.getElementById("zona-listas").style.display = "block";
+
+            var fab = document.getElementById("btn-fab");
+            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) {
+                fab.style.display = "flex";
+            } else {
+                fab.style.display = "none";
+            }
+
+            if (p === "GAS") pG();
+            if (p === "RUTAS") pR();
+            if (p === "CODIGOS") pC();
+        }
+
+        function pG() {
+            var h = "";
+            var l = bdG.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
+            for (var i = 0; i < l.length; i++) {
+                var s = l[i];
+                var c = gCol(s.marca);
+                // Cero comillas cruzadas gracias a this.id
+                h += "<div class='card card-station' onclick='abrirVisor(this.id)' id='" + s.id + "'>";
+                h += "<div class='brand-indicator " + c + "'></div>";
+                h += "<h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
+                h += "<small style='color: #aaa;'>" + (s.marca || "") + " • " + (s.direccion || "") + "</small></div>";
+            }
+            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
+        }
+
+        function pR() {
+            var h = "";
+            var l = bdR.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
+            for (var i = 0; i < l.length; i++) {
+                var s = l[i];
+                h += "<div class='card card-station' onclick='aEdR(this.id)' id='" + s.id + "'>";
+                h += "<div class='brand-indicator brand-DEFAULT'></div>";
+                h += "<h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
+                h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
+            }
+            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
+        }
+
+        // PINTAR CÓDIGOS CON NOMBRES DE PRODUCTO
+        function pC() {
+            var h = "<div class='row m-0'>";
+            for (var i = 0; i < bdC.length; i++) {
+                var p = bdC[i];
+                var cBg = p.colorFondo || "#333333";
+                var cTxt = p.colorTexto || "#FFFFFF";
+                
+                // Intenta buscar el nombre de producto usando distintas posibilidades de columnas
+                var nombreProducto = p.nombre || p.producto || p.descripcion || "";
+                
+                h += "<div class='col-6 p-1'>";
+                h += "<div style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:15px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);'>";
+                h += "<h4 class='fw-bold m-0'>" + (p.codigo || "??") + "</h4>";
+                
+                // Si existe el nombre, lo pone debajo pequeñito
+                if (nombreProducto !== "") {
+                    h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreProducto + "</small>";
+                }
+                
+                h += "</div></div>";
+            }
+            h += "</div>";
+            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted mt-5'>No hay códigos</p>";
+        }
+
+        // 6. VISOR DEL CAMIÓN
+        function abrirVisor(id) {
+            vGas = null;
+            for (var i = 0; i < bdG.length; i++) {
+                if (bdG[i].id === id) { vGas = bdG[i]; break; }
+            }
+            if (!vGas) return;
+            
+            vZon = 1;
+            vLad = vGas.ladoDescarga === "BOTH" ? "LEFT" : vGas.ladoDescarga;
+            
+            ocultarTodo();
+            document.getElementById("main-tabs").style.display = "none";
+            document.getElementById("btn-fab").style.display = "none";
+            document.getElementById("zona-visor").style.display = "block";
+            dVis();
+        }
+
+        function dVis() {
+            var s = vGas;
+            var hx = gHx(s.marca);
+            var h = "";
+            
+            var bE = "";
+            if (user.r !== "INVITADO") {
+                bE = "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdG(this.value)' value='" + s.id + "'>Editar</button>";
+            }
+
+            h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(pst)'>← Volver a la Lista</button>" + bE + "</div>";
+            h += "<div class='card card-station' style='border-top:6px solid " + hx + "; cursor:default'>";
+            h += "<small style='color:" + hx + "; font-weight:bold'>" + (s.marca || "") + "</small>";
+            h += "<h4 class='text-white fw-bold m-0'>" + (s.nombre || "") + "</h4>";
+            h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
+            
+            h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
+            
+            if (s.ladoDescarga === "BOTH") {
+                h += "<div class='d-flex justify-content-center gap-2 mb-3'>";
+                h += "<button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button>";
+                h += "<button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
+            }
+            if (s.zonasDescarga > 1) {
+                h += "<div class='d-flex justify-content-center gap-2 mb-3'>";
+                for (var i = 1; i <= s.zonasDescarga; i++) {
+                    h += "<button class='btn btn-sm " + (i === vZon ? "btn-purple" : "btn-outline-light") + "' onclick='cZon(this.value)' value='" + i + "'>ZONA " + i + "</button>";
+                }
+                h += "</div>";
+            }
+            
+            var iM = (vLad === "LEFT");
+            var pZ = gL(s.productos || [], vZon, iM);
+            var dC = gC();
+            
+            h += "<div class='d-flex justify-content-center align-items-center mt-4'>";
+            h += (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
+            
+            document.getElementById("zona-visor").innerHTML = h;
+        }
+
+        function cLad(l) { vLad = l; dVis(); }
+        function cZon(z) { vZon = parseInt(z, 10); dVis(); }
+
+        // 7. EDITORES
+        function aEdN() {
+            if (pst === "GAS") aEdG(null);
+            else if (pst === "RUTAS") aEdR(null);
+        }
+
+        function cerrarEditor() {
+            if (vGas) abrirVisor(vGas.id);
+            else irPestana(pst);
+        }
+
+        function aEdG(val) {
+            ocultarTodo();
+            document.getElementById("main-tabs").style.display = "none";
+            document.getElementById("btn-fab").style.display = "none";
+            document.getElementById("zona-editor-gas").style.display = "block";
+            
+            var bd = document.getElementById("b-del-gas");
+            
+            if (typeof val === "string" && val.length > 3) {
+                var s = null;
+                for (var i = 0; i < bdG.length; i++) {
+                    if (bdG[i].id === val) { s = bdG[i]; break; }
+                }
+                eId = s.id;
+                ePr = JSON.parse(JSON.stringify(s.productos || []));
+                
+                document.getElementById("ttl-e-g").innerText = "Editar Gasolinera";
+                document.getElementById("eg-marca").value = s.marca;
+                document.getElementById("eg-nom").value = s.nombre;
+                document.getElementById("eg-dir").value = s.direccion;
+                document.getElementById("eg-lad").value = s.ladoDescarga;
+                document.getElementById("eg-zon").value = s.zonasDescarga;
+                
+                if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
+            } else {
+                eId = "w-" + Math.random().toString(36).substr(2, 9);
+                ePr = [];
+                document.getElementById("ttl-e-g").innerText = "Nueva Estación";
+                document.getElementById("eg-marca").value = "REPSOL";
+                document.getElementById("eg-nom").value = "";
+                document.getElementById("eg-dir").value = "";
+                document.getElementById("eg-lad").value = "RIGHT";
+                document.getElementById("eg-zon").value = 1;
+                bd.style.display = "none";
+            }
+            eZon = 1;
+            gBotC();
+            dCamEd();
+        }
+
+        function aEdR(val) {
+            if (user.r === "INVITADO") return alert("Los invitados solo pueden leer.");
+            ocultarTodo();
+            document.getElementById("main-tabs").style.display = "none";
+            document.getElementById("btn-fab").style.display = "none";
+            document.getElementById("zona-editor-ruta").style.display = "block";
+            
+            var bd = document.getElementById("b-del-rut");
+            
+            if (typeof val === "string" && val.length > 3) {
+                var c = null;
+                for (var i = 0; i < bdR.length; i++) {
+                    if (bdR[i].id === val) { c = bdR[i]; break; }
+                }
+                eId = val;
+                document.getElementById("ttl-e-r").innerText = "Editar Cliente";
+                document.getElementById("er-nom").value = c.nombre;
+                document.getElementById("er-dir").value = c.direccion;
+                
+                if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
+            } else {
+                eId = "w-" + Math.random().toString(36).substr(2, 9);
+                document.getElementById("ttl-e-r").innerText = "Nuevo Cliente";
+                document.getElementById("er-nom").value = "";
+                document.getElementById("er-dir").value = "";
+                bd.style.display = "none";
+            }
+        }
+
+        // LÓGICA DE DIBUJO Y ARRASTRE DEL EDITOR
+        function dCamEd() {
+            var area = document.getElementById("eg-canv");
+            var iM = document.getElementById("eg-lad").value === "LEFT";
+            var tZ = parseInt(document.getElementById("eg-zon").value, 10);
+            if (eZon > tZ) eZon = tZ;
+            
+            var zh = "<div class='d-flex justify-content-center gap-2 mb-3'>";
+            for (var i = 1; i <= tZ; i++) {
+                zh += "<button class='btn btn-sm " + (i === eZon ? "btn-purple" : "btn-outline-light") + "' onclick='eZon=" + i + ";dCamEd()'>ZONA " + i + "</button>";
+            }
+            zh += "</div>";
+            
+            var ch = "<div class='zone-canvas' style='background:#222; border-radius:12px; border:2px dashed #444'>";
+            for (var j = 0; j < ePr.length; j++) {
+                var p = ePr[j];
+                if (p.zonaIndex !== eZon) continue;
+                
+                var tx = iM ? -p.nx : p.nx;
+                var ty = iM ? -p.ny : p.ny;
+                var ci = gComb(p.codigoProducto);
+                
+                ch += "<div class='fuel-circle draggable shadow' data-idx='" + j + "' style='left:" + (7 + tx) + "px; top:" + (131 + ty) + "px; background:" + ci.b + "; color:" + ci.t + "'>" + ci.s + "</div>";
+            }
+            
+            ch += "<button class='btn-add-fuel shadow' onclick='aMod()'>+</button></div>";
+            
+            var dc = gC();
+            var ce = iM ? ch + "<div style='width:16px'></div>" + dc : dc + "<div style='width:16px'></div>" + ch;
+            
+            area.innerHTML = zh + "<div class='d-flex justify-content-center align-items-center'>" + ce + "</div>";
+            actArr(iM);
+        }
+
+        function actArr(iM) {
+            var c = document.querySelectorAll(".draggable");
+            for (var i = 0; i < c.length; i++) {
+                var cr = c[i];
+                cr.onpointerdown = function(e) {
+                    var id = parseInt(this.getAttribute("data-idx"), 10);
+                    this.setAttribute("d-dg", "1");
+                    this.setAttribute("d-sx", e.clientX);
+                    this.setAttribute("d-sy", e.clientY);
+                    this.setAttribute("d-ox", ePr[id].nx);
+                    this.setAttribute("d-oy", ePr[id].ny);
+                    this.setPointerCapture(e.pointerId);
+                };
+                cr.onpointermove = function(e) {
+                    if (this.getAttribute("d-dg") !== "1") return;
+                    var id = parseInt(this.getAttribute("data-idx"), 10);
+                    var dx = e.clientX - parseFloat(this.getAttribute("d-sx"));
+                    var dy = e.clientY - parseFloat(this.getAttribute("d-sy"));
+                    ePr[id].nx = parseFloat(this.getAttribute("d-ox")) + (iM ? -dx : dx);
+                    ePr[id].ny = parseFloat(this.getAttribute("d-oy")) + (iM ? -dy : dy);
+                    this.style.left = (7 + (iM ? -ePr[id].nx : ePr[id].nx)) + "px";
+                    this.style.top = (131 + (iM ? -ePr[id].ny : ePr[id].ny)) + "px";
+                };
+                cr.onpointerup = function(e) {
+                    this.setAttribute("d-dg", "0");
+                    this.releasePointerCapture(e.pointerId);
+                };
+                cr.ondblclick = function() {
+                    var id = parseInt(this.getAttribute("data-idx"), 10);
+                    if (confirm("¿Quieres eliminar este producto?")) { ePr.splice(id, 1); dCamEd(); }
+                };
+            }
+        }
+
+        // MENÚ AÑADIR COMBUSTIBLE
+        function gBotC() {
+            var l = ["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"];
+            var h = "";
+            for (var i = 0; i < l.length; i++) {
+                var f = l[i];
+                var c = gComb(f);
+                h += "<div class='col-6 p-1'><button class='btn w-100 fw-bold shadow-sm' style='background:" + c.b + "; color:" + c.t + "; border-radius:8px;' onclick='addP(this.value)' value='" + f + "'>" + f + "</button></div>";
+            }
+            document.getElementById("g-comb").innerHTML = h;
+        }
+
+        function aMod() { document.getElementById("m-comb").style.display = "flex"; }
+        function cMod() { document.getElementById("m-comb").style.display = "none"; }
+        
+        function addP(val) {
+            var cnt = 0;
+            for (var i = 0; i < ePr.length; i++) {
+                if (ePr[i].zonaIndex === eZon) cnt++;
+            }
+            // Los apilamos uno debajo de otro automáticamente
+            ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 });
+            cMod();
+            dCamEd();
+        }
+
+        // GUARDADO EN GOOGLE
+        function gGas() {
+            var b = document.getElementById("btn-s-gas");
+            b.innerText = "Guardando..."; b.disabled = true;
+            var d = {
+                id: eId,
+                marca: document.getElementById("eg-marca").value,
+                nombre: document.getElementById("eg-nom").value.toUpperCase(),
+                direccion: document.getElementById("eg-dir").value.toUpperCase(),
+                ladoDescarga: document.getElementById("eg-lad").value,
+                zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10),
+                productos: ePr
+            };
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) })
+            .then(function() { alert("Gasolinera Guardada."); dDat(); cerrarEditor(); })
+            .catch(function() { alert("Fallo al guardar en Google."); })
+            .finally(function() { b.innerText = "Guardar Estación"; b.disabled = false; });
+        }
+
+        function gRut() {
+            var b = document.getElementById("btn-s-rut");
+            b.innerText = "Guardando..."; b.disabled = true;
+            var d = {
+                id: eId,
+                nombre: document.getElementById("er-nom").value.toUpperCase(),
+                direccion: document.getElementById("er-dir").value.toUpperCase()
+            };
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) })
+            .then(function() { alert("Cliente Guardado."); dDat(); cerrarEditor(); })
+            .catch(function() { alert("Fallo al guardar en Google."); })
+            .finally(function() { b.innerText = "Guardar Cliente"; b.disabled = false; });
+        }
+
+        function bGas() {
+            if (!confirm("¿Seguro que quieres BORRAR esta gasolinera?")) return;
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) })
+            .then(function() { alert("Borrado de la base de datos."); vGas = null; dDat(); cerrarEditor(); });
+        }
+
+        function bRut() {
+            if (!confirm("¿Seguro que quieres BORRAR a este cliente?")) return;
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) })
+            .then(function() { alert("Borrado de la base de datos."); dDat(); cerrarEditor(); });
+        }
+
+        // 8. HERRAMIENTAS GRÁFICAS DEL CAMIÓN
+        function gC() {
+            var h = "<div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'>";
+            h += "<div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div>";
+            h += "</div></div>";
+            return h;
+        }
+
+        function gL(p, z, m) {
+            var h = "<div class='zone-canvas'>";
+            var l = [];
+            for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); }
+            if (m) l.reverse();
+
+            for (var j = 0; j < l.length; j++) {
+                var t = l[j];
+                var tx = m ? -t.nx : t.nx;
+                var ty = m ? -t.ny : t.ny;
+                var c = gComb(t.codigoProducto);
+                h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px; top:" + (131 + ty) + "px; background:" + c.b + "; color:" + c.t + "'>" + c.s + "</div>";
+            }
+            return h + "</div>";
+        }
+
+        function gCol(m) {
+            var x = (m || "").toUpperCase();
+            if (x.indexOf("REPSOL") > -1) return "brand-REPSOL";
+            if (x.indexOf("BP") > -1) return "brand-BP";
+            if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE";
+            if (x.indexOf("SHELL") > -1) return "brand-SHELL";
+            if (x.indexOf("GALP") > -1) return "brand-GALP";
+            return "brand-DEFAULT";
+        }
+
+        function gHx(m) {
+            var x = (m || "").toUpperCase();
+            if (x.indexOf("REPSOL") > -1) return "#FF9800";
+            if (x.indexOf("BP") > -1) return "#4CAF50";
+            if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6";
+            if (x.indexOf("SHELL") > -1) return "#FFC107";
+            if (x.indexOf("GALP") > -1) return "#FF5000";
+            return "#673AB7";
+        }
+
+        function gComb(c) {
+            var n = (c || "").toUpperCase().trim();
+            var b = "#424242"; var t = "#FFF"; var s = n;
+            switch(n) {
+                case "A": b = "#FFB300"; break;
+                case "A+5": b = "#F57C00"; break;
+                case "A+": b = "#FF8F00"; break;
+                case "NEXA": b = "#00838F"; s = "NEX"; break;
+                case "B": b = "#D32F2F"; break;
+                case "B MAR PRO": b = "#880E4F"; s = "BPR"; break;
+                case "C": b = "#0288D1"; break;
+                case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break;
+                case "95": b = "#388E3C"; break;
+                case "95+": b = "#1B5E20"; break;
+                case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break;
+                case "98": b = "#1565C0"; break;
+                case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break;
+            }
+            return { b: b, t: t, s: s };
+        }
+    </script>
 </body>
 </html>
