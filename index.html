@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LogisTank - Paso 3</title>
+<title>LogisTank - Paso 4</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body{background:#121212;color:#FFF;font-family:sans-serif;margin:0;padding:0}
 .bg-purple{background:#673AB7!important}
 .btn-purple{background:#673AB7;color:#fff;border:none;font-weight:bold}
-.form-control{background:#1E1E1E;color:#fff;border:1px solid #333}
-.form-control:focus{border-color:#673AB7;box-shadow:none;background:#1E1E1E;color:#fff}
+.btn-danger{background:#DC3545;color:#fff;border:none;border-radius:8px}
+.form-control, .form-select{background:#1E1E1E;color:#fff;border:1px solid #333}
+.form-control:focus, .form-select:focus{border-color:#673AB7;box-shadow:none;background:#1E1E1E;color:#fff}
 .card-station{background:#1E1E1E;border-radius:12px;margin-bottom:12px;position:relative;padding:15px 15px 15px 25px;border:none;box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:pointer}
 .brand-indicator{width:8px;height:100%;position:absolute;left:0;top:0;border-top-left-radius:12px;border-bottom-left-radius:12px}
 .brand-REPSOL{background:#FF9800} .brand-BP{background:#4CAF50} .brand-MOEVE{background:#005CE6} .brand-SHELL{background:#FFC107} .brand-GALP{background:#FF5000} .brand-DEFAULT{background:#673AB7}
@@ -23,6 +24,8 @@ body{background:#121212;color:#FFF;font-family:sans-serif;margin:0;padding:0}
 .truck-hatch{width:45px;height:45px;border:2px solid rgba(255,255,255,0.1);border-radius:50%}
 .zone-canvas{width:62px;height:310px;position:relative}
 .fuel-circle{width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);display:flex;justify-content:center;align-items:center;font-weight:900;font-size:12px;position:absolute;box-shadow:0 4px 6px rgba(0,0,0,0.5);user-select:none}
+.draggable{touch-action:none;cursor:grab}
+.btn-add-fuel{width:48px;height:48px;border-radius:50%;background:#673AB7;border:none;display:flex;justify-content:center;align-items:center;font-size:24px;font-weight:bold;color:white;cursor:pointer;position:absolute;bottom:-20px;left:7px;z-index:10;box-shadow:0 4px 8px rgba(0,0,0,0.5)}
 #p-login{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh}
 #p-app{display:none;flex-direction:column;min-height:100vh}
 #c-err{display:none;background:#f00;color:#fff;padding:20px;width:100%;font-family:monospace;font-size:14px;position:fixed;top:0;z-index:9999;border-bottom:5px solid #000;box-shadow:0 5px 15px rgba(0,0,0,0.5)}
@@ -43,107 +46,178 @@ body{background:#121212;color:#FFF;font-family:sans-serif;margin:0;padding:0}
 </div></div>
 
 <div id="p-app">
-<header class="bg-purple text-white p-3"><div class="d-flex justify-content-between align-items-center mx-auto" style="max-width:1200px"><div><h3 class="m-0 fw-bold">LogisTank</h3><small id="lbl-usr">Cargando...</small></div><button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="border-radius:6px">Salir</button></div></header>
+<header class="bg-purple text-white p-3"><div class="d-flex justify-content-between align-items-center mx-auto" style="max-width:1200px"><div><h3 class="m-0 fw-bold" onclick="ir('GAS')">LogisTank</h3><small id="lbl-usr">Cargando...</small></div><button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="border-radius:6px">Salir</button></div></header>
 <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width:1200px">
 <ul class="nav nav-pills" id="tabs"><li class="nav-item"><a class="nav-link active" id="t-gas" href="#" onclick="ir('GAS')">Gasolineras</a></li><li class="nav-item"><a class="nav-link" id="t-rut" href="#" onclick="ir('RUTAS')">Rutas</a></li><li class="nav-item"><a class="nav-link" id="t-cod" href="#" onclick="ir('CODIGOS')">Códigos</a></li></ul>
-<div id="z-list" class="mt-3"></div><div id="z-vis" style="display:none;padding-bottom:50px"></div>
-</main></div>
+
+<div id="z-list" class="mt-3"></div>
+<div id="z-vis" style="display:none;padding-bottom:50px"></div>
+
+<div id="z-ed-gas" style="display:none;padding-bottom:80px" class="mt-2">
+<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light" onclick="cEd()">← Volver</button><button id="b-del-gas" class="btn btn-danger" style="display:none" onclick="bGas()">Borrar</button></div>
+<div class="card card-station" style="cursor:default"><h4 class="fw-bold mb-3 text-white" id="ttl-e-g">Nueva Estación</h4>
+<select id="eg-marca" class="form-select mb-3"><option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option></select>
+<input type="text" id="eg-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
+<input type="text" id="eg-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+<select id="eg-lad" class="form-select mb-3" onchange="dCamEd()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option></select>
+<input type="number" id="eg-zon" class="form-control mb-3" min="1" max="4" value="1" onchange="dCamEd()">
+<h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema</h5><div id="eg-canv" class="my-3"></div>
+<button onclick="gGas()" id="btn-s-gas" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
+</div></div>
+
+<div id="z-ed-rut" style="display:none;padding-bottom:80px" class="mt-2">
+<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light" onclick="cEd()">← Volver</button><button id="b-del-rut" class="btn btn-danger" style="display:none" onclick="bRut()">Borrar</button></div>
+<div class="card card-station" style="cursor:default"><h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
+<input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
+<input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+<button onclick="gRut()" id="btn-s-rut" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
+</div></div>
+</main>
+
+<button id="btn-fab" onclick="aEdN()" class="shadow-lg" style="display:none;position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:#673AB7;color:#fff;border:none;font-size:32px;justify-content:center;align-items:center;z-index:1000">+</button>
+</div>
+
+<div id="m-comb" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;justify-content:center;align-items:center">
+<div style="background:#1E1E1E;width:90%;max-width:400px;border-radius:16px;padding:20px"><div class="d-flex justify-content-between mb-3"><h5 class="text-white fw-bold m-0">Añadir</h5><span onclick="cMod()" style="color:white;font-size:20px;cursor:pointer">X</span></div><div class="row m-0" id="g-comb"></div></div></div>
 
 <script>
 var URL_API="https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
-var user=null, bdG=[], bdR=[], bdC=[];
+var user=null, bdG=[], bdR=[], bdC=[], pst='GAS';
 var vGas=null, vLad='RIGHT', vZon=1;
+var eId=null, ePr=[], eZon=1;
 
-function mApp(n){
-user={n:n}; document.getElementById('p-login').style.display='none'; document.getElementById('p-app').style.display='flex'; document.getElementById('lbl-usr').innerText=n; dDat();
+window.onload=function(){try{var s=localStorage.getItem('lt_usr');if(s){user=JSON.parse(s);mApp(user.n,user.r)}}catch(e){}};
+
+function mApp(n,r){
+user={n:n,r:r}; document.getElementById('p-login').style.display='none'; document.getElementById('p-app').style.display='flex'; document.getElementById('lbl-usr').innerText=n+" ("+r+")"; dDat();
 }
-function entrarInvitado(){ mApp("Invitado"); }
+function entrarInvitado(){ mApp("Invitado","INVITADO"); }
 function hacerLogin(){
 var u=document.getElementById('l-usr').value.trim(), p=document.getElementById('l-pwd').value.trim();
 if(!u||!p)return alert("Faltan datos");
 var b=document.getElementById('btn-login'); b.innerText="Conectando..."; b.disabled=true;
 fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',username:u,password:p})})
-.then(function(r){return r.json()}).then(function(d){if(d.success)mApp(d.nombre);else{alert("Incorrecto");b.innerText="Iniciar Sesión";b.disabled=false}})
+.then(function(r){return r.json()}).then(function(d){
+if(d.success){try{localStorage.setItem('lt_usr',JSON.stringify({n:d.nombre,r:d.role}))}catch(e){} mApp(d.nombre,d.role);}else{alert("Incorrecto");b.innerText="Iniciar Sesión";b.disabled=false}})
 .catch(function(){alert("Fallo de red");b.innerText="Iniciar Sesión";b.disabled=false});
 }
+
 function dDat(){
-var z=document.getElementById('z-list'); z.innerHTML='<div class="text-center mt-5">Descargando base de datos...</div>';
+var z=document.getElementById('z-list'); z.innerHTML='<div class="text-center mt-5">Descargando datos...</div>';
 Promise.all([fetch(URL_API+'?action=getGasStations').then(function(r){return r.json()}),fetch(URL_API+'?action=getRoutes').then(function(r){return r.json()}),fetch(URL_API+'?action=getProducts').then(function(r){return r.json()})])
-.then(function(res){bdG=res[0];bdR=res[1];bdC=res[2];ir('GAS')}).catch(function(){z.innerHTML='Error'});
+.then(function(res){bdG=res[0];bdR=res[1];bdC=res[2];ir('GAS')}).catch(function(){z.innerHTML='Error al descargar'});
 }
+
+function oc(){document.getElementById('z-list').style.display='none';document.getElementById('z-vis').style.display='none';document.getElementById('z-ed-gas').style.display='none';document.getElementById('z-ed-rut').style.display='none';}
+
 function ir(p){
-document.getElementById('t-gas').className='nav-link'; document.getElementById('t-rut').className='nav-link'; document.getElementById('t-cod').className='nav-link';
+pst=p; document.getElementById('t-gas').className='nav-link'; document.getElementById('t-rut').className='nav-link'; document.getElementById('t-cod').className='nav-link';
 if(p==='GAS')document.getElementById('t-gas').className='nav-link active'; if(p==='RUTAS')document.getElementById('t-rut').className='nav-link active'; if(p==='CODIGOS')document.getElementById('t-cod').className='nav-link active';
-document.getElementById('z-vis').style.display='none'; document.getElementById('tabs').style.display='flex'; document.getElementById('z-list').style.display='block';
+oc(); document.getElementById('tabs').style.display='flex'; document.getElementById('z-list').style.display='block';
+var f=document.getElementById('btn-fab'); if(user.r!=='INVITADO'&&(p==='GAS'||p==='RUTAS'))f.style.display='flex'; else f.style.display='none';
 if(p==='GAS')pG(); if(p==='RUTAS')pR(); if(p==='CODIGOS')pC();
 }
+
 function pG(){
 var h='', l=bdG.slice().sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'')});
-for(var i=0;i<l.length;i++){
-var s=l[i], c=gCol(s.marca);
-h+='<div class="card card-station" onclick="aVis(this.id)" id="'+s.id+'"><div class="brand-indicator '+c+'"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.marca||'')+' • '+(s.direccion||'')+'</small></div>';
-}
+for(var i=0;i<l.length;i++){ var s=l[i], c=gCol(s.marca); h+='<div class="card card-station" onclick="aVis(this.id)" id="'+s.id+'"><div class="brand-indicator '+c+'"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.marca||'')+' • '+(s.direccion||'')+'</small></div>';}
 document.getElementById('z-list').innerHTML=h||'<p class="text-center text-muted">Vacio</p>';
 }
 function pR(){
 var h='', l=bdR.slice().sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'')});
-for(var i=0;i<l.length;i++){
-var s=l[i]; h+='<div class="card card-station"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.direccion||'')+'</small></div>';
-}
+for(var i=0;i<l.length;i++){ var s=l[i]; h+='<div class="card card-station" onclick="aEdR(this.id)" id="'+s.id+'"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold m-0 text-white">'+(s.nombre||'')+'</h5><small class="text-muted">'+(s.direccion||'')+'</small></div>';}
 document.getElementById('z-list').innerHTML=h||'<p class="text-center text-muted">Vacio</p>';
 }
 function pC(){
 var h='<div class="row m-0">';
-for(var i=0;i<bdC.length;i++){
-var p=bdC[i]; h+='<div class="col-6 p-1"><div style="background:'+(p.colorFondo||'#333')+';color:'+(p.colorTexto||'#FFF')+';border-radius:12px;padding:15px;text-align:center"><h4 class="fw-bold m-0">'+(p.codigo||'')+'</h4></div></div>';
-}
+for(var i=0;i<bdC.length;i++){ var p=bdC[i]; h+='<div class="col-6 p-1"><div style="background:'+(p.colorFondo||'#333')+';color:'+(p.colorTexto||'#FFF')+';border-radius:12px;padding:15px;text-align:center"><h4 class="fw-bold m-0">'+(p.codigo||'')+'</h4></div></div>';}
 document.getElementById('z-list').innerHTML=h+'</div>';
 }
+
 function aVis(id){
 vGas=null; for(var i=0;i<bdG.length;i++){if(bdG[i].id===id){vGas=bdG[i];break}} if(!vGas)return;
 vZon=1; vLad=vGas.ladoDescarga==='BOTH'?'LEFT':vGas.ladoDescarga;
-document.getElementById('z-list').style.display='none'; document.getElementById('tabs').style.display='none'; document.getElementById('z-vis').style.display='block'; dVis();
+oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-vis').style.display='block'; dVis();
 }
-function cVis(){document.getElementById('z-vis').style.display='none';document.getElementById('tabs').style.display='flex';document.getElementById('z-list').style.display='block';}
+function cVis(){ir(pst);}
 function dVis(){
 var s=vGas, hx=gHx(s.marca), h='';
-h+='<button class="btn btn-outline-light btn-sm mb-3" onclick="cVis()">← Volver</button>';
-h+='<div class="card card-station" style="border-top:6px solid '+hx+'"><small style="color:'+hx+';font-weight:bold">'+(s.marca||'')+'</small><h4 class="text-white fw-bold m-0">'+(s.nombre||'')+'</h4></div>';
+var bE=user.r!=='INVITADO'?'<button class="btn btn-warning btn-sm fw-bold" onclick="aEdG(\''+s.id+'\')">Editar</button>':'';
+h+='<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="cVis()">← Volver</button>'+bE+'</div>';
+h+='<div class="card card-station" style="border-top:6px solid '+hx+'"><small style="color:'+hx+';font-weight:bold">'+(s.marca||'')+'</small><h4 class="text-white fw-bold m-0">'+(s.nombre||'')+'</h4><small class="text-muted">'+(s.direccion||'')+'</small></div>';
 h+='<h5 class="text-center text-white fw-bold my-3">Esquema</h5>';
-if(s.ladoDescarga==='BOTH'){
-h+='<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm '+(vLad==='LEFT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="LEFT">IZQ</button><button class="btn btn-sm '+(vLad==='RIGHT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="RIGHT">DER</button></div>';
-}
-if(s.zonasDescarga>1){
-h+='<div class="d-flex justify-content-center gap-2 mb-3">';
-for(var i=1;i<=s.zonasDescarga;i++){h+='<button class="btn btn-sm '+(i===vZon?'btn-purple':'btn-outline-light')+'" onclick="cZon(this.value)" value="'+i+'">ZONA '+i+'</button>';}
-h+='</div>';
-}
+if(s.ladoDescarga==='BOTH') h+='<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm '+(vLad==='LEFT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="LEFT">IZQ</button><button class="btn btn-sm '+(vLad==='RIGHT'?'btn-purple':'btn-outline-light')+'" onclick="cLad(this.value)" value="RIGHT">DER</button></div>';
+if(s.zonasDescarga>1){ h+='<div class="d-flex justify-content-center gap-2 mb-3">'; for(var i=1;i<=s.zonasDescarga;i++){h+='<button class="btn btn-sm '+(i===vZon?'btn-purple':'btn-outline-light')+'" onclick="cZon(this.value)" value="'+i+'">ZONA '+i+'</button>';} h+='</div>';}
 var iM=(vLad==='LEFT'), pZ=gL(s.productos||[],vZon,iM), dC=gC();
 h+='<div class="d-flex justify-content-center align-items-center mt-4">'+(iM?pZ+'<div style="width:16px"></div>'+dC:dC+'<div style="width:16px"></div>'+pZ)+'</div>';
 document.getElementById('z-vis').innerHTML=h;
 }
-function cLad(l){vLad=l;dVis()}
-function cZon(z){vZon=parseInt(z);dVis()}
-function gC(){return '<div class="d-flex flex-column align-items-center"><div class="truck-head"></div><div class="truck-neck"></div><div class="truck-body"><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div></div></div>'}
-function gL(p,z,m){
-var h='<div class="zone-canvas">', l=[];
-for(var i=0;i<p.length;i++){if(p[i].zonaIndex===z)l.push(p[i])} if(m)l.reverse();
-for(var j=0;j<l.length;j++){
-var t=l[j], tx=m?-t.nx:t.nx, ty=m?-t.ny:t.ny, c=gComb(t.codigoProducto);
-h+='<div class="fuel-circle" style="left:'+(7+tx)+'px;top:'+(131+ty)+'px;background:'+c.b+';color:'+c.t+'">'+c.s+'</div>';
+function cLad(l){vLad=l;dVis()} function cZon(z){vZon=parseInt(z);dVis()}
+
+function aEdN(){if(pst==='GAS')aEdG(); else if(pst==='RUTAS')aEdR();}
+function cEd(){if(vGas)aVis(vGas.id);else ir(pst);}
+
+function aEdG(id){
+oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-ed-gas').style.display='block';
+var bd=document.getElementById('b-del-gas');
+if(id){
+var s=null; for(var i=0;i<bdG.length;i++){if(bdG[i].id===id){s=bdG[i];break}} eId=s.id; ePr=JSON.parse(JSON.stringify(s.productos||[]));
+document.getElementById('ttl-e-g').innerText="Editar Gasolinera"; document.getElementById('eg-marca').value=s.marca; document.getElementById('eg-nom').value=s.nombre; document.getElementById('eg-dir').value=s.direccion; document.getElementById('eg-lad').value=s.ladoDescarga; document.getElementById('eg-zon').value=s.zonasDescarga;
+if(user.r==='ADMIN')bd.style.display='block'; else bd.style.display='none';
+}else{
+eId='w-'+Math.random().toString(36).substr(2,9); ePr=[];
+document.getElementById('ttl-e-g').innerText="Nueva Estación"; document.getElementById('eg-marca').value='REPSOL'; document.getElementById('eg-nom').value=''; document.getElementById('eg-dir').value=''; document.getElementById('eg-lad').value='RIGHT'; document.getElementById('eg-zon').value=1; bd.style.display='none';
 }
-return h+'</div>';
+eZon=1; gBotC(); dCamEd();
 }
-function gCol(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return 'brand-REPSOL';if(x.includes('BP'))return 'brand-BP';if(x.includes('MOEVE'))return 'brand-MOEVE';if(x.includes('SHELL'))return 'brand-SHELL';if(x.includes('GALP'))return 'brand-GALP';return 'brand-DEFAULT'}
-function gHx(m){var x=(m||'').toUpperCase();if(x.includes('REPSOL'))return '#FF9800';if(x.includes('BP'))return '#4CAF50';if(x.includes('MOEVE'))return '#005CE6';if(x.includes('SHELL'))return '#FFC107';if(x.includes('GALP'))return '#FF5000';return '#673AB7'}
-function gComb(c){
-var n=(c||'').toUpperCase().trim(), b='#424242', t='#FFF', s=n;
-switch(n){case 'A':b='#FFB300';break;case 'A+5':b='#F57C00';break;case 'A+':b='#FF8F00';break;case 'NEXA':b='#00838F';s='NEX';break;case 'B':b='#D32F2F';break;case 'B MAR PRO':b='#880E4F';s='BPR';break;case 'C':b='#0288D1';break;case 'BIENERGI 10':b='#6A1B9A';s='B10';break;case '95':b='#388E3C';break;case '95+':b='#1B5E20';break;case '95 MAR SPORT':b='#00E676';t='#000';s='95S';break;case '98':b='#1565C0';break;case 'MARBIDIESEL':b='#5D4037';s='MBD';break;}
-return {b:b,t:t,s:s};
+
+function aEdR(id){
+if(user.r==='INVITADO')return alert("Lectura"); oc(); document.getElementById('tabs').style.display='none'; document.getElementById('btn-fab').style.display='none'; document.getElementById('z-ed-rut').style.display='block';
+var bd=document.getElementById('b-del-rut');
+if(id){
+var c=null; for(var i=0;i<bdR.length;i++){if(bdR[i].id===id){c=bdR[i];break}} eId=id; document.getElementById('ttl-e-r').innerText="Editar Cliente"; document.getElementById('er-nom').value=c.nombre; document.getElementById('er-dir').value=c.direccion;
+if(user.r==='ADMIN')bd.style.display='block'; else bd.style.display='none';
+}else{
+eId='w-'+Math.random().toString(36).substr(2,9); document.getElementById('ttl-e-r').innerText="Nuevo Cliente"; document.getElementById('er-nom').value=''; document.getElementById('er-dir').value=''; bd.style.display='none';
 }
-// Chivato de seguridad: Si llega hasta aquí sin cortarse, todo está perfecto.
-document.getElementById('lbl-paso').innerText = "Paso 3: Código Comprimido";
-document.getElementById('lbl-paso').style.color = "#4CAF50";
-</script>
-</body>
-</html>
+}
+
+function dCamEd(){
+var a=document.getElementById('eg-canv'), iM=document.getElementById('eg-lad').value==='LEFT', tZ=parseInt(document.getElementById('eg-zon').value); if(eZon>tZ)eZon=tZ;
+var zh='<div class="d-flex justify-content-center gap-2 mb-3">'; for(var i=1;i<=tZ;i++){zh+='<button class="btn btn-sm '+(i===eZon?'btn-purple':'btn-outline-light')+'" onclick="eZon='+i+';dCamEd()">ZONA '+i+'</button>';} zh+='</div>';
+var ch='<div class="zone-canvas" style="background:#222;border-radius:12px;border:2px dashed #444">';
+for(var j=0;j<ePr.length;j++){
+var p=ePr[j]; if(p.zonaIndex!==eZon)continue; var tx=iM?-p.nx:p.nx, ty=iM?-p.ny:p.ny, ci=gComb(p.codigoProducto);
+ch+='<div class="fuel-circle draggable shadow" data-idx="'+j+'" style="left:'+(7+tx)+'px;top:'+(131+ty)+'px;background:'+ci.b+';color:'+ci.t+'">'+ci.s+'</div>';
+}
+ch+='<button class="btn-add-fuel shadow" onclick="aMod()">+</button></div>';
+var dc=gC(), ce=iM?ch+'<div style="width:16px"></div>'+dc:dc+'<div style="width:16px"></div>'+ch;
+a.innerHTML=zh+'<div class="d-flex justify-content-center align-items-center">'+ce+'</div>'; actArr(iM);
+}
+
+function actArr(iM){
+var c=document.querySelectorAll('.draggable');
+for(var i=0;i<c.length;i++){
+var cr=c[i];
+cr.onpointerdown=function(e){var id=parseInt(this.getAttribute('data-idx'));this.setAttribute('d-dg','1');this.setAttribute('d-sx',e.clientX);this.setAttribute('d-sy',e.clientY);this.setAttribute('d-ox',ePr[id].nx);this.setAttribute('d-oy',ePr[id].ny);this.setPointerCapture(e.pointerId)};
+cr.onpointermove=function(e){if(this.getAttribute('d-dg')!=='1')return;var id=parseInt(this.getAttribute('data-idx')), dx=e.clientX-parseFloat(this.getAttribute('d-sx')), dy=e.clientY-parseFloat(this.getAttribute('d-sy'));ePr[id].nx=parseFloat(this.getAttribute('d-ox'))+(iM?-dx:dx);ePr[id].ny=parseFloat(this.getAttribute('d-oy'))+(iM?-dy:dy);this.style.left=(7+(iM?-ePr[id].nx:ePr[id].nx))+'px';this.style.top=(131+(iM?-ePr[id].ny:ePr[id].ny))+'px'};
+cr.onpointerup=function(e){this.setAttribute('d-dg','0');this.releasePointerCapture(e.pointerId)};
+cr.ondblclick=function(){var id=parseInt(this.getAttribute('data-idx'));if(confirm("¿Quitar?")){ePr.splice(id,1);dCamEd()}};
+}
+}
+
+function gBotC(){
+var l=["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"], h='';
+for(var i=0;i<l.length;i++){var f=l[i], c=gComb(f);h+='<div class="col-6 p-1"><button class="btn w-100 fw-bold shadow-sm" style="background:'+c.b+';color:'+c.t+';border-radius:8px" onclick="addP(\''+f+'\')">'+f+'</button></div>';}
+document.getElementById('g-comb').innerHTML=h;
+}
+function aMod(){document.getElementById('m-comb').style.display='flex'} function cMod(){document.getElementById('m-comb').style.display='none'}
+function addP(c){var cnt=0;for(var i=0;i<ePr.length;i++){if(ePr[i].zonaIndex===eZon)cnt++;} ePr.push({codigoProducto:c,zonaIndex:eZon,nx:0,ny:(cnt*56)-100});cMod();dCamEd()}
+
+function gGas(){
+var b=document.getElementById('btn-s-gas'); b.innerText='Guardando...'; b.disabled=true;
+var d={id:eId,marca:document.getElementById('eg-marca').value,nombre:document.getElementById('eg-nom').value.toUpperCase(),direccion:document.getElementById('eg-dir').value.toUpperCase(),ladoDescarga:document.getElementById('eg-lad').value,zonasDescarga:parseInt(document.getElementById('eg-zon').value),productos:ePr};
+fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'saveGasStation',data:d,userRole:user.r,username:user.n})}).then(function(){alert("Guardado");dDat();cEd()}).catch(function(){alert("Fallo")}).finally(function(){b.innerText='Guardar';b.disabled=false});
+}
+function gRut(){
+var b=docu
