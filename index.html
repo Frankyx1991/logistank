@@ -41,7 +41,15 @@
 </head>
 <body>
 
-    <div id="consola-errores" style="display: none; background-color: #8b0000; color: white; padding: 15px; width: 100%; font-family: monospace; font-size: 12px; position: fixed; top: 0; z-index: 9999;"></div>
+    <div id="consola-errores" style="display: none; background-color: #8b0000; color: white; padding: 15px; width: 100%; font-family: monospace; font-size: 14px; position: fixed; top: 0; z-index: 9999; font-weight: bold;"></div>
+    <script>
+        window.onerror = function(msg, url, line) {
+            var caja = document.getElementById('consola-errores');
+            caja.style.display = 'block';
+            caja.innerHTML += "FALLO LÍNEA " + line + ": " + msg + "<br>";
+            return false;
+        };
+    </script>
 
     <div id="pantalla-login" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh;">
         <div class="card shadow-lg p-4 w-100 mx-auto" style="max-width: 400px; border-radius: 24px; background-color: #1E1E1E; border: none;">
@@ -85,13 +93,36 @@
                 </div>
                 <div class="card card-station p-3" style="cursor: default;">
                     <h4 class="fw-bold mb-3 text-white" id="title-editor-gas">Nueva Estación</h4>
-                    <select id="eg-marca" class="form-select mb-3"><option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option></select>
-                    <input type="text" id="eg-nombre" class="form-control mb-3 text-uppercase" placeholder="Nombre">
-                    <input type="text" id="eg-direccion" class="form-control mb-3 text-uppercase" placeholder="Dirección">
-                    <select id="eg-lado" class="form-select mb-3" onchange="dibujarCamionEditor()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option></select>
+                    
+                    <label class="form-label text-muted">Marca</label>
+                    <select id="eg-marca" class="form-select mb-3">
+                        <option value="REPSOL">REPSOL</option>
+                        <option value="MOEVE">MOEVE</option>
+                        <option value="BP">BP</option>
+                        <option value="SHELL">SHELL</option>
+                        <option value="GALP">GALP</option>
+                        <option value="LOW COST">LOW COST</option>
+                    </select>
+                    
+                    <label class="form-label text-muted">Nombre</label>
+                    <input type="text" id="eg-nombre" class="form-control mb-3 text-uppercase">
+                    
+                    <label class="form-label text-muted">Dirección</label>
+                    <input type="text" id="eg-direccion" class="form-control mb-3 text-uppercase">
+                    
+                    <label class="form-label text-muted">Lado de Descarga</label>
+                    <select id="eg-lado" class="form-select mb-3" onchange="dibujarCamionEditor()">
+                        <option value="RIGHT">DERECHA</option>
+                        <option value="LEFT">IZQUIERDA</option>
+                        <option value="BOTH">AMBOS</option>
+                    </select>
+                    
+                    <label class="form-label text-muted">Zonas de Descarga (1 a 4)</label>
                     <input type="number" id="eg-zonas" class="form-control mb-3" min="1" max="4" value="1" onchange="dibujarCamionEditor()">
+                    
                     <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema de Descarga</h5>
                     <div id="eg-canvas-area" class="my-3"></div>
+                    
                     <button id="btn-save-gas" onclick="guardarGasolinera()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
                 </div>
             </div>
@@ -103,8 +134,10 @@
                 </div>
                 <div class="card card-station p-3" style="cursor: default;">
                     <h4 class="fw-bold mb-3 text-white" id="title-editor-ruta">Nuevo Cliente</h4>
-                    <input type="text" id="er-nombre" class="form-control mb-3 text-uppercase" placeholder="Nombre">
-                    <input type="text" id="er-direccion" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+                    <label class="form-label text-muted">Nombre</label>
+                    <input type="text" id="er-nombre" class="form-control mb-3 text-uppercase">
+                    <label class="form-label text-muted">Dirección</label>
+                    <input type="text" id="er-direccion" class="form-control mb-3 text-uppercase">
                     <button id="btn-save-route" onclick="guardarRuta()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
                 </div>
             </div>
@@ -117,20 +150,13 @@
         <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
             <div class="d-flex justify-content-between mb-3">
                 <h5 class="text-white fw-bold m-0">Añadir Combustible</h5>
-                <span onclick="cerrarModal()" style="color: white; font-size: 20px; cursor: pointer;">✕</span>
+                <span onclick="cerrarModal()" style="color: white; font-size: 20px; cursor: pointer;">X</span>
             </div>
             <div class="row g-2" id="grid-combustibles"></div>
         </div>
     </div>
 
     <script>
-        window.onerror = function(msg, url, line) {
-            var caja = document.getElementById('consola-errores');
-            caja.style.display = 'block';
-            caja.innerHTML += "FALLO LÍNEA " + line + ": " + msg + "<br>";
-            return false;
-        };
-
         var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
         
         var usuarioActual = null;
@@ -146,7 +172,6 @@
         var productosEdicion = []; 
         var zonaActivaEditor = 1;
 
-        // --- ARRANQUE ---
         window.onload = function() {
             try {
                 var saved = localStorage.getItem('logistank_user');
@@ -195,7 +220,7 @@
                     btn.innerText = "Iniciar Sesión"; btn.disabled = false; 
                 }
             })
-            .catch(function(e) { 
+            .catch(function() { 
                 alert("Fallo de conexión."); 
                 btn.innerText = "Iniciar Sesión"; btn.disabled = false; 
             });
@@ -206,7 +231,6 @@
             location.reload();
         }
 
-        // --- DESCARGA ---
         function descargarBaseDatos() {
             var zona = document.getElementById('zona-listas');
             zona.innerHTML = '<div class="text-center mt-5"><p class="text-white">Descargando datos...</p></div>';
@@ -222,12 +246,11 @@
                 bdCodigos = resultados[2];
                 irPestana('GAS');
             })
-            .catch(function(e) { 
+            .catch(function() { 
                 zona.innerHTML = '<div class="alert alert-danger text-center mt-5">Error descargando datos.</div>'; 
             });
         }
 
-        // --- PESTAÑAS Y LISTAS ---
         function ocultarSecciones() {
             document.getElementById('zona-listas').style.display = 'none';
             document.getElementById('zona-visor').style.display = 'none';
@@ -264,12 +287,16 @@
         function pintarGasolineras() {
             var html = '';
             var lista = bdGasolineras.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
+            
             for(var i=0; i<lista.length; i++) {
                 var s = lista[i];
-                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')">' +
-                        '<div class="brand-indicator ' + obtenerClaseColor(s.marca) + '"></div>' +
-                        '<h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5>' +
-                        '<small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small></div>';
+                var claseCol = obtenerClaseColor(s.marca);
+                
+                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')">';
+                html += '<div class="brand-indicator ' + claseCol + '"></div>';
+                html += '<h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5>';
+                html += '<small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small>';
+                html += '</div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay gasolineras</p>';
         }
@@ -277,12 +304,14 @@
         function pintarRutas() {
             var html = '';
             var lista = bdRutas.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
+            
             for(var i=0; i<lista.length; i++) {
                 var c = lista[i];
-                html += '<div class="card card-station" onclick="abrirEditorRuta(\'' + c.id + '\')">' +
-                        '<div class="brand-indicator brand-DEFAULT"></div>' +
-                        '<h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5>' +
-                        '<small style="color:#aaa;">' + (c.direccion || '') + '</small></div>';
+                html += '<div class="card card-station" onclick="abrirEditorRuta(\'' + c.id + '\')">';
+                html += '<div class="brand-indicator brand-DEFAULT"></div>';
+                html += '<h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5>';
+                html += '<small style="color:#aaa;">' + (c.direccion || '') + '</small>';
+                html += '</div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay rutas</p>';
         }
@@ -291,14 +320,18 @@
             var html = '<div class="row g-2">';
             for(var i=0; i<bdCodigos.length; i++) {
                 var p = bdCodigos[i];
-                html += '<div class="col-6">' +
-                        '<div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo || '#333333') + '; color:' + (p.colorTexto || '#FFFFFF') + '; border-radius: 12px;">' +
-                        '<h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4></div></div>';
+                var cBg = p.colorFondo || '#333333';
+                var cTxt = p.colorTexto || '#FFFFFF';
+                
+                html += '<div class="col-6">';
+                html += '<div class="card border-0 p-3 text-center" style="background-color:' + cBg + '; color:' + cTxt + '; border-radius: 12px;">';
+                html += '<h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4>';
+                html += '</div></div>';
             }
-            document.getElementById('zona-listas').innerHTML = html + '</div>';
+            html += '</div>';
+            document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay códigos</p>';
         }
 
-        // --- VISOR DE GASOLINERA ---
         function abrirVisor(id) {
             gasolineraVista = null;
             for(var i=0; i<bdGasolineras.length; i++) { 
@@ -310,17 +343,4 @@
             ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
             
             ocultarSecciones();
-            document.getElementById('main-tabs').style.display = 'none';
-            document.getElementById('btn-fab').style.display = 'none';
-            document.getElementById('zona-visor').style.display = 'block';
-            dibujarVisor();
-        }
-
-        function dibujarVisor() {
-            var s = gasolineraVista; 
-            var hex = obtenerHexColor(s.marca);
-            var btnEditar = usuarioActual.role !== 'INVITADO' ? '<button class="btn btn-warning btn-sm fw-bold" onclick="abrirEditorGas(\'' + s.id + '\')">Editar</button>' : '';
-            
-            var html = '<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="irPestana(\'GAS\')">← Volver a la Lista</button>' + btnEditar + '</div>';
-            html += '<div class="card card-station p-3" style="border-top: 6px solid ' + hex + '; cursor: default;"><small style="color:' + hex + '; font-weight:bold;">' + s.marca + '</small><h4 class="text-white fw-bold m-0">' + s.nombre + '</h4><small style="color:#aaa;">' + s.direccion + '</small></div>';
-            html += '<h5 class="fw-bold 
+            document.getElem
