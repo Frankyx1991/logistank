@@ -6,7 +6,6 @@
     <title>LogisTank Web</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
     <style>
         body { background-color: #121212; color: #FFF; font-family: 'Roboto', sans-serif; margin:0; padding:0; }
@@ -14,14 +13,14 @@
         .text-purple { color: #D1C4E9 !important; }
         .btn-purple { background-color: #673AB7; color: white; border: none; font-weight: bold; }
         .btn-purple:hover { background-color: #512DA8; color: white; }
+        .btn-danger { background-color: #DC3545; color: white; border: none; border-radius: 8px; }
         
-        .form-control { background-color: #1E1E1E; color: white; border: 1px solid #333; }
-        .form-control:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
+        .form-control, .form-select { background-color: #1E1E1E; color: white; border: 1px solid #333; }
+        .form-control:focus, .form-select:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
         
         .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 12px; position: relative; padding: 15px 15px 15px 25px; cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
         .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         
-        /* Colores de marca */
         .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
         .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
         .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; }
@@ -30,15 +29,16 @@
         .nav-pills .nav-link { background-color: #1E1E1E; color: #D1C4E9; font-weight: bold; border-radius: 8px; padding: 12px; flex: 1; text-align: center; text-decoration: none;}
         .nav-pills .nav-link.active { background-color: #673AB7 !important; color: white !important; }
         
-        /* Gráficos del camión */
         .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
         .truck-head { width: 70px; height: 45px; background-color: #555555; border-radius: 6px; }
         .truck-neck { width: 16px; height: 12px; background-color: gray; }
         .truck-hatch { width: 45px; height: 45px; border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; }
         .zone-canvas { width: 62px; height: 310px; position: relative; }
         .fuel-circle { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; position: absolute; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none; }
+        .draggable { touch-action: none; cursor: grab; }
+        .draggable:active { cursor: grabbing; z-index: 100; transform: scale(1.1); }
+        .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
 
-        /* Contenedores de Pantalla */
         #pantalla-login { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
         #pantalla-app { display: none; flex-direction: column; min-height: 100vh; }
     </style>
@@ -53,13 +53,11 @@
                 <h1 class="fw-black text-purple" style="font-weight: 900;">LogisTank</h1>
                 <p class="text-muted">Control Logístico Web</p>
             </div>
-            
             <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Usuario">
             <input type="password" id="login-pass" class="form-control mb-4 py-3" placeholder="Contraseña">
-            
             <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
             <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
-            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
+            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Invitado</button>
         </div>
     </div>
 
@@ -67,14 +65,14 @@
         <header class="bg-purple text-white p-3 shadow-sm">
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
-                    <h3 class="m-0 fw-black">LogisTank</h3>
+                    <h3 class="m-0 fw-black" style="cursor: pointer;" onclick="irPestana('GAS')">LogisTank</h3>
                     <small id="nombre-usuario">Cargando...</small>
                 </div>
-                <button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold" style="background-color: #DC3545; border:none; border-radius:6px; color:white;">Salir</button>
+                <button onclick="location.reload()" class="btn btn-danger btn-sm px-3 py-2 fw-bold">Salir</button>
             </div>
         </header>
         
-        <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px;">
+        <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative;">
             <ul class="nav nav-pills" id="main-tabs">
                 <li class="nav-item"><a class="nav-link active" id="tab-gas" href="#" onclick="irPestana('GAS')">Gasolineras</a></li>
                 <li class="nav-item"><a class="nav-link" id="tab-routes" href="#" onclick="irPestana('RUTAS')">Rutas</a></li>
@@ -82,9 +80,51 @@
             </ul>
             
             <div id="zona-listas" style="display: block;"></div>
-            
             <div id="zona-visor" style="display: none;" class="pb-5"></div>
+            
+            <div id="zona-editor-gas" style="display: none;" class="pb-5">
+                <div class="d-flex justify-content-between mb-3 mt-2">
+                    <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
+                    <button id="btn-delete-gas" class="btn btn-danger" style="display: none;" onclick="borrarGasolinera()">Borrar</button>
+                </div>
+                <div class="card card-station p-3" style="cursor: default;">
+                    <h4 class="fw-bold mb-3 text-white" id="title-editor-gas">Nueva Estación</h4>
+                    <select id="eg-marca" class="form-select mb-3"><option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option></select>
+                    <input type="text" id="eg-nombre" class="form-control mb-3 text-uppercase" placeholder="Nombre">
+                    <input type="text" id="eg-direccion" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+                    <select id="eg-lado" class="form-select mb-3" onchange="dibujarCamionEditor()"><option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option></select>
+                    <input type="number" id="eg-zonas" class="form-control mb-3" min="1" max="4" value="1" onchange="dibujarCamionEditor()">
+                    <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema de Descarga</h5>
+                    <div id="eg-canvas-area" class="my-3"></div>
+                    <button id="btn-save-gas" onclick="guardarGasolinera()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
+                </div>
+            </div>
+
+            <div id="zona-editor-ruta" style="display: none;" class="pb-5">
+                <div class="d-flex justify-content-between mb-3 mt-2">
+                    <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
+                    <button id="btn-delete-route" class="btn btn-danger" style="display: none;" onclick="borrarRuta()">Borrar</button>
+                </div>
+                <div class="card card-station p-3" style="cursor: default;">
+                    <h4 class="fw-bold mb-3 text-white" id="title-editor-ruta">Nuevo Cliente</h4>
+                    <input type="text" id="er-nombre" class="form-control mb-3 text-uppercase" placeholder="Nombre">
+                    <input type="text" id="er-direccion" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+                    <button id="btn-save-route" onclick="guardarRuta()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar</button>
+                </div>
+            </div>
         </main>
+
+        <button id="btn-fab" onclick="abrirEditorNuevo()" class="shadow-lg" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; justify-content: center; align-items: center; z-index: 1000;">+</button>
+    </div>
+
+    <div id="modal-combustibles" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="text-white fw-bold m-0">Añadir Combustible</h5>
+                <span onclick="cerrarModal()" style="color: white; font-size: 20px; cursor: pointer;">✕</span>
+            </div>
+            <div class="row g-2" id="grid-combustibles"></div>
+        </div>
     </div>
 
     <script>
@@ -97,23 +137,23 @@
 
         var URL_API = 'https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec';
         
-        var bdGasolineras = [];
-        var bdRutas = [];
-        var bdCodigos = [];
+        var usuarioActual = null;
+        var bdGasolineras = []; var bdRutas = []; var bdCodigos = [];
+        var pestanaActual = 'GAS';
         
-        // Variables para controlar el estado del Visor
-        var gasolineraVista = null;
-        var ladoVista = 'RIGHT';
-        var zonaVista = 1;
+        var gasolineraVista = null; var ladoVista = 'RIGHT'; var zonaVista = 1;
+        var idEdicion = null; var productosEdicion = []; var zonaActivaEditor = 1;
 
-        function mostrarApp(nombre) {
+        // INICIO
+        function mostrarApp(nombre, rol) {
+            usuarioActual = { nombre: nombre, role: rol };
             document.getElementById('pantalla-login').style.display = 'none';
             document.getElementById('pantalla-app').style.display = 'flex';
-            document.getElementById('nombre-usuario').innerText = nombre;
+            document.getElementById('nombre-usuario').innerText = nombre + " (" + rol + ")";
             descargarBaseDatos();
         }
 
-        function entrarInvitado() { mostrarApp("Invitado (INVITADO)"); }
+        function entrarInvitado() { mostrarApp("Invitado", "INVITADO"); }
 
         function hacerLogin() {
             var u = document.getElementById('login-user').value;
@@ -130,12 +170,13 @@
             })
             .then(function(res) { return res.json(); })
             .then(function(datos) {
-                if(datos.success) { mostrarApp(datos.nombre + " (" + datos.role + ")"); } 
+                if(datos.success) { mostrarApp(datos.nombre, datos.role); } 
                 else { alert("Usuario o contraseña incorrectos."); btn.innerText = "Iniciar Sesión"; btn.disabled = false; }
             })
-            .catch(function(e) { alert("Fallo de conexión."); btn.innerText = "Iniciar Sesión"; btn.disabled = false; });
+            .catch(function() { alert("Fallo de conexión."); btn.innerText = "Iniciar Sesión"; btn.disabled = false; });
         }
 
+        // DESCARGA
         function descargarBaseDatos() {
             var zona = document.getElementById('zona-listas');
             zona.innerHTML = '<div class="text-center mt-5"><p class="text-white">Descargando datos...</p></div>';
@@ -149,22 +190,32 @@
                 bdGasolineras = resultados[0]; bdRutas = resultados[1]; bdCodigos = resultados[2];
                 irPestana('GAS');
             })
-            .catch(function(e) { zona.innerHTML = '<div class="alert alert-danger text-center mt-5">Error descargando datos.</div>'; });
+            .catch(function() { zona.innerHTML = '<div class="alert alert-danger text-center mt-5">Error descargando datos.</div>'; });
+        }
+
+        // PESTAÑAS Y LISTAS
+        function ocultarSecciones() {
+            document.getElementById('zona-listas').style.display = 'none';
+            document.getElementById('zona-visor').style.display = 'none';
+            document.getElementById('zona-editor-gas').style.display = 'none';
+            document.getElementById('zona-editor-ruta').style.display = 'none';
         }
 
         function irPestana(pestana) {
             pestanaActual = pestana;
-            document.getElementById('tab-gas').className = 'nav-link';
-            document.getElementById('tab-routes').className = 'nav-link';
-            document.getElementById('tab-codes').className = 'nav-link';
-
+            document.getElementById('tab-gas').className = 'nav-link'; document.getElementById('tab-routes').className = 'nav-link'; document.getElementById('tab-codes').className = 'nav-link';
             if(pestana === 'GAS') document.getElementById('tab-gas').className = 'nav-link active';
             if(pestana === 'RUTAS') document.getElementById('tab-routes').className = 'nav-link active';
             if(pestana === 'CODIGOS') document.getElementById('tab-codes').className = 'nav-link active';
 
-            document.getElementById('zona-visor').style.display = 'none';
+            ocultarSecciones();
             document.getElementById('main-tabs').style.display = 'flex';
             document.getElementById('zona-listas').style.display = 'block';
+
+            var fab = document.getElementById('btn-fab');
+            if(usuarioActual.role !== 'INVITADO' && (pestana === 'GAS' || pestana === 'RUTAS')) {
+                fab.style.display = 'flex';
+            } else { fab.style.display = 'none'; }
 
             if(pestana === 'GAS') pintarGasolineras();
             if(pestana === 'RUTAS') pintarRutas();
@@ -176,11 +227,7 @@
             var lista = bdGasolineras.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
             for(var i=0; i<lista.length; i++) {
                 var s = lista[i];
-                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')">' +
-                        '<div class="brand-indicator ' + obtenerClaseColor(s.marca) + '"></div>' +
-                        '<h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5>' +
-                        '<small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small>' +
-                        '</div>';
+                html += '<div class="card card-station" onclick="abrirVisor(\'' + s.id + '\')"><div class="brand-indicator ' + obtenerClaseColor(s.marca) + '"></div><h5 class="fw-bold mb-0 text-white">' + (s.nombre || 'Sin Nombre') + '</h5><small style="color:#aaa;">' + (s.marca || '') + ' • ' + (s.direccion || '') + '</small></div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay gasolineras</p>';
         }
@@ -190,11 +237,7 @@
             var lista = bdRutas.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || ''); });
             for(var i=0; i<lista.length; i++) {
                 var c = lista[i];
-                html += '<div class="card card-station">' +
-                        '<div class="brand-indicator brand-DEFAULT"></div>' +
-                        '<h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5>' +
-                        '<small style="color:#aaa;">' + (c.direccion || '') + '</small>' +
-                        '</div>';
+                html += '<div class="card card-station" onclick="abrirEditorRuta(\'' + c.id + '\')"><div class="brand-indicator brand-DEFAULT"></div><h5 class="fw-bold mb-0 text-white">' + (c.nombre || 'Sin Nombre') + '</h5><small style="color:#aaa;">' + (c.direccion || '') + '</small></div>';
             }
             document.getElementById('zona-listas').innerHTML = html || '<p class="text-center text-muted mt-5">No hay rutas</p>';
         }
@@ -203,58 +246,37 @@
             var html = '<div class="row g-2">';
             for(var i=0; i<bdCodigos.length; i++) {
                 var p = bdCodigos[i];
-                html += '<div class="col-6">' +
-                        '<div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo || '#333333') + '; color:' + (p.colorTexto || '#FFFFFF') + '; border-radius: 12px;">' +
-                        '<h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4>' +
-                        '</div>' +
-                        '</div>';
+                html += '<div class="col-6"><div class="card border-0 p-3 text-center" style="background-color:' + (p.colorFondo || '#333333') + '; color:' + (p.colorTexto || '#FFFFFF') + '; border-radius: 12px;"><h4 class="fw-black m-0">' + (p.codigo || '??') + '</h4></div></div>';
             }
             document.getElementById('zona-listas').innerHTML = html + '</div>';
         }
 
-        // ==========================================
-        // SISTEMA INTERACTIVO DEL VISOR (CAMIÓN)
-        // ==========================================
+        // VISOR
         function abrirVisor(id) {
             gasolineraVista = null;
-            for(var i=0; i<bdGasolineras.length; i++) {
-                if(bdGasolineras[i].id === id) { gasolineraVista = bdGasolineras[i]; break; }
-            }
+            for(var i=0; i<bdGasolineras.length; i++) { if(bdGasolineras[i].id === id) { gasolineraVista = bdGasolineras[i]; break; } }
             if(!gasolineraVista) return;
-
-            zonaVista = 1;
-            ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
-
-            document.getElementById('zona-listas').style.display = 'none';
+            zonaVista = 1; ladoVista = gasolineraVista.ladoDescarga === 'BOTH' ? 'LEFT' : gasolineraVista.ladoDescarga;
+            ocultarSecciones();
             document.getElementById('main-tabs').style.display = 'none';
+            document.getElementById('btn-fab').style.display = 'none';
             document.getElementById('zona-visor').style.display = 'block';
-
-            actualizarDibujoVisor();
+            dibujarVisor();
         }
 
-        function actualizarDibujoVisor() {
-            var s = gasolineraVista;
-            var hex = obtenerHexColor(s.marca);
-            var contenedor = document.getElementById('zona-visor');
-
-            var html = '<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="irPestana(\'GAS\')">← Volver a la Lista</button></div>';
+        function dibujarVisor() {
+            var s = gasolineraVista; var hex = obtenerHexColor(s.marca);
+            var btnEditar = usuarioActual.role !== 'INVITADO' ? '<button class="btn btn-warning btn-sm fw-bold" onclick="abrirEditorGas(\'' + s.id + '\')">Editar</button>' : '';
+            var html = '<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-light btn-sm" onclick="irPestana(\'GAS\')">← Volver a la Lista</button>' + btnEditar + '</div>';
             html += '<div class="card card-station p-3" style="border-top: 6px solid ' + hex + '; cursor: default;"><small style="color:' + hex + '; font-weight:bold;">' + s.marca + '</small><h4 class="text-white fw-bold m-0">' + s.nombre + '</h4><small style="color:#aaa;">' + s.direccion + '</small></div>';
             html += '<h5 class="fw-bold mt-4 mb-3 text-center text-white">Esquema de Descarga</h5>';
 
-            // Control de Lado (IZQ / DER)
             if(s.ladoDescarga === 'BOTH') {
-                html += '<div class="d-flex justify-content-center gap-2 mb-3">' +
-                        '<button class="btn btn-sm ' + (ladoVista === 'LEFT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'LEFT\')">IZQ</button>' +
-                        '<button class="btn btn-sm ' + (ladoVista === 'RIGHT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'RIGHT\')">DER</button>' +
-                        '</div>';
+                html += '<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm ' + (ladoVista === 'LEFT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'LEFT\')">IZQ</button><button class="btn btn-sm ' + (ladoVista === 'RIGHT' ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarLadoVisor(\'RIGHT\')">DER</button></div>';
             }
-
-            // Control de Zonas
             if(s.zonasDescarga > 1) {
                 html += '<div class="d-flex justify-content-center gap-2 mb-4">';
-                for(var i = 1; i <= s.zonasDescarga; i++) {
-                    html += '<button class="btn btn-sm ' + (i === zonaVista ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarZonaVisor(' + i + ')">ZONA ' + i + '</button>';
-                }
+                for(var i = 1; i <= s.zonasDescarga; i++) html += '<button class="btn btn-sm ' + (i === zonaVista ? 'btn-purple' : 'btn-outline-light') + '" onclick="cambiarZonaVisor(' + i + ')">ZONA ' + i + '</button>';
                 html += '</div>';
             }
 
@@ -263,72 +285,9 @@
             var camionHTML = generarCamionHTML();
 
             html += '<div class="d-flex justify-content-center align-items-center my-4">';
-            if(isMirrored) { html += lienzoHTML + '<div style="width:16px;"></div>' + camionHTML; } 
-            else { html += camionHTML + '<div style="width:16px;"></div>' + lienzoHTML; }
+            if(isMirrored) { html += lienzoHTML + '<div style="width:16px;"></div>' + camionHTML; } else { html += camionHTML + '<div style="width:16px;"></div>' + lienzoHTML; }
             html += '</div>';
-
-            contenedor.innerHTML = html;
+            document.getElementById('zona-visor').innerHTML = html;
         }
 
-        function cambiarLadoVisor(lado) { ladoVista = lado; actualizarDibujoVisor(); }
-        function cambiarZonaVisor(zona) { zonaVista = zona; actualizarDibujoVisor(); }
-
-        function generarCamionHTML() {
-            return '<div class="d-flex flex-column align-items-center"><div class="truck-head"></div><div class="truck-neck"></div><div class="truck-body"><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div><div class="truck-hatch"></div></div></div>';
-        }
-
-        function generarLienzoProductos(productos, zonaIndex, isMirrored) {
-            var html = '<div class="zone-canvas">';
-            var centerY = (310 - 48) / 2;
-            
-            var listaFiltrada = [];
-            for(var i = 0; i < productos.length; i++) {
-                if(productos[i].zonaIndex === zonaIndex) { listaFiltrada.push(productos[i]); }
-            }
-            if(isMirrored) { listaFiltrada.reverse(); }
-
-            for(var j = 0; j < listaFiltrada.length; j++) {
-                var p = listaFiltrada[j];
-                var tx = isMirrored ? -p.nx : p.nx;
-                var ty = isMirrored ? -p.ny : p.ny;
-                var colorInfo = obtenerColorCombustible(p.codigoProducto);
-
-                html += '<div class="fuel-circle" style="left:' + (7 + tx) + 'px; top:' + (131 + ty) + 'px; background-color:' + colorInfo.bg + '; color:' + colorInfo.txt + ';">' + colorInfo.short + '</div>';
-            }
-
-            html += '</div>';
-            return html;
-        }
-
-        // --- UTILIDADES GRÁFICAS ---
-        function obtenerClaseColor(marca) {
-            var m = (marca || '').toUpperCase();
-            if(m.indexOf('REPSOL') > -1) return 'brand-REPSOL'; if(m.indexOf('BP') > -1) return 'brand-BP';
-            if(m.indexOf('MOEVE') > -1 || m.indexOf('CEPSA') > -1) return 'brand-MOEVE';
-            if(m.indexOf('SHELL') > -1) return 'brand-SHELL'; if(m.indexOf('GALP') > -1) return 'brand-GALP';
-            return 'brand-DEFAULT';
-        }
-
-        function obtenerHexColor(marca) {
-            var m = (marca || '').toUpperCase();
-            if(m.indexOf('REPSOL') > -1) return '#FF9800'; if(m.indexOf('BP') > -1) return '#4CAF50';
-            if(m.indexOf('MOEVE') > -1 || m.indexOf('CEPSA') > -1) return '#005CE6';
-            if(m.indexOf('SHELL') > -1) return '#FFC107'; if(m.indexOf('GALP') > -1) return '#FF5000';
-            return '#673AB7';
-        }
-
-        function obtenerColorCombustible(codigo) {
-            var n = (codigo || '').toUpperCase().trim(); var bg = '#424242'; var txt = '#FFF'; var s = n;
-            switch(n){
-                case 'A': bg='#FFB300'; break; case 'A+5': bg='#F57C00'; break; case 'A+': bg='#FF8F00'; break;
-                case 'NEXA': bg='#00838F'; s='NEX'; break; case 'B': bg='#D32F2F'; break;
-                case 'B MAR PRO': bg='#880E4F'; s='BPR'; break; case 'C': bg='#0288D1'; break;
-                case 'BIENERGI 10': bg='#6A1B9A'; s='B10'; break; case '95': bg='#388E3C'; break;
-                case '95+': bg='#1B5E20'; break; case '95 MAR SPORT': bg='#00E676'; txt='#000'; s='95S'; break;
-                case '98': bg='#1565C0'; break; case 'MARBIDIESEL': bg='#5D4037'; s='MBD'; break;
-            }
-            return { bg: bg, txt: txt, short: s };
-        }
-    </script>
-</body>
-</html>
+        function cambiarLadoVisor(lad
