@@ -10,71 +10,67 @@ let routeClients = [];
 let productsList = [];
 let currentTab = 'GAS'; 
 
-const loginScreen = document.getElementById('login-screen');
-const mainScreen = document.getElementById('main-screen');
-const listContainer = document.getElementById('list-container');
-const detailsContainer = document.getElementById('details-container');
-const editorGasContainer = document.getElementById('editor-gas-container');
-const editorRouteContainer = document.getElementById('editor-route-container');
-const userInfoDisplay = document.getElementById('user-info-display');
-const btnAddFloating = document.getElementById('btn-add-floating');
-
 let editingStationId = null;
 let editorPlacements = [];
 let editorCurrentZone = 1;
 let fuelModalInstance = null;
 
-// =========================================
-// INICIALIZACIÓN BLINDADA
-// =========================================
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        // Blindaje: Solo carga el modal si el HTML está actualizado
-        const modalEl = document.getElementById('fuelModal');
-        if (modalEl) fuelModalInstance = new bootstrap.Modal(modalEl);
-        
-        const savedUser = localStorage.getItem('logistank_user');
-        if (savedUser) { currentUser = JSON.parse(savedUser); showMainScreen(); }
-
-        document.getElementById('btn-login').addEventListener('click', () => {
-            const u = document.getElementById('login-user').value.trim();
-            const p = document.getElementById('login-pass').value.trim();
-            if(u && p) login(u, p); else alert("Introduce credenciales.");
-        });
-
-        document.getElementById('btn-guest').addEventListener('click', () => {
-            currentUser = { id: 'INVITADO', nombre: 'Invitado', role: 'INVITADO' };
-            localStorage.setItem('logistank_user', JSON.stringify(currentUser));
-            showMainScreen();
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            localStorage.removeItem('logistank_user'); currentUser = null;
-            if(mainScreen) mainScreen.classList.add('hidden'); 
-            if(loginScreen) loginScreen.classList.remove('hidden');
-        });
-
-        document.getElementById('tab-gas')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
-        document.getElementById('tab-routes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
-        document.getElementById('tab-codes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
-        document.getElementById('logo-home')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
-
-    } catch (e) {
-        console.error("Error inicializando la app:", e);
-        alert("La página está cargando una versión antigua. Por favor, borra la caché del navegador.");
+// Ejecución segura del arranque
+try {
+    const modalEl = document.getElementById('fuelModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        fuelModalInstance = new bootstrap.Modal(modalEl);
     }
-});
 
+    const savedUser = localStorage.getItem('logistank_user');
+    if (savedUser) { 
+        currentUser = JSON.parse(savedUser); 
+        showMainScreen(); 
+    }
+
+    document.getElementById('btn-login')?.addEventListener('click', () => {
+        const u = document.getElementById('login-user').value.trim();
+        const p = document.getElementById('login-pass').value.trim();
+        if(u && p) login(u, p); else alert("Introduce credenciales.");
+    });
+
+    document.getElementById('btn-guest')?.addEventListener('click', () => {
+        currentUser = { id: 'INVITADO', nombre: 'Invitado', role: 'INVITADO' };
+        localStorage.setItem('logistank_user', JSON.stringify(currentUser));
+        showMainScreen();
+    });
+
+    document.getElementById('btn-logout')?.addEventListener('click', () => {
+        localStorage.removeItem('logistank_user'); currentUser = null;
+        document.getElementById('main-screen')?.classList.add('hidden'); 
+        document.getElementById('login-screen')?.classList.remove('hidden');
+    });
+
+    document.getElementById('tab-gas')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+    document.getElementById('tab-routes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-routes', 'ROUTES'); });
+    document.getElementById('tab-codes')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-codes', 'CODES'); });
+    document.getElementById('logo-home')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('tab-gas', 'GAS'); });
+
+} catch (err) {
+    alert("Error arrancando la app: " + err.message);
+}
+
+// =========================================
+// NAVEGACIÓN Y PANTALLAS
+// =========================================
 function updateFabVisibility() {
-    if(!btnAddFloating) return;
+    const fab = document.getElementById('btn-add-floating');
+    const listC = document.getElementById('list-container');
+    if(!fab) return;
+    
     if (!currentUser || currentUser.role === 'INVITADO') {
-        btnAddFloating.style.display = 'none'; return;
+        fab.style.display = 'none'; return;
     }
-    const isListVisible = listContainer && !listContainer.classList.contains('hidden');
+    const isListVisible = listC && !listC.classList.contains('hidden');
     if (isListVisible && (currentTab === 'GAS' || currentTab === 'ROUTES')) {
-        btnAddFloating.style.display = 'block';
+        fab.style.display = 'block';
     } else {
-        btnAddFloating.style.display = 'none';
+        fab.style.display = 'none';
     }
 }
 
@@ -93,13 +89,11 @@ function switchTab(tabId, tabName) {
         }
     }
     
-    if(detailsContainer) detailsContainer.classList.add('hidden');
-    if(editorGasContainer) editorGasContainer.classList.add('hidden');
-    if(editorRouteContainer) editorRouteContainer.classList.add('hidden');
-    if(listContainer) listContainer.classList.remove('hidden');
-    
-    const tabsEl = document.getElementById('main-tabs');
-    if(tabsEl) tabsEl.classList.remove('hidden');
+    document.getElementById('details-container')?.classList.add('hidden');
+    document.getElementById('editor-gas-container')?.classList.add('hidden');
+    document.getElementById('editor-route-container')?.classList.add('hidden');
+    document.getElementById('list-container')?.classList.remove('hidden');
+    document.getElementById('main-tabs')?.classList.remove('hidden');
 
     updateFabVisibility();
 
@@ -108,8 +102,16 @@ function switchTab(tabId, tabName) {
     if(tabName === 'CODES') renderCodes();
 }
 
+function showMainScreen() {
+    document.getElementById('login-screen')?.classList.add('hidden'); 
+    document.getElementById('main-screen')?.classList.remove('hidden');
+    const uiInfo = document.getElementById('user-info-display');
+    if(uiInfo) uiInfo.textContent = `${currentUser.nombre} (${currentUser.role})`;
+    fetchData();
+}
+
 // =========================================
-// COMUNICACIÓN CON GOOGLE SHEETS
+// CONEXIÓN CON GOOGLE SHEETS
 // =========================================
 async function login(username, password) {
     const btn = document.getElementById('btn-login');
@@ -118,59 +120,57 @@ async function login(username, password) {
     btn.disabled = true;
 
     try {
-        await fetch(SCRIPT_URL, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ action: 'login', username: username, password: password })
         });
+        const result = await res.json();
         
-        currentUser = { id: username, nombre: username, role: 'ADMIN' };
-        localStorage.setItem('logistank_user', JSON.stringify(currentUser));
-        showMainScreen();
+        if (result.success) {
+            currentUser = { id: result.id || username, nombre: result.nombre, role: result.role };
+            localStorage.setItem('logistank_user', JSON.stringify(currentUser));
+            showMainScreen();
+        } else {
+            alert('Acceso denegado: ' + (result.message || 'Credenciales incorrectas'));
+        }
     } catch (error) {
-        alert('Error de red al conectar con Google. Revisa tu conexión.');
+        alert('Error conectando con el servidor. Revisa si hay conexión o problemas de CORS.');
     } finally {
         btn.innerHTML = originalText; btn.disabled = false;
     }
 }
 
 async function fetchData() {
-    if(!listContainer) return;
-    listContainer.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Descargando datos...</p></div>';
+    const listC = document.getElementById('list-container');
+    if(!listC) return;
+    listC.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-purple"></div><p>Conectando a tu Google Sheets...</p></div>';
+    
     try {
         const [rG, rR, rP] = await Promise.all([
             fetch(`${SCRIPT_URL}?action=getGasStations`), 
             fetch(`${SCRIPT_URL}?action=getRoutes`), 
             fetch(`${SCRIPT_URL}?action=getProducts`)
         ]);
-        
         gasStations = await rG.json(); 
         routeClients = await rR.json(); 
         productsList = await rP.json();
         switchTab('tab-gas', 'GAS');
     } catch (e) { 
-        listContainer.innerHTML = `<div class="alert alert-danger m-3">
-            <b>⛔ Bloqueo de Google</b><br><br>
-            Asegúrate de haber puesto "Cualquier persona" en las opciones de implementación de Apps Script.<br>
+        listC.innerHTML = `<div class="alert alert-danger m-3">
+            <b>⛔ Error de Servidor</b><br><br>No se pudieron descargar los datos.
+            Ve a tu Google Apps Script -> Gestionar Implementación -> Asegúrate de que ponga <b>"Cualquier persona"</b>.<br>
             <i>Detalle: ${e.message}</i>
         </div>`; 
     }
 }
 
 // =========================================
-// RENDERIZADO DE LISTAS
+// RENDERIZADO DE VISTAS Y LISTAS
 // =========================================
-function showMainScreen() {
-    if(loginScreen) loginScreen.classList.add('hidden'); 
-    if(mainScreen) mainScreen.classList.remove('hidden');
-    if(userInfoDisplay) userInfoDisplay.textContent = `${currentUser.nombre} (${currentUser.role})`;
-    fetchData();
-}
-
 function renderGasStations() {
-    if(!listContainer) return;
-    if (gasStations.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
+    const listC = document.getElementById('list-container'); if(!listC) return;
+    if (gasStations.length === 0) { listC.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...gasStations].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     let html = '<div class="d-flex flex-column gap-3">';
     sorted.forEach(s => {
@@ -179,12 +179,12 @@ function renderGasStations() {
             <h5 class="fw-bold mb-1 text-dark">${s.nombre}</h5><p class="mb-0 text-muted small">${s.marca} • ${s.direccion}</p>
         </div>`;
     });
-    listContainer.innerHTML = html + '</div>';
+    listC.innerHTML = html + '</div>';
 }
 
 function renderRoutes() {
-    if(!listContainer) return;
-    if (routeClients.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
+    const listC = document.getElementById('list-container'); if(!listC) return;
+    if (routeClients.length === 0) { listC.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     const sorted = [...routeClients].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     let html = '<div class="d-flex flex-column gap-3">';
     sorted.forEach(c => {
@@ -193,18 +193,18 @@ function renderRoutes() {
             <h5 class="fw-bold mb-1 text-dark">${c.nombre}</h5><p class="mb-0 text-muted small">${c.direccion}</p>
         </div>`;
     });
-    listContainer.innerHTML = html + '</div>';
+    listC.innerHTML = html + '</div>';
 }
 
 function renderCodes() {
-    if(!listContainer) return;
-    if (productsList.length === 0) { listContainer.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
+    const listC = document.getElementById('list-container'); if(!listC) return;
+    if (productsList.length === 0) { listC.innerHTML = '<p class="text-center mt-5">Vacío</p>'; return; }
     let html = '<div class="row g-3">';
     productsList.forEach(p => {
         html += `<div class="col-6"><div class="card border-0 text-center p-3 shadow-sm" style="background-color: ${p.colorFondo||'#424242'}; color: ${p.colorTexto||'#FFF'}; border-radius: 12px;">
             <h4 class="fw-black m-0">${p.codigo}</h4></div></div>`;
     });
-    listContainer.innerHTML = html + '</div>';
+    listC.innerHTML = html + '</div>';
 }
 
 // =========================================
@@ -216,27 +216,24 @@ function viewStationDetails(id) {
     viewSt = gasStations.find(s => s.id === id); if(!viewSt) return;
     vZone = 1; vSide = viewSt.ladoDescarga === 'BOTH' ? 'LEFT' : viewSt.ladoDescarga;
     
-    if(listContainer) listContainer.classList.add('hidden');
-    if(detailsContainer) detailsContainer.classList.remove('hidden');
-    const tabs = document.getElementById('main-tabs');
-    if(tabs) tabs.classList.add('hidden');
+    document.getElementById('list-container')?.classList.add('hidden');
+    document.getElementById('details-container')?.classList.remove('hidden');
+    document.getElementById('main-tabs')?.classList.add('hidden');
     
     updateFabVisibility();
     renderStationView();
 }
 
 function closeDetails() { 
-    if(detailsContainer) detailsContainer.classList.add('hidden'); 
-    if(listContainer) listContainer.classList.remove('hidden');
-    const tabs = document.getElementById('main-tabs');
-    if(tabs) tabs.classList.remove('hidden');
-    
+    document.getElementById('details-container')?.classList.add('hidden'); 
+    document.getElementById('list-container')?.classList.remove('hidden');
+    document.getElementById('main-tabs')?.classList.remove('hidden');
     viewSt = null; 
     updateFabVisibility();
 }
 
 function renderStationView() {
-    if(!detailsContainer) return;
+    const detC = document.getElementById('details-container'); if(!detC) return;
     const s = viewSt; const bc = getBrandColorHex(s.marca);
     let isEditBtn = currentUser.role !== 'INVITADO' ? `<button class="btn btn-warning" onclick="openGasEditor('${s.id}')"><i class="bi bi-pencil"></i></button>` : '';
     
@@ -265,7 +262,7 @@ function renderStationView() {
 
     const isMirrored = vSide === 'LEFT';
     html += `<div class="d-flex justify-content-center align-items-center my-4">${isMirrored ? getCanvasViewerHtml(s, vZone, isMirrored) + '<div style="width:12px;"></div>' + getTruckHtml() : getTruckHtml() + '<div style="width:12px;"></div>' + getCanvasViewerHtml(s, vZone, isMirrored)}</div>`;
-    detailsContainer.innerHTML = html;
+    detC.innerHTML = html;
 }
 
 function getCanvasViewerHtml(s, z, isM) {
@@ -295,14 +292,13 @@ function openEditorForCurrentTab() {
 }
 
 function closeEditor() {
-    if(editorGasContainer) editorGasContainer.classList.add('hidden');
-    if(editorRouteContainer) editorRouteContainer.classList.add('hidden');
+    document.getElementById('editor-gas-container')?.classList.add('hidden');
+    document.getElementById('editor-route-container')?.classList.add('hidden');
     if (viewSt) {
-        if(detailsContainer) detailsContainer.classList.remove('hidden'); 
+        document.getElementById('details-container')?.classList.remove('hidden'); 
     } else {
-        if(listContainer) listContainer.classList.remove('hidden');
-        const tabs = document.getElementById('main-tabs');
-        if(tabs) tabs.classList.remove('hidden');
+        document.getElementById('list-container')?.classList.remove('hidden');
+        document.getElementById('main-tabs')?.classList.remove('hidden');
     }
     updateFabVisibility();
 }
@@ -313,12 +309,10 @@ function generateUUID() { return 'web-' + Math.random().toString(36).substring(2
 function openRouteEditor(id) {
     if(currentUser.role === 'INVITADO') return alert("Solo lectura");
     
-    if(listContainer) listContainer.classList.add('hidden'); 
-    if(detailsContainer) detailsContainer.classList.add('hidden');
-    const tabs = document.getElementById('main-tabs');
-    if(tabs) tabs.classList.add('hidden');
-    
-    if(editorRouteContainer) editorRouteContainer.classList.remove('hidden');
+    document.getElementById('list-container')?.classList.add('hidden'); 
+    document.getElementById('details-container')?.classList.add('hidden');
+    document.getElementById('main-tabs')?.classList.add('hidden');
+    document.getElementById('editor-route-container')?.classList.remove('hidden');
     updateFabVisibility();
 
     const btnDel = document.getElementById('btn-delete-route');
@@ -356,7 +350,7 @@ async function saveRoute() {
     };
 
     try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveRoute', data: data, userRole: currentUser.role, username: currentUser.nombre }) });
+        await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveRoute', data: data, userRole: currentUser.role, username: currentUser.nombre }) });
         alert("Petición de guardado enviada."); fetchData(); closeEditor();
     } catch (e) { alert('Error: ' + e.message); } finally { btn.innerHTML = 'Guardar Cliente'; btn.disabled = false; }
 }
@@ -364,7 +358,7 @@ async function saveRoute() {
 async function deleteRoute() {
     if(!confirm("¿Borrar cliente?")) return;
     try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteRoute', id: editingStationId }) });
+        await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteRoute', id: editingStationId }) });
         alert("Petición de borrado enviada."); fetchData(); closeEditor();
     } catch (e) { alert('Error: ' + e.message); }
 }
@@ -373,12 +367,10 @@ async function deleteRoute() {
 function openGasEditor(id) {
     if(currentUser.role === 'INVITADO') return alert("Solo lectura");
 
-    if(listContainer) listContainer.classList.add('hidden'); 
-    if(detailsContainer) detailsContainer.classList.add('hidden');
-    const tabs = document.getElementById('main-tabs');
-    if(tabs) tabs.classList.add('hidden');
-    
-    if(editorGasContainer) editorGasContainer.classList.remove('hidden');
+    document.getElementById('list-container')?.classList.add('hidden'); 
+    document.getElementById('details-container')?.classList.add('hidden');
+    document.getElementById('main-tabs')?.classList.add('hidden');
+    document.getElementById('editor-gas-container')?.classList.remove('hidden');
     updateFabVisibility();
 
     const btnDel = document.getElementById('btn-delete-gas');
@@ -408,4 +400,12 @@ function openGasEditor(id) {
     }
 
     editorCurrentZone = 1;
-    buildFuelModal()
+    buildFuelModal();
+    renderEditorCanvas();
+}
+
+function renderEditorCanvas() {
+    const area = document.getElementById('eg-canvas-area'); if(!area) return;
+    const lado = document.getElementById('eg-lado').value; const isM = lado === 'LEFT';
+
+    let zonasHtml = `<div clas
