@@ -192,8 +192,8 @@
     </div>
 
     <script>
-        // ¡CUIDADO! ASEGÚRATE DE QUE LA URL ES LA CORRECTA DE TU NUEVA IMPLEMENTACIÓN DE GOOGLE SCRIPT
-        var URL_API = "https://script.google.com/macros/s/AKfycbzbVlFm52G3sR2Y-j5-wN9vEEx60qB4i4Yq17R9TfO8hL7EEDF1v9Q5E_9DkH39h5aE9A/exec";
+        // AQUÍ ESTÁ EL ENLACE QUE ME HAS PASADO (TU URL ORIGINAL)
+        var URL_API = "https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
         
         var user = null;
         var bdG = []; var bdR = []; var bdC = [];
@@ -483,7 +483,6 @@
                 document.getElementById("ttl-e-r").innerText = esLectura ? "Ficha de Cliente" : "Editar Cliente"; 
                 document.getElementById("er-nom").value = c.nombre; 
                 document.getElementById("er-dir").value = c.direccion;
-                
                 document.getElementById("er-tel").value = c.telefono ? String(c.telefono).replace(/'/g, "") : ""; 
                 document.getElementById("er-wa").value = c.telefonoEncargado ? String(c.telefonoEncargado).replace(/'/g, "") : ""; 
                 document.getElementById("er-lat").value = c.latitud || ""; 
@@ -559,7 +558,6 @@
             ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 }); cMod(); dCamEd();
         }
 
-        // GUARDADO DE GASOLINERAS ADAPTADO A LATITUD Y LONGITUD
         function gGas() {
             var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
             var d = {
