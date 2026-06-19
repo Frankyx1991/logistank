@@ -114,10 +114,13 @@
                     <label class="form-label text-muted">Dirección</label>
                     <input type="text" id="eg-dir" class="form-control mb-3 text-uppercase">
 
-                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación</label>
-                    <input type="text" id="eg-tel" class="form-control mb-2" placeholder="Teléfono (ej: 971000000)">
-                    <input type="text" id="eg-wa" class="form-control mb-2" placeholder="WhatsApp (ej: 34600000000)">
-                    <input type="text" id="eg-ub" class="form-control mb-4" placeholder="Enlace de Google Maps">
+                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación GPS</label>
+                    <input type="text" id="eg-tel" class="form-control mb-2" placeholder="Teléfono Fijo (ej: 971000000)">
+                    <input type="text" id="eg-wa" class="form-control mb-2" placeholder="Móvil Encargado (WhatsApp)">
+                    <div class="d-flex gap-2 mb-4">
+                        <input type="number" id="eg-lat" class="form-control" placeholder="Latitud">
+                        <input type="number" id="eg-lon" class="form-control" placeholder="Longitud">
+                    </div>
                     
                     <label class="form-label text-muted">Lado de Descarga</label>
                     <select id="eg-lad" class="form-select mb-3" onchange="dCamEd()">
@@ -140,17 +143,21 @@
                     <button id="b-del-rut" class="btn btn-danger" style="display: none;" onclick="bRut()">Borrar</button>
                 </div>
                 <div class="card card-station" style="cursor: default;">
-                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
+                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Ficha de Cliente</h4>
                     
-                    <div id="visor-enlaces-ruta" class="d-flex justify-content-center gap-4 mb-4 fs-1" style="display: none;"></div>
+                    <div id="visor-enlaces-ruta" class="d-flex justify-content-center gap-4 mb-4 fs-1 pb-2" style="display: none; border-bottom: 1px solid #444;"></div>
 
+                    <label class="form-label text-muted mt-2">Nombre y Dirección</label>
                     <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
                     <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
 
-                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación</label>
-                    <input type="text" id="er-tel" class="form-control mb-2" placeholder="Teléfono (ej: 971000000)">
-                    <input type="text" id="er-wa" class="form-control mb-2" placeholder="WhatsApp (ej: 34600000000)">
-                    <input type="text" id="er-ub" class="form-control mb-4" placeholder="Enlace de Google Maps">
+                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación GPS</label>
+                    <input type="text" id="er-tel" class="form-control mb-2" placeholder="Teléfono Fijo">
+                    <input type="text" id="er-wa" class="form-control mb-2" placeholder="Móvil Encargado (WhatsApp)">
+                    <div class="d-flex gap-2 mb-4">
+                        <input type="number" id="er-lat" class="form-control" placeholder="Latitud">
+                        <input type="number" id="er-lon" class="form-control" placeholder="Longitud">
+                    </div>
 
                     <button id="btn-s-rut" onclick="gRut()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Cliente</button>
                 </div>
@@ -176,19 +183,18 @@
                 <h4 class="text-white fw-bold m-0">Ajustes</h4>
                 <span onclick="cerrarAjustes()" style="color: white; font-size: 24px; cursor: pointer;">✕</span>
             </div>
-            
             <label class="form-label text-muted fw-bold">Cambiar mi Contraseña</label>
             <input type="password" id="nueva-pass" class="form-control mb-3 py-2" placeholder="Escribe tu nueva contraseña">
             <button class="btn btn-warning w-100 fw-bold mb-4" onclick="cambiarMiContrasena(this)">Guardar Contraseña</button>
-            
             <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
-            
             <button class="btn btn-danger w-100 py-3 fs-5" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
     </div>
 
     <script>
-        var URL_API = "https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
+        // ¡CUIDADO! ASEGÚRATE DE QUE LA URL ES LA CORRECTA DE TU NUEVA IMPLEMENTACIÓN DE GOOGLE SCRIPT
+        var URL_API = "https://script.google.com/macros/s/AKfycbzbVlFm52G3sR2Y-j5-wN9vEEx60qB4i4Yq17R9TfO8hL7EEDF1v9Q5E_9DkH39h5aE9A/exec";
+        
         var user = null;
         var bdG = []; var bdR = []; var bdC = [];
         var pst = "GAS";
@@ -202,7 +208,7 @@
                     var datosUser = JSON.parse(guardado);
                     mostrarApp(datosUser.n, datosUser.r);
                 }
-            } catch(e) { logError("Error leyendo memoria: " + e.message); }
+            } catch(e) {}
         };
 
         function mostrarApp(nombre, rol) {
@@ -270,7 +276,7 @@
 
         function descargarDatos() {
             var zona = document.getElementById("zona-listas");
-            zona.innerHTML = "<div class='text-center mt-5 text-white'>Descargando base de datos...</div>";
+            zona.innerHTML = "<div class='text-center mt-5 text-white'>Conectando con Servidor...</div>";
 
             Promise.all([
                 fetch(URL_API + "?action=getGasStations").then(function(r) { return r.json(); }),
@@ -307,9 +313,20 @@
             if (p === "GAS") pG(); if (p === "RUTAS") pR(); if (p === "CODIGOS") pC();
         }
 
-        // ==========================================
-        // 1. ICONOS EN LA LISTA DE GASOLINERAS
-        // ==========================================
+        // =========================================================
+        // LÓGICA DE ICONOS DE CONTACTO PARA LISTAS
+        // =========================================================
+        function getContactIconsHtml(tl, encWa, lat, lon) {
+            var hL = "";
+            var _tl = tl ? String(tl).trim().replace(/'/g, "") : "";
+            var _wa = encWa ? String(encWa).trim().replace(/'/g, "").replace(/\s+/g, '') : "";
+            
+            if (_tl !== "") hL += "<a href='tel:" + _tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+            if (_wa !== "") hL += "<a href='https://wa.me/" + _wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+            if (lat && lon) hL += "<a href='https://maps.google.com/?q=" + lat + "," + lon + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+            return hL;
+        }
+
         function pG() {
             var h = "";
             var l = bdG.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -322,25 +339,17 @@
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.marca || "") + " • " + (s.direccion || "") + "</small></div>";
                 
-                // Iconos en la lista (Usa stopPropagation para no abrir la tarjeta)
-                h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
-                var tl = s.telefono ? String(s.telefono).trim() : "";
-                var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
-                var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
-                
-                if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-                if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-                if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
-                h += "</div>";
+                // Pinta los iconos y evita que al pulsar abra el camión
+                var iconos = getContactIconsHtml(s.telefono, s.telefonoEncargado, s.latitud, s.longitud);
+                if(iconos !== "") {
+                    h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>" + iconos + "</div>";
+                }
                 
                 h += "</div></div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
-        // ==========================================
-        // 2. ICONOS EN LA LISTA DE RUTAS
-        // ==========================================
         function pR() {
             var h = "";
             var l = bdR.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -353,16 +362,11 @@
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
                 
-                // Iconos en la lista
-                h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
-                var tl = s.telefono ? String(s.telefono).trim() : "";
-                var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
-                var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
-                
-                if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-                if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-                if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
-                h += "</div>";
+                // Pinta los iconos y evita que al pulsar abra el camión
+                var iconos = getContactIconsHtml(s.telefono, s.telefonoEncargado, s.latitud, s.longitud);
+                if(iconos !== "") {
+                    h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>" + iconos + "</div>";
+                }
                 
                 h += "</div></div>";
             }
@@ -373,7 +377,7 @@
             var h = "<div class='row m-0'>";
             for (var i = 0; i < bdC.length; i++) {
                 var p = bdC[i]; var cBg = p.colorFondo || "#333333"; var cTxt = p.colorTexto || "#FFFFFF";
-                var nombreProducto = p.nombre || p.producto || p.descripcion || "";
+                var nombreProducto = p.nombre || p.producto || p.descripcion || p.nombreOficial || p.nombreApp || "";
                 h += "<div class='col-6 p-1'><div style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:15px; text-align:center;'>";
                 h += "<h4 class='fw-bold m-0'>" + (p.codigo || "??") + "</h4>";
                 if (nombreProducto !== "") h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreProducto + "</small>";
@@ -383,7 +387,7 @@
         }
 
         // ==========================================
-        // 3. ICONOS GIGANTES DENTRO DEL VISOR DE GASOLINERA
+        // ICONOS GIGANTES EN VISOR GASOLINERA
         // ==========================================
         function abrirVisor(id) {
             vGas = null; for (var i = 0; i < bdG.length; i++) { if (bdG[i].id === id) { vGas = bdG[i]; break; } }
@@ -403,16 +407,12 @@
             h += "<h4 class='text-white fw-bold m-0'>" + (s.nombre || "") + "</h4>";
             h += "<small class='text-muted'>" + (s.direccion || "") + "</small>";
             
-            // FILA DE ICONOS GIGANTES DENTRO DE LA FICHA
-            h += "<div class='d-flex justify-content-center gap-4 fs-1 mt-3 pb-2'>";
-            var tl = s.telefono ? String(s.telefono).trim() : "";
-            var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
-            var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
-            
-            if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-            if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-            if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
-            h += "</div></div>"; // Cierre flex e iconos y tarjeta
+            // Fila de iconos gigantes
+            var iconosGigantes = getContactIconsHtml(s.telefono, s.telefonoEncargado, s.latitud, s.longitud);
+            if(iconosGigantes !== "") {
+                h += "<div class='d-flex justify-content-center gap-4 fs-1 mt-3 pb-2 border-top pt-3 border-secondary'>" + iconosGigantes + "</div>";
+            }
+            h += "</div>"; 
             
             h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
             if (s.ladoDescarga === "BOTH") {
@@ -432,7 +432,7 @@
         function cZon(z) { vZon = parseInt(z, 10); dVis(); }
 
         // ==========================================
-        // 4. ICONOS GIGANTES DENTRO DEL VISOR DE RUTAS
+        // EDITORES Y VISOR DE RUTAS
         // ==========================================
         function aEdN() { if (pst === "GAS") aEdG(null); else if (pst === "RUTAS") aEdR(null); }
         function cerrarEditor() { if (vGas) abrirVisor(vGas.id); else irPestana(pst); }
@@ -444,12 +444,18 @@
                 var s = null; for (var i = 0; i < bdG.length; i++) { if (bdG[i].id === val) { s = bdG[i]; break; } }
                 eId = s.id; ePr = JSON.parse(JSON.stringify(s.productos || []));
                 document.getElementById("ttl-e-g").innerText = "Editar Gasolinera"; document.getElementById("eg-marca").value = s.marca; document.getElementById("eg-nom").value = s.nombre; document.getElementById("eg-dir").value = s.direccion; document.getElementById("eg-lad").value = s.ladoDescarga; document.getElementById("eg-zon").value = s.zonasDescarga;
-                document.getElementById("eg-tel").value = s.telefono || ""; document.getElementById("eg-wa").value = s.whatsapp || ""; document.getElementById("eg-ub").value = s.ubicacion || "";
+                
+                // Limpia la comilla de los teléfonos que manda Google Apps Script
+                document.getElementById("eg-tel").value = s.telefono ? String(s.telefono).replace(/'/g, "") : ""; 
+                document.getElementById("eg-wa").value = s.telefonoEncargado ? String(s.telefonoEncargado).replace(/'/g, "") : ""; 
+                document.getElementById("eg-lat").value = s.latitud || ""; 
+                document.getElementById("eg-lon").value = s.longitud || "";
+                
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
                 eId = "w-" + Math.random().toString(36).substr(2, 9); ePr = [];
                 document.getElementById("ttl-e-g").innerText = "Nueva Estación"; document.getElementById("eg-marca").value = "REPSOL"; document.getElementById("eg-nom").value = ""; document.getElementById("eg-dir").value = ""; document.getElementById("eg-lad").value = "RIGHT"; document.getElementById("eg-zon").value = 1;
-                document.getElementById("eg-tel").value = ""; document.getElementById("eg-wa").value = ""; document.getElementById("eg-ub").value = ""; bd.style.display = "none";
+                document.getElementById("eg-tel").value = ""; document.getElementById("eg-wa").value = ""; document.getElementById("eg-lat").value = ""; document.getElementById("eg-lon").value = ""; bd.style.display = "none";
             }
             eZon = 1; gBotC(); dCamEd();
         }
@@ -466,7 +472,8 @@
             document.getElementById("er-dir").disabled = esLectura;
             document.getElementById("er-tel").disabled = esLectura;
             document.getElementById("er-wa").disabled = esLectura;
-            document.getElementById("er-ub").disabled = esLectura;
+            document.getElementById("er-lat").disabled = esLectura;
+            document.getElementById("er-lon").disabled = esLectura;
             
             if (esLectura) btnGuardar.style.display = "none"; else btnGuardar.style.display = "block";
 
@@ -476,22 +483,16 @@
                 document.getElementById("ttl-e-r").innerText = esLectura ? "Ficha de Cliente" : "Editar Cliente"; 
                 document.getElementById("er-nom").value = c.nombre; 
                 document.getElementById("er-dir").value = c.direccion;
-                document.getElementById("er-tel").value = c.telefono || ""; 
-                document.getElementById("er-wa").value = c.whatsapp || ""; 
-                document.getElementById("er-ub").value = c.ubicacion || "";
+                
+                document.getElementById("er-tel").value = c.telefono ? String(c.telefono).replace(/'/g, "") : ""; 
+                document.getElementById("er-wa").value = c.telefonoEncargado ? String(c.telefonoEncargado).replace(/'/g, "") : ""; 
+                document.getElementById("er-lat").value = c.latitud || ""; 
+                document.getElementById("er-lon").value = c.longitud || "";
                 
                 // MUESTRA LOS ICONOS GIGANTES EN LA FICHA DE RUTA
-                var tl = c.telefono ? String(c.telefono).trim() : "";
-                var wa = c.whatsapp ? String(c.whatsapp).trim().replace(/\s+/g, '') : "";
-                var ub = c.ubicacion ? String(c.ubicacion).trim() : "";
-                var hL = "";
-                
-                if (tl !== "") hL += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-                if (wa !== "") hL += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-                if (ub !== "") hL += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
-                
-                if (hL !== "") {
-                    divEnlaces.innerHTML = hL;
+                var iconosGigantes = getContactIconsHtml(c.telefono, c.telefonoEncargado, c.latitud, c.longitud);
+                if (iconosGigantes !== "") {
+                    divEnlaces.innerHTML = iconosGigantes;
                     divEnlaces.style.display = "flex";
                 } else {
                     divEnlaces.style.display = "none";
@@ -502,7 +503,7 @@
                 if (esLectura) return irPestana(pst);
                 eId = "w-" + Math.random().toString(36).substr(2, 9);
                 document.getElementById("ttl-e-r").innerText = "Nuevo Cliente"; document.getElementById("er-nom").value = ""; document.getElementById("er-dir").value = "";
-                document.getElementById("er-tel").value = ""; document.getElementById("er-wa").value = ""; document.getElementById("er-ub").value = ""; 
+                document.getElementById("er-tel").value = ""; document.getElementById("er-wa").value = ""; document.getElementById("er-lat").value = ""; document.getElementById("er-lon").value = "";
                 divEnlaces.style.display = "none";
                 bd.style.display = "none";
             }
@@ -558,25 +559,28 @@
             ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 }); cMod(); dCamEd();
         }
 
+        // GUARDADO DE GASOLINERAS ADAPTADO A LATITUD Y LONGITUD
         function gGas() {
             var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
             var d = {
                 id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(),
-                telefono: document.getElementById("eg-tel").value.trim(), whatsapp: document.getElementById("eg-wa").value.trim(), ubicacion: document.getElementById("eg-ub").value.trim(),
+                telefono: document.getElementById("eg-tel").value.trim(), telefonoEncargado: document.getElementById("eg-wa").value.trim(), 
+                latitud: document.getElementById("eg-lat").value, longitud: document.getElementById("eg-lon").value,
                 ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
+            .then(function() { alert("Guardado en Google"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
         }
 
         function gRut() {
             var b = document.getElementById("btn-s-rut"); b.innerText = "Guardando..."; b.disabled = true;
             var d = {
                 id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(),
-                telefono: document.getElementById("er-tel").value.trim(), whatsapp: document.getElementById("er-wa").value.trim(), ubicacion: document.getElementById("er-ub").value.trim()
+                telefono: document.getElementById("er-tel").value.trim(), telefonoEncargado: document.getElementById("er-wa").value.trim(), 
+                latitud: document.getElementById("er-lat").value, longitud: document.getElementById("er-lon").value
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
+            .then(function() { alert("Guardado en Google"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
         }
 
         function bGas() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) }).then(function() { alert("Borrado"); vGas = null; descargarDatos(); cerrarEditor(); }); }
