@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogisTank - Final</title>
+    <title>LogisTank - Final Completo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
     <style>
         body { background-color: #121212; color: #FFF; font-family: sans-serif; margin: 0; padding: 0; }
         .bg-purple { background-color: #673AB7 !important; }
@@ -113,6 +116,11 @@
                     
                     <label class="form-label text-muted">Dirección</label>
                     <input type="text" id="eg-dir" class="form-control mb-3 text-uppercase">
+
+                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación</label>
+                    <input type="text" id="eg-tel" class="form-control mb-2" placeholder="Teléfono (ej: 971000000)">
+                    <input type="text" id="eg-wa" class="form-control mb-2" placeholder="WhatsApp (ej: 34600000000)">
+                    <input type="text" id="eg-ub" class="form-control mb-4" placeholder="Enlace de Google Maps">
                     
                     <label class="form-label text-muted">Lado de Descarga</label>
                     <select id="eg-lad" class="form-select mb-3" onchange="dCamEd()">
@@ -138,6 +146,12 @@
                     <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
                     <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
                     <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+
+                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación</label>
+                    <input type="text" id="er-tel" class="form-control mb-2" placeholder="Teléfono (ej: 971000000)">
+                    <input type="text" id="er-wa" class="form-control mb-2" placeholder="WhatsApp (ej: 34600000000)">
+                    <input type="text" id="er-ub" class="form-control mb-4" placeholder="Enlace de Google Maps">
+
                     <button id="btn-s-rut" onclick="gRut()" class="btn btn-purple w-100 py-3 mt-4 fs-5">Guardar Cliente</button>
                 </div>
             </div>
@@ -185,15 +199,12 @@
         // 1. MEMORIA Y ARRANQUE AUTOMÁTICO
         window.onload = function() {
             try {
-                // Buscamos si el móvil tiene la sesión guardada del día anterior
                 var guardado = localStorage.getItem('logistank_sesion');
                 if (guardado) {
                     var datosUser = JSON.parse(guardado);
                     mostrarApp(datosUser.n, datosUser.r);
                 }
-            } catch(e) {
-                logError("Fallo al leer la memoria: " + e.message);
-            }
+            } catch(e) { logError("Fallo al leer la memoria: " + e.message); }
         };
 
         function mostrarApp(nombre, rol) {
@@ -206,10 +217,7 @@
 
         // 2. INICIO DE SESIÓN
         function entrarInvitado() {
-            try {
-                // Guardamos en memoria que entró como invitado
-                localStorage.setItem('logistank_sesion', JSON.stringify({ n: "Invitado", r: "INVITADO" }));
-            } catch(e) {}
+            try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: "Invitado", r: "INVITADO" })); } catch(e) {}
             mostrarApp("Invitado", "INVITADO");
         }
 
@@ -229,11 +237,7 @@
             .then(function(res) { return res.json(); })
             .then(function(datos) {
                 if (datos.success) {
-                    // Guardamos la sesión en el teléfono para no pedirla al recargar
-                    try {
-                        localStorage.setItem('logistank_sesion', JSON.stringify({ n: datos.nombre, r: datos.role }));
-                    } catch(e) {}
-                    
+                    try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: datos.nombre, r: datos.role })); } catch(e) {}
                     mostrarApp(datos.nombre, datos.role);
                 } else {
                     alert("Usuario o contraseña incorrectos.");
@@ -246,25 +250,17 @@
             });
         }
 
-        // 3. AJUSTES (CERRAR SESIÓN Y CONTRASEÑA)
-        function abrirAjustes() {
-            document.getElementById("modal-ajustes").style.display = "flex";
-        }
-        function cerrarAjustes() {
-            document.getElementById("modal-ajustes").style.display = "none";
-        }
+        // 3. AJUSTES
+        function abrirAjustes() { document.getElementById("modal-ajustes").style.display = "flex"; }
+        function cerrarAjustes() { document.getElementById("modal-ajustes").style.display = "none"; }
 
         function cerrarSesion() {
-            try {
-                // Borramos la memoria y recargamos la página entera
-                localStorage.removeItem('logistank_sesion');
-            } catch(e) {}
+            try { localStorage.removeItem('logistank_sesion'); } catch(e) {}
             location.reload();
         }
 
         function cambiarMiContrasena(btn) {
             if (user.r === 'INVITADO') return alert("Los invitados no tienen contraseña.");
-            
             var nuevaPass = document.getElementById("nueva-pass").value.trim();
             if (nuevaPass === "") return alert("Escribe una contraseña primero.");
             
@@ -277,18 +273,12 @@
             })
             .then(function(res) { return res.json(); })
             .then(function(datos) {
-                alert("Contraseña cambiada con éxito. Ya puedes usarla la próxima vez.");
+                alert("Contraseña cambiada con éxito.");
                 document.getElementById("nueva-pass").value = "";
                 cerrarAjustes();
             })
-            .catch(function(e) {
-                // NOTA: Si en Google Apps Script no has programado la función 'changePassword',
-                // saltará este error. Avisame y te paso el trozo de código para el Excel.
-                alert("Fallo al cambiar la contraseña. Asegúrate de que el Google Script soporta la orden.");
-            })
-            .finally(function() {
-                btn.innerText = "Guardar Contraseña"; btn.disabled = false;
-            });
+            .catch(function(e) { alert("Fallo al cambiar la contraseña."); })
+            .finally(function() { btn.innerText = "Guardar Contraseña"; btn.disabled = false; });
         }
 
         // 4. DESCARGA
@@ -333,32 +323,43 @@
             document.getElementById("zona-listas").style.display = "block";
 
             var fab = document.getElementById("btn-fab");
-            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) {
-                fab.style.display = "flex";
-            } else {
-                fab.style.display = "none";
-            }
+            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) { fab.style.display = "flex"; } else { fab.style.display = "none"; }
 
             if (p === "GAS") pG();
             if (p === "RUTAS") pR();
             if (p === "CODIGOS") pC();
         }
 
+        // LISTA DE GASOLINERAS CON ICONOS (WHATSAPP, MAPA, TELÉFONO)
         function pG() {
             var h = "";
             var l = bdG.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
             for (var i = 0; i < l.length; i++) {
                 var s = l[i];
                 var c = gCol(s.marca);
-                // Cero comillas cruzadas gracias a this.id
+                
                 h += "<div class='card card-station' onclick='abrirVisor(this.id)' id='" + s.id + "'>";
                 h += "<div class='brand-indicator " + c + "'></div>";
-                h += "<h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
+                
+                // Contenedor flexible para poner textos a la izquierda e iconos a la derecha
+                h += "<div class='d-flex justify-content-between align-items-center'>";
+                
+                h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.marca || "") + " • " + (s.direccion || "") + "</small></div>";
+                
+                // ICONOS DE CONTACTO
+                h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
+                if (s.telefono) h += "<a href='tel:" + s.telefono + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+                if (s.whatsapp) h += "<a href='https://wa.me/" + s.whatsapp.toString().replace(/\s+/g, '') + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+                if (s.ubicacion) h += "<a href='" + s.ubicacion + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+                h += "</div>";
+
+                h += "</div></div>"; // Cierre flex y cierre card
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
+        // LISTA DE RUTAS CON ICONOS (WHATSAPP, MAPA, TELÉFONO)
         function pR() {
             var h = "";
             var l = bdR.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -366,13 +367,26 @@
                 var s = l[i];
                 h += "<div class='card card-station' onclick='aEdR(this.id)' id='" + s.id + "'>";
                 h += "<div class='brand-indicator brand-DEFAULT'></div>";
-                h += "<h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
+                
+                // Contenedor flexible
+                h += "<div class='d-flex justify-content-between align-items-center'>";
+                
+                h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
+                
+                // ICONOS DE CONTACTO
+                h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
+                if (s.telefono) h += "<a href='tel:" + s.telefono + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+                if (s.whatsapp) h += "<a href='https://wa.me/" + s.whatsapp.toString().replace(/\s+/g, '') + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+                if (s.ubicacion) h += "<a href='" + s.ubicacion + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+                h += "</div>";
+
+                h += "</div></div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
-        // PINTAR CÓDIGOS CON NOMBRES DE PRODUCTO
+        // LISTA DE CÓDIGOS CON NOMBRES DE PRODUCTO
         function pC() {
             var h = "<div class='row m-0'>";
             for (var i = 0; i < bdC.length; i++) {
@@ -380,14 +394,12 @@
                 var cBg = p.colorFondo || "#333333";
                 var cTxt = p.colorTexto || "#FFFFFF";
                 
-                // Intenta buscar el nombre de producto usando distintas posibilidades de columnas
                 var nombreProducto = p.nombre || p.producto || p.descripcion || "";
                 
                 h += "<div class='col-6 p-1'>";
                 h += "<div style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:15px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);'>";
                 h += "<h4 class='fw-bold m-0'>" + (p.codigo || "??") + "</h4>";
                 
-                // Si existe el nombre, lo pone debajo pequeñito
                 if (nombreProducto !== "") {
                     h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreProducto + "</small>";
                 }
@@ -494,6 +506,11 @@
                 document.getElementById("eg-lad").value = s.ladoDescarga;
                 document.getElementById("eg-zon").value = s.zonasDescarga;
                 
+                // Cargar campos de contacto si existen
+                document.getElementById("eg-tel").value = s.telefono || "";
+                document.getElementById("eg-wa").value = s.whatsapp || "";
+                document.getElementById("eg-ub").value = s.ubicacion || "";
+                
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
                 eId = "w-" + Math.random().toString(36).substr(2, 9);
@@ -504,6 +521,10 @@
                 document.getElementById("eg-dir").value = "";
                 document.getElementById("eg-lad").value = "RIGHT";
                 document.getElementById("eg-zon").value = 1;
+                
+                document.getElementById("eg-tel").value = "";
+                document.getElementById("eg-wa").value = "";
+                document.getElementById("eg-ub").value = "";
                 bd.style.display = "none";
             }
             eZon = 1;
@@ -530,17 +551,25 @@
                 document.getElementById("er-nom").value = c.nombre;
                 document.getElementById("er-dir").value = c.direccion;
                 
+                // Cargar campos de contacto si existen
+                document.getElementById("er-tel").value = c.telefono || "";
+                document.getElementById("er-wa").value = c.whatsapp || "";
+                document.getElementById("er-ub").value = c.ubicacion || "";
+                
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
                 eId = "w-" + Math.random().toString(36).substr(2, 9);
                 document.getElementById("ttl-e-r").innerText = "Nuevo Cliente";
                 document.getElementById("er-nom").value = "";
                 document.getElementById("er-dir").value = "";
+                
+                document.getElementById("er-tel").value = "";
+                document.getElementById("er-wa").value = "";
+                document.getElementById("er-ub").value = "";
                 bd.style.display = "none";
             }
         }
 
-        // LÓGICA DE DIBUJO Y ARRASTRE DEL EDITOR
         function dCamEd() {
             var area = document.getElementById("eg-canv");
             var iM = document.getElementById("eg-lad").value === "LEFT";
@@ -608,7 +637,6 @@
             }
         }
 
-        // MENÚ AÑADIR COMBUSTIBLE
         function gBotC() {
             var l = ["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"];
             var h = "";
@@ -628,13 +656,12 @@
             for (var i = 0; i < ePr.length; i++) {
                 if (ePr[i].zonaIndex === eZon) cnt++;
             }
-            // Los apilamos uno debajo de otro automáticamente
             ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 });
             cMod();
             dCamEd();
         }
 
-        // GUARDADO EN GOOGLE
+        // GUARDADO DE DATOS (CON TELÉFONO, WHATSAPP Y UBICACIÓN)
         function gGas() {
             var b = document.getElementById("btn-s-gas");
             b.innerText = "Guardando..."; b.disabled = true;
@@ -643,12 +670,15 @@
                 marca: document.getElementById("eg-marca").value,
                 nombre: document.getElementById("eg-nom").value.toUpperCase(),
                 direccion: document.getElementById("eg-dir").value.toUpperCase(),
+                telefono: document.getElementById("eg-tel").value.trim(),
+                whatsapp: document.getElementById("eg-wa").value.trim(),
+                ubicacion: document.getElementById("eg-ub").value.trim(),
                 ladoDescarga: document.getElementById("eg-lad").value,
                 zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10),
                 productos: ePr
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Gasolinera Guardada."); dDat(); cerrarEditor(); })
+            .then(function() { alert("Gasolinera Guardada."); descargarDatos(); cerrarEditor(); })
             .catch(function() { alert("Fallo al guardar en Google."); })
             .finally(function() { b.innerText = "Guardar Estación"; b.disabled = false; });
         }
@@ -659,10 +689,13 @@
             var d = {
                 id: eId,
                 nombre: document.getElementById("er-nom").value.toUpperCase(),
-                direccion: document.getElementById("er-dir").value.toUpperCase()
+                direccion: document.getElementById("er-dir").value.toUpperCase(),
+                telefono: document.getElementById("er-tel").value.trim(),
+                whatsapp: document.getElementById("er-wa").value.trim(),
+                ubicacion: document.getElementById("er-ub").value.trim()
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Cliente Guardado."); dDat(); cerrarEditor(); })
+            .then(function() { alert("Cliente Guardado."); descargarDatos(); cerrarEditor(); })
             .catch(function() { alert("Fallo al guardar en Google."); })
             .finally(function() { b.innerText = "Guardar Cliente"; b.disabled = false; });
         }
@@ -670,13 +703,13 @@
         function bGas() {
             if (!confirm("¿Seguro que quieres BORRAR esta gasolinera?")) return;
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) })
-            .then(function() { alert("Borrado de la base de datos."); vGas = null; dDat(); cerrarEditor(); });
+            .then(function() { alert("Borrado de la base de datos."); vGas = null; descargarDatos(); cerrarEditor(); });
         }
 
         function bRut() {
             if (!confirm("¿Seguro que quieres BORRAR a este cliente?")) return;
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) })
-            .then(function() { alert("Borrado de la base de datos."); dDat(); cerrarEditor(); });
+            .then(function() { alert("Borrado de la base de datos."); descargarDatos(); cerrarEditor(); });
         }
 
         // 8. HERRAMIENTAS GRÁFICAS DEL CAMIÓN
