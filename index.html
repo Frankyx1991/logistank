@@ -144,6 +144,9 @@
                 </div>
                 <div class="card card-station" style="cursor: default;">
                     <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Nuevo Cliente</h4>
+                    
+                    <div id="visor-enlaces-ruta" class="d-flex justify-content-center gap-4 mb-4 fs-1" style="display: none;"></div>
+
                     <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
                     <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
 
@@ -330,7 +333,7 @@
             if (p === "CODIGOS") pC();
         }
 
-        // LISTA DE GASOLINERAS CON ICONOS (WHATSAPP, MAPA, TELÉFONO)
+        // LISTA DE GASOLINERAS CON ICONOS CLICKABLES
         function pG() {
             var h = "";
             var l = bdG.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -341,25 +344,28 @@
                 h += "<div class='card card-station' onclick='abrirVisor(this.id)' id='" + s.id + "'>";
                 h += "<div class='brand-indicator " + c + "'></div>";
                 
-                // Contenedor flexible para poner textos a la izquierda e iconos a la derecha
                 h += "<div class='d-flex justify-content-between align-items-center'>";
                 
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.marca || "") + " • " + (s.direccion || "") + "</small></div>";
                 
-                // ICONOS DE CONTACTO
+                // ICONOS DE CONTACTO (Con stopPropagation para que no abran el camión al pulsarlos)
                 h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
-                if (s.telefono) h += "<a href='tel:" + s.telefono + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-                if (s.whatsapp) h += "<a href='https://wa.me/" + s.whatsapp.toString().replace(/\s+/g, '') + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-                if (s.ubicacion) h += "<a href='" + s.ubicacion + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+                var tl = s.telefono ? String(s.telefono).trim() : "";
+                var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
+                var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
+                
+                if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+                if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+                if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
                 h += "</div>";
 
-                h += "</div></div>"; // Cierre flex y cierre card
+                h += "</div></div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
-        // LISTA DE RUTAS CON ICONOS (WHATSAPP, MAPA, TELÉFONO)
+        // LISTA DE RUTAS CON ICONOS CLICKABLES
         function pR() {
             var h = "";
             var l = bdR.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -368,7 +374,6 @@
                 h += "<div class='card card-station' onclick='aEdR(this.id)' id='" + s.id + "'>";
                 h += "<div class='brand-indicator brand-DEFAULT'></div>";
                 
-                // Contenedor flexible
                 h += "<div class='d-flex justify-content-between align-items-center'>";
                 
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
@@ -376,9 +381,13 @@
                 
                 // ICONOS DE CONTACTO
                 h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
-                if (s.telefono) h += "<a href='tel:" + s.telefono + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
-                if (s.whatsapp) h += "<a href='https://wa.me/" + s.whatsapp.toString().replace(/\s+/g, '') + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
-                if (s.ubicacion) h += "<a href='" + s.ubicacion + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+                var tl = s.telefono ? String(s.telefono).trim() : "";
+                var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
+                var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
+                
+                if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+                if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+                if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
                 h += "</div>";
 
                 h += "</div></div>";
@@ -410,7 +419,7 @@
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted mt-5'>No hay códigos</p>";
         }
 
-        // 6. VISOR DEL CAMIÓN
+        // 6. VISOR DEL CAMIÓN (SE ABRE AL PULSAR UNA GASOLINERA)
         function abrirVisor(id) {
             vGas = null;
             for (var i = 0; i < bdG.length; i++) {
@@ -439,10 +448,25 @@
             }
 
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(pst)'>← Volver a la Lista</button>" + bE + "</div>";
+            
             h += "<div class='card card-station' style='border-top:6px solid " + hx + "; cursor:default'>";
             h += "<small style='color:" + hx + "; font-weight:bold'>" + (s.marca || "") + "</small>";
             h += "<h4 class='text-white fw-bold m-0'>" + (s.nombre || "") + "</h4>";
-            h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
+            h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small>";
+            
+            // ==========================================
+            // NUEVO: ICONOS GIGANTES DENTRO DE LA FICHA
+            // ==========================================
+            h += "<div class='d-flex gap-4 fs-1 mt-3 justify-content-center'>";
+            var tl = s.telefono ? String(s.telefono).trim() : "";
+            var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
+            var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
+            
+            if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+            if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+            if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+            h += "</div>";
+            h += "</div>"; // Cierre de la card de la cabecera
             
             h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
             
@@ -472,7 +496,7 @@
         function cLad(l) { vLad = l; dVis(); }
         function cZon(z) { vZon = parseInt(z, 10); dVis(); }
 
-        // 7. EDITORES
+        // 7. EDITORES Y FICHA DE RUTAS
         function aEdN() {
             if (pst === "GAS") aEdG(null);
             else if (pst === "RUTAS") aEdR(null);
@@ -506,7 +530,6 @@
                 document.getElementById("eg-lad").value = s.ladoDescarga;
                 document.getElementById("eg-zon").value = s.zonasDescarga;
                 
-                // Cargar campos de contacto si existen
                 document.getElementById("eg-tel").value = s.telefono || "";
                 document.getElementById("eg-wa").value = s.whatsapp || "";
                 document.getElementById("eg-ub").value = s.ubicacion || "";
@@ -532,32 +555,66 @@
             dCamEd();
         }
 
+        // LAS RUTAS SE ABREN AQUÍ TANTO PARA VER COMO PARA EDITAR
         function aEdR(val) {
-            if (user.r === "INVITADO") return alert("Los invitados solo pueden leer.");
             ocultarTodo();
             document.getElementById("main-tabs").style.display = "none";
             document.getElementById("btn-fab").style.display = "none";
             document.getElementById("zona-editor-ruta").style.display = "block";
             
             var bd = document.getElementById("b-del-rut");
+            var btnGuardar = document.getElementById("btn-s-rut");
+            var divEnlacesRuta = document.getElementById("visor-enlaces-ruta");
             
+            divEnlacesRuta.style.display = "none";
+            divEnlacesRuta.innerHTML = "";
+
+            // Controlamos si el usuario solo puede mirar la ficha o puede editar
+            var esLectura = (user.r === "INVITADO");
+            
+            document.getElementById("er-nom").disabled = esLectura;
+            document.getElementById("er-dir").disabled = esLectura;
+            document.getElementById("er-tel").disabled = esLectura;
+            document.getElementById("er-wa").disabled = esLectura;
+            document.getElementById("er-ub").disabled = esLectura;
+            
+            if (esLectura) btnGuardar.style.display = "none"; else btnGuardar.style.display = "block";
+
             if (typeof val === "string" && val.length > 3) {
                 var c = null;
                 for (var i = 0; i < bdR.length; i++) {
                     if (bdR[i].id === val) { c = bdR[i]; break; }
                 }
                 eId = val;
-                document.getElementById("ttl-e-r").innerText = "Editar Cliente";
+                document.getElementById("ttl-e-r").innerText = esLectura ? "Ficha del Cliente" : "Editar Cliente";
                 document.getElementById("er-nom").value = c.nombre;
                 document.getElementById("er-dir").value = c.direccion;
                 
-                // Cargar campos de contacto si existen
                 document.getElementById("er-tel").value = c.telefono || "";
                 document.getElementById("er-wa").value = c.whatsapp || "";
                 document.getElementById("er-ub").value = c.ubicacion || "";
                 
+                // ==========================================
+                // ICONOS GIGANTES DENTRO DE LA FICHA DE RUTA
+                // ==========================================
+                var tl = c.telefono ? String(c.telefono).trim() : "";
+                var wa = c.whatsapp ? String(c.whatsapp).trim().replace(/\s+/g, '') : "";
+                var ub = c.ubicacion ? String(c.ubicacion).trim() : "";
+                var hL = "";
+                
+                if (tl !== "") hL += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
+                if (wa !== "") hL += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
+                if (ub !== "") hL += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
+                
+                if (hL !== "") {
+                    divEnlacesRuta.innerHTML = hL;
+                    divEnlacesRuta.style.display = "flex";
+                }
+                
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
+                if (esLectura) { irPestana(pst); return; } // Si es invitado y le da al +, lo devolvemos
+                
                 eId = "w-" + Math.random().toString(36).substr(2, 9);
                 document.getElementById("ttl-e-r").innerText = "Nuevo Cliente";
                 document.getElementById("er-nom").value = "";
@@ -661,7 +718,6 @@
             dCamEd();
         }
 
-        // GUARDADO DE DATOS (CON TELÉFONO, WHATSAPP Y UBICACIÓN)
         function gGas() {
             var b = document.getElementById("btn-s-gas");
             b.innerText = "Guardando..."; b.disabled = true;
@@ -712,7 +768,6 @@
             .then(function() { alert("Borrado de la base de datos."); descargarDatos(); cerrarEditor(); });
         }
 
-        // 8. HERRAMIENTAS GRÁFICAS DEL CAMIÓN
         function gC() {
             var h = "<div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'>";
             h += "<div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div>";
