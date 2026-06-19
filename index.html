@@ -64,10 +64,8 @@
                 <h1 class="fw-bold" style="color: #D1C4E9;">LogisTank</h1>
                 <p style="color: #aaa; font-weight: bold;">Control Logístico Web</p>
             </div>
-            
             <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Usuario">
             <input type="password" id="login-pass" class="form-control mb-4 py-3" placeholder="Contraseña">
-            
             <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
             <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
             <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
@@ -75,7 +73,6 @@
     </div>
 
     <div id="pantalla-app" style="display: none; flex-direction: column; min-height: 100vh;">
-        
         <header class="bg-purple text-white p-3">
             <div class="d-flex justify-content-between align-items-center mx-auto" style="max-width: 1200px;">
                 <div>
@@ -192,14 +189,12 @@
 
     <script>
         var URL_API = "https://script.google.com/macros/s/AKfycbyIZAUVYjHnZS_BEmcsnHO-qf538S9mKul9np0cTCkm3ssw9cv-dJOfC3olhvV8Jj4d/exec";
-        
         var user = null;
         var bdG = []; var bdR = []; var bdC = [];
         var pst = "GAS";
         var vGas = null; var vLad = "RIGHT"; var vZon = 1;
         var eId = null; var ePr = []; var eZon = 1;
 
-        // 1. MEMORIA Y ARRANQUE AUTOMÁTICO
         window.onload = function() {
             try {
                 var guardado = localStorage.getItem('logistank_sesion');
@@ -207,7 +202,7 @@
                     var datosUser = JSON.parse(guardado);
                     mostrarApp(datosUser.n, datosUser.r);
                 }
-            } catch(e) { logError("Fallo al leer la memoria: " + e.message); }
+            } catch(e) { logError("Error leyendo memoria: " + e.message); }
         };
 
         function mostrarApp(nombre, rol) {
@@ -218,7 +213,6 @@
             descargarDatos();
         }
 
-        // 2. INICIO DE SESIÓN
         function entrarInvitado() {
             try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: "Invitado", r: "INVITADO" })); } catch(e) {}
             mostrarApp("Invitado", "INVITADO");
@@ -227,8 +221,7 @@
         function hacerLogin() {
             var u = document.getElementById("login-user").value.trim();
             var p = document.getElementById("login-pass").value.trim();
-            if (u === "" || p === "") { alert("Faltan datos por rellenar."); return; }
-            
+            if (u === "" || p === "") { alert("Faltan datos"); return; }
             var btn = document.getElementById("btn-login");
             btn.innerText = "Conectando..."; btn.disabled = true;
 
@@ -243,30 +236,21 @@
                     try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: datos.nombre, r: datos.role })); } catch(e) {}
                     mostrarApp(datos.nombre, datos.role);
                 } else {
-                    alert("Usuario o contraseña incorrectos.");
+                    alert("Incorrecto");
                     btn.innerText = "Iniciar Sesión"; btn.disabled = false;
                 }
             })
-            .catch(function(e) {
-                alert("Fallo de red conectando con Google.");
-                btn.innerText = "Iniciar Sesión"; btn.disabled = false;
-            });
+            .catch(function(e) { alert("Fallo de red"); btn.innerText = "Iniciar Sesión"; btn.disabled = false; });
         }
 
-        // 3. AJUSTES
         function abrirAjustes() { document.getElementById("modal-ajustes").style.display = "flex"; }
         function cerrarAjustes() { document.getElementById("modal-ajustes").style.display = "none"; }
-
-        function cerrarSesion() {
-            try { localStorage.removeItem('logistank_sesion'); } catch(e) {}
-            location.reload();
-        }
+        function cerrarSesion() { try { localStorage.removeItem('logistank_sesion'); } catch(e) {} location.reload(); }
 
         function cambiarMiContrasena(btn) {
-            if (user.r === 'INVITADO') return alert("Los invitados no tienen contraseña.");
+            if (user.r === 'INVITADO') return alert("Solo lectura.");
             var nuevaPass = document.getElementById("nueva-pass").value.trim();
-            if (nuevaPass === "") return alert("Escribe una contraseña primero.");
-            
+            if (nuevaPass === "") return alert("Escribe una contraseña.");
             btn.innerText = "Guardando..."; btn.disabled = true;
 
             fetch(URL_API, {
@@ -276,7 +260,7 @@
             })
             .then(function(res) { return res.json(); })
             .then(function(datos) {
-                alert("Contraseña cambiada con éxito.");
+                alert("Contraseña cambiada.");
                 document.getElementById("nueva-pass").value = "";
                 cerrarAjustes();
             })
@@ -284,26 +268,19 @@
             .finally(function() { btn.innerText = "Guardar Contraseña"; btn.disabled = false; });
         }
 
-        // 4. DESCARGA
         function descargarDatos() {
             var zona = document.getElementById("zona-listas");
-            zona.innerHTML = "<div class='text-center mt-5 text-white'>Conectando con la base de datos...</div>";
+            zona.innerHTML = "<div class='text-center mt-5 text-white'>Descargando base de datos...</div>";
 
             Promise.all([
                 fetch(URL_API + "?action=getGasStations").then(function(r) { return r.json(); }),
                 fetch(URL_API + "?action=getRoutes").then(function(r) { return r.json(); }),
                 fetch(URL_API + "?action=getProducts").then(function(r) { return r.json(); })
             ])
-            .then(function(res) {
-                bdG = res[0]; bdR = res[1]; bdC = res[2];
-                irPestana("GAS");
-            })
-            .catch(function(e) {
-                zona.innerHTML = "<div class='text-center mt-5 text-danger'>Error al descargar los datos.</div>";
-            });
+            .then(function(res) { bdG = res[0]; bdR = res[1]; bdC = res[2]; irPestana("GAS"); })
+            .catch(function(e) { zona.innerHTML = "<div class='text-center mt-5 text-danger'>Error al descargar</div>"; });
         }
 
-        // 5. NAVEGACIÓN Y LISTAS
         function ocultarTodo() {
             document.getElementById("zona-listas").style.display = "none";
             document.getElementById("zona-visor").style.display = "none";
@@ -316,7 +293,6 @@
             document.getElementById("tab-gas").className = "nav-link"; 
             document.getElementById("tab-routes").className = "nav-link"; 
             document.getElementById("tab-codes").className = "nav-link";
-            
             if (p === "GAS") document.getElementById("tab-gas").className = "nav-link active";
             if (p === "RUTAS") document.getElementById("tab-routes").className = "nav-link active";
             if (p === "CODIGOS") document.getElementById("tab-codes").className = "nav-link active";
@@ -326,30 +302,27 @@
             document.getElementById("zona-listas").style.display = "block";
 
             var fab = document.getElementById("btn-fab");
-            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) { fab.style.display = "flex"; } else { fab.style.display = "none"; }
+            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) fab.style.display = "flex"; else fab.style.display = "none";
 
-            if (p === "GAS") pG();
-            if (p === "RUTAS") pR();
-            if (p === "CODIGOS") pC();
+            if (p === "GAS") pG(); if (p === "RUTAS") pR(); if (p === "CODIGOS") pC();
         }
 
-        // LISTA DE GASOLINERAS CON ICONOS CLICKABLES
+        // ==========================================
+        // 1. ICONOS EN LA LISTA DE GASOLINERAS
+        // ==========================================
         function pG() {
             var h = "";
             var l = bdG.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
             for (var i = 0; i < l.length; i++) {
-                var s = l[i];
-                var c = gCol(s.marca);
-                
+                var s = l[i]; var c = gCol(s.marca);
                 h += "<div class='card card-station' onclick='abrirVisor(this.id)' id='" + s.id + "'>";
                 h += "<div class='brand-indicator " + c + "'></div>";
                 
                 h += "<div class='d-flex justify-content-between align-items-center'>";
-                
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.marca || "") + " • " + (s.direccion || "") + "</small></div>";
                 
-                // ICONOS DE CONTACTO (Con stopPropagation para que no abran el camión al pulsarlos)
+                // Iconos en la lista (Usa stopPropagation para no abrir la tarjeta)
                 h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
                 var tl = s.telefono ? String(s.telefono).trim() : "";
                 var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
@@ -359,13 +332,15 @@
                 if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
                 if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
                 h += "</div>";
-
+                
                 h += "</div></div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
-        // LISTA DE RUTAS CON ICONOS CLICKABLES
+        // ==========================================
+        // 2. ICONOS EN LA LISTA DE RUTAS
+        // ==========================================
         function pR() {
             var h = "";
             var l = bdR.slice().sort(function(a, b) { return (a.nombre || "").localeCompare(b.nombre || ""); });
@@ -375,11 +350,10 @@
                 h += "<div class='brand-indicator brand-DEFAULT'></div>";
                 
                 h += "<div class='d-flex justify-content-between align-items-center'>";
-                
                 h += "<div><h5 class='fw-bold m-0 text-white'>" + (s.nombre || "") + "</h5>";
                 h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small></div>";
                 
-                // ICONOS DE CONTACTO
+                // Iconos en la lista
                 h += "<div class='d-flex gap-3 fs-4' onclick='event.stopPropagation()'>";
                 var tl = s.telefono ? String(s.telefono).trim() : "";
                 var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
@@ -389,75 +363,48 @@
                 if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
                 if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
                 h += "</div>";
-
+                
                 h += "</div></div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
 
-        // LISTA DE CÓDIGOS CON NOMBRES DE PRODUCTO
         function pC() {
             var h = "<div class='row m-0'>";
             for (var i = 0; i < bdC.length; i++) {
-                var p = bdC[i];
-                var cBg = p.colorFondo || "#333333";
-                var cTxt = p.colorTexto || "#FFFFFF";
-                
+                var p = bdC[i]; var cBg = p.colorFondo || "#333333"; var cTxt = p.colorTexto || "#FFFFFF";
                 var nombreProducto = p.nombre || p.producto || p.descripcion || "";
-                
-                h += "<div class='col-6 p-1'>";
-                h += "<div style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:15px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);'>";
+                h += "<div class='col-6 p-1'><div style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:15px; text-align:center;'>";
                 h += "<h4 class='fw-bold m-0'>" + (p.codigo || "??") + "</h4>";
-                
-                if (nombreProducto !== "") {
-                    h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreProducto + "</small>";
-                }
-                
+                if (nombreProducto !== "") h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreProducto + "</small>";
                 h += "</div></div>";
             }
-            h += "</div>";
-            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted mt-5'>No hay códigos</p>";
+            document.getElementById("zona-listas").innerHTML = h + "</div>";
         }
 
-        // 6. VISOR DEL CAMIÓN (SE ABRE AL PULSAR UNA GASOLINERA)
+        // ==========================================
+        // 3. ICONOS GIGANTES DENTRO DEL VISOR DE GASOLINERA
+        // ==========================================
         function abrirVisor(id) {
-            vGas = null;
-            for (var i = 0; i < bdG.length; i++) {
-                if (bdG[i].id === id) { vGas = bdG[i]; break; }
-            }
+            vGas = null; for (var i = 0; i < bdG.length; i++) { if (bdG[i].id === id) { vGas = bdG[i]; break; } }
             if (!vGas) return;
-            
-            vZon = 1;
-            vLad = vGas.ladoDescarga === "BOTH" ? "LEFT" : vGas.ladoDescarga;
-            
-            ocultarTodo();
-            document.getElementById("main-tabs").style.display = "none";
-            document.getElementById("btn-fab").style.display = "none";
-            document.getElementById("zona-visor").style.display = "block";
-            dVis();
+            vZon = 1; vLad = vGas.ladoDescarga === "BOTH" ? "LEFT" : vGas.ladoDescarga;
+            ocultarTodo(); document.getElementById("main-tabs").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-visor").style.display = "block"; dVis();
         }
 
         function dVis() {
-            var s = vGas;
-            var hx = gHx(s.marca);
-            var h = "";
+            var s = vGas; var hx = gHx(s.marca); var h = "";
+            var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdG(this.value)' value='" + s.id + "'>Editar</button>" : "";
             
-            var bE = "";
-            if (user.r !== "INVITADO") {
-                bE = "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdG(this.value)' value='" + s.id + "'>Editar</button>";
-            }
-
-            h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(pst)'>← Volver a la Lista</button>" + bE + "</div>";
+            h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(pst)'>← Volver</button>" + bE + "</div>";
             
             h += "<div class='card card-station' style='border-top:6px solid " + hx + "; cursor:default'>";
-            h += "<small style='color:" + hx + "; font-weight:bold'>" + (s.marca || "") + "</small>";
+            h += "<small style='color:" + hx + ";font-weight:bold'>" + (s.marca || "") + "</small>";
             h += "<h4 class='text-white fw-bold m-0'>" + (s.nombre || "") + "</h4>";
-            h += "<small style='color: #aaa;'>" + (s.direccion || "") + "</small>";
+            h += "<small class='text-muted'>" + (s.direccion || "") + "</small>";
             
-            // ==========================================
-            // NUEVO: ICONOS GIGANTES DENTRO DE LA FICHA
-            // ==========================================
-            h += "<div class='d-flex gap-4 fs-1 mt-3 justify-content-center'>";
+            // FILA DE ICONOS GIGANTES DENTRO DE LA FICHA
+            h += "<div class='d-flex justify-content-center gap-4 fs-1 mt-3 pb-2'>";
             var tl = s.telefono ? String(s.telefono).trim() : "";
             var wa = s.whatsapp ? String(s.whatsapp).trim().replace(/\s+/g, '') : "";
             var ub = s.ubicacion ? String(s.ubicacion).trim() : "";
@@ -465,111 +412,54 @@
             if (tl !== "") h += "<a href='tel:" + tl + "' class='text-white'><i class='bi bi-telephone-fill'></i></a>";
             if (wa !== "") h += "<a href='https://wa.me/" + wa + "' target='_blank' style='color:#25D366;'><i class='bi bi-whatsapp'></i></a>";
             if (ub !== "") h += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
-            h += "</div>";
-            h += "</div>"; // Cierre de la card de la cabecera
+            h += "</div></div>"; // Cierre flex e iconos y tarjeta
             
             h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
-            
             if (s.ladoDescarga === "BOTH") {
-                h += "<div class='d-flex justify-content-center gap-2 mb-3'>";
-                h += "<button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button>";
-                h += "<button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
+                h += "<div class='d-flex justify-content-center gap-2 mb-3'><button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button><button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
             }
             if (s.zonasDescarga > 1) {
                 h += "<div class='d-flex justify-content-center gap-2 mb-3'>";
-                for (var i = 1; i <= s.zonasDescarga; i++) {
-                    h += "<button class='btn btn-sm " + (i === vZon ? "btn-purple" : "btn-outline-light") + "' onclick='cZon(this.value)' value='" + i + "'>ZONA " + i + "</button>";
-                }
+                for (var i = 1; i <= s.zonasDescarga; i++) h += "<button class='btn btn-sm " + (i === vZon ? "btn-purple" : "btn-outline-light") + "' onclick='cZon(this.value)' value='" + i + "'>ZONA " + i + "</button>";
                 h += "</div>";
             }
-            
-            var iM = (vLad === "LEFT");
-            var pZ = gL(s.productos || [], vZon, iM);
-            var dC = gC();
-            
-            h += "<div class='d-flex justify-content-center align-items-center mt-4'>";
-            h += (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
-            
+            var iM = (vLad === "LEFT"); var pZ = gL(s.productos || [], vZon, iM); var dC = gC();
+            h += "<div class='d-flex justify-content-center align-items-center mt-4'>" + (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
             document.getElementById("zona-visor").innerHTML = h;
         }
 
         function cLad(l) { vLad = l; dVis(); }
         function cZon(z) { vZon = parseInt(z, 10); dVis(); }
 
-        // 7. EDITORES Y FICHA DE RUTAS
-        function aEdN() {
-            if (pst === "GAS") aEdG(null);
-            else if (pst === "RUTAS") aEdR(null);
-        }
-
-        function cerrarEditor() {
-            if (vGas) abrirVisor(vGas.id);
-            else irPestana(pst);
-        }
+        // ==========================================
+        // 4. ICONOS GIGANTES DENTRO DEL VISOR DE RUTAS
+        // ==========================================
+        function aEdN() { if (pst === "GAS") aEdG(null); else if (pst === "RUTAS") aEdR(null); }
+        function cerrarEditor() { if (vGas) abrirVisor(vGas.id); else irPestana(pst); }
 
         function aEdG(val) {
-            ocultarTodo();
-            document.getElementById("main-tabs").style.display = "none";
-            document.getElementById("btn-fab").style.display = "none";
-            document.getElementById("zona-editor-gas").style.display = "block";
-            
+            ocultarTodo(); document.getElementById("main-tabs").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-editor-gas").style.display = "block";
             var bd = document.getElementById("b-del-gas");
-            
             if (typeof val === "string" && val.length > 3) {
-                var s = null;
-                for (var i = 0; i < bdG.length; i++) {
-                    if (bdG[i].id === val) { s = bdG[i]; break; }
-                }
-                eId = s.id;
-                ePr = JSON.parse(JSON.stringify(s.productos || []));
-                
-                document.getElementById("ttl-e-g").innerText = "Editar Gasolinera";
-                document.getElementById("eg-marca").value = s.marca;
-                document.getElementById("eg-nom").value = s.nombre;
-                document.getElementById("eg-dir").value = s.direccion;
-                document.getElementById("eg-lad").value = s.ladoDescarga;
-                document.getElementById("eg-zon").value = s.zonasDescarga;
-                
-                document.getElementById("eg-tel").value = s.telefono || "";
-                document.getElementById("eg-wa").value = s.whatsapp || "";
-                document.getElementById("eg-ub").value = s.ubicacion || "";
-                
+                var s = null; for (var i = 0; i < bdG.length; i++) { if (bdG[i].id === val) { s = bdG[i]; break; } }
+                eId = s.id; ePr = JSON.parse(JSON.stringify(s.productos || []));
+                document.getElementById("ttl-e-g").innerText = "Editar Gasolinera"; document.getElementById("eg-marca").value = s.marca; document.getElementById("eg-nom").value = s.nombre; document.getElementById("eg-dir").value = s.direccion; document.getElementById("eg-lad").value = s.ladoDescarga; document.getElementById("eg-zon").value = s.zonasDescarga;
+                document.getElementById("eg-tel").value = s.telefono || ""; document.getElementById("eg-wa").value = s.whatsapp || ""; document.getElementById("eg-ub").value = s.ubicacion || "";
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
-                eId = "w-" + Math.random().toString(36).substr(2, 9);
-                ePr = [];
-                document.getElementById("ttl-e-g").innerText = "Nueva Estación";
-                document.getElementById("eg-marca").value = "REPSOL";
-                document.getElementById("eg-nom").value = "";
-                document.getElementById("eg-dir").value = "";
-                document.getElementById("eg-lad").value = "RIGHT";
-                document.getElementById("eg-zon").value = 1;
-                
-                document.getElementById("eg-tel").value = "";
-                document.getElementById("eg-wa").value = "";
-                document.getElementById("eg-ub").value = "";
-                bd.style.display = "none";
+                eId = "w-" + Math.random().toString(36).substr(2, 9); ePr = [];
+                document.getElementById("ttl-e-g").innerText = "Nueva Estación"; document.getElementById("eg-marca").value = "REPSOL"; document.getElementById("eg-nom").value = ""; document.getElementById("eg-dir").value = ""; document.getElementById("eg-lad").value = "RIGHT"; document.getElementById("eg-zon").value = 1;
+                document.getElementById("eg-tel").value = ""; document.getElementById("eg-wa").value = ""; document.getElementById("eg-ub").value = ""; bd.style.display = "none";
             }
-            eZon = 1;
-            gBotC();
-            dCamEd();
+            eZon = 1; gBotC(); dCamEd();
         }
 
-        // LAS RUTAS SE ABREN AQUÍ TANTO PARA VER COMO PARA EDITAR
         function aEdR(val) {
-            ocultarTodo();
-            document.getElementById("main-tabs").style.display = "none";
-            document.getElementById("btn-fab").style.display = "none";
-            document.getElementById("zona-editor-ruta").style.display = "block";
+            ocultarTodo(); document.getElementById("main-tabs").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-editor-ruta").style.display = "block";
             
             var bd = document.getElementById("b-del-rut");
             var btnGuardar = document.getElementById("btn-s-rut");
-            var divEnlacesRuta = document.getElementById("visor-enlaces-ruta");
-            
-            divEnlacesRuta.style.display = "none";
-            divEnlacesRuta.innerHTML = "";
-
-            // Controlamos si el usuario solo puede mirar la ficha o puede editar
+            var divEnlaces = document.getElementById("visor-enlaces-ruta");
             var esLectura = (user.r === "INVITADO");
             
             document.getElementById("er-nom").disabled = esLectura;
@@ -581,22 +471,16 @@
             if (esLectura) btnGuardar.style.display = "none"; else btnGuardar.style.display = "block";
 
             if (typeof val === "string" && val.length > 3) {
-                var c = null;
-                for (var i = 0; i < bdR.length; i++) {
-                    if (bdR[i].id === val) { c = bdR[i]; break; }
-                }
-                eId = val;
-                document.getElementById("ttl-e-r").innerText = esLectura ? "Ficha del Cliente" : "Editar Cliente";
-                document.getElementById("er-nom").value = c.nombre;
+                var c = null; for (var i = 0; i < bdR.length; i++) { if (bdR[i].id === val) { c = bdR[i]; break; } }
+                eId = val; 
+                document.getElementById("ttl-e-r").innerText = esLectura ? "Ficha de Cliente" : "Editar Cliente"; 
+                document.getElementById("er-nom").value = c.nombre; 
                 document.getElementById("er-dir").value = c.direccion;
-                
-                document.getElementById("er-tel").value = c.telefono || "";
-                document.getElementById("er-wa").value = c.whatsapp || "";
+                document.getElementById("er-tel").value = c.telefono || ""; 
+                document.getElementById("er-wa").value = c.whatsapp || ""; 
                 document.getElementById("er-ub").value = c.ubicacion || "";
                 
-                // ==========================================
-                // ICONOS GIGANTES DENTRO DE LA FICHA DE RUTA
-                // ==========================================
+                // MUESTRA LOS ICONOS GIGANTES EN LA FICHA DE RUTA
                 var tl = c.telefono ? String(c.telefono).trim() : "";
                 var wa = c.whatsapp ? String(c.whatsapp).trim().replace(/\s+/g, '') : "";
                 var ub = c.ubicacion ? String(c.ubicacion).trim() : "";
@@ -607,57 +491,37 @@
                 if (ub !== "") hL += "<a href='" + ub + "' target='_blank' style='color:#3b82f6;'><i class='bi bi-geo-alt-fill'></i></a>";
                 
                 if (hL !== "") {
-                    divEnlacesRuta.innerHTML = hL;
-                    divEnlacesRuta.style.display = "flex";
+                    divEnlaces.innerHTML = hL;
+                    divEnlaces.style.display = "flex";
+                } else {
+                    divEnlaces.style.display = "none";
                 }
                 
                 if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
             } else {
-                if (esLectura) { irPestana(pst); return; } // Si es invitado y le da al +, lo devolvemos
-                
+                if (esLectura) return irPestana(pst);
                 eId = "w-" + Math.random().toString(36).substr(2, 9);
-                document.getElementById("ttl-e-r").innerText = "Nuevo Cliente";
-                document.getElementById("er-nom").value = "";
-                document.getElementById("er-dir").value = "";
-                
-                document.getElementById("er-tel").value = "";
-                document.getElementById("er-wa").value = "";
-                document.getElementById("er-ub").value = "";
+                document.getElementById("ttl-e-r").innerText = "Nuevo Cliente"; document.getElementById("er-nom").value = ""; document.getElementById("er-dir").value = "";
+                document.getElementById("er-tel").value = ""; document.getElementById("er-wa").value = ""; document.getElementById("er-ub").value = ""; 
+                divEnlaces.style.display = "none";
                 bd.style.display = "none";
             }
         }
 
         function dCamEd() {
-            var area = document.getElementById("eg-canv");
-            var iM = document.getElementById("eg-lad").value === "LEFT";
-            var tZ = parseInt(document.getElementById("eg-zon").value, 10);
-            if (eZon > tZ) eZon = tZ;
-            
+            var area = document.getElementById("eg-canv"); var iM = document.getElementById("eg-lad").value === "LEFT"; var tZ = parseInt(document.getElementById("eg-zon").value, 10); if (eZon > tZ) eZon = tZ;
             var zh = "<div class='d-flex justify-content-center gap-2 mb-3'>";
-            for (var i = 1; i <= tZ; i++) {
-                zh += "<button class='btn btn-sm " + (i === eZon ? "btn-purple" : "btn-outline-light") + "' onclick='eZon=" + i + ";dCamEd()'>ZONA " + i + "</button>";
-            }
+            for (var i = 1; i <= tZ; i++) zh += "<button class='btn btn-sm " + (i === eZon ? "btn-purple" : "btn-outline-light") + "' onclick='eZon=" + i + ";dCamEd()'>ZONA " + i + "</button>";
             zh += "</div>";
-            
-            var ch = "<div class='zone-canvas' style='background:#222; border-radius:12px; border:2px dashed #444'>";
+            var ch = "<div class='zone-canvas' style='background:#222;border-radius:12px;border:2px dashed #444'>";
             for (var j = 0; j < ePr.length; j++) {
-                var p = ePr[j];
-                if (p.zonaIndex !== eZon) continue;
-                
-                var tx = iM ? -p.nx : p.nx;
-                var ty = iM ? -p.ny : p.ny;
-                var ci = gComb(p.codigoProducto);
-                
-                ch += "<div class='fuel-circle draggable shadow' data-idx='" + j + "' style='left:" + (7 + tx) + "px; top:" + (131 + ty) + "px; background:" + ci.b + "; color:" + ci.t + "'>" + ci.s + "</div>";
+                var p = ePr[j]; if (p.zonaIndex !== eZon) continue;
+                var tx = iM ? -p.nx : p.nx; var ty = iM ? -p.ny : p.ny; var ci = gComb(p.codigoProducto);
+                ch += "<div class='fuel-circle draggable shadow' data-idx='" + j + "' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + ci.b + ";color:" + ci.t + "'>" + ci.s + "</div>";
             }
-            
             ch += "<button class='btn-add-fuel shadow' onclick='aMod()'>+</button></div>";
-            
-            var dc = gC();
-            var ce = iM ? ch + "<div style='width:16px'></div>" + dc : dc + "<div style='width:16px'></div>" + ch;
-            
-            area.innerHTML = zh + "<div class='d-flex justify-content-center align-items-center'>" + ce + "</div>";
-            actArr(iM);
+            var dc = gC(); var ce = iM ? ch + "<div style='width:16px'></div>" + dc : dc + "<div style='width:16px'></div>" + ch;
+            area.innerHTML = zh + "<div class='d-flex justify-content-center align-items-center'>" + ce + "</div>"; actArr(iM);
         }
 
         function actArr(iM) {
@@ -665,169 +529,75 @@
             for (var i = 0; i < c.length; i++) {
                 var cr = c[i];
                 cr.onpointerdown = function(e) {
-                    var id = parseInt(this.getAttribute("data-idx"), 10);
-                    this.setAttribute("d-dg", "1");
-                    this.setAttribute("d-sx", e.clientX);
-                    this.setAttribute("d-sy", e.clientY);
-                    this.setAttribute("d-ox", ePr[id].nx);
-                    this.setAttribute("d-oy", ePr[id].ny);
-                    this.setPointerCapture(e.pointerId);
+                    var id = parseInt(this.getAttribute("data-idx"), 10); this.setAttribute("d-dg", "1"); this.setAttribute("d-sx", e.clientX); this.setAttribute("d-sy", e.clientY); this.setAttribute("d-ox", ePr[id].nx); this.setAttribute("d-oy", ePr[id].ny); this.setPointerCapture(e.pointerId);
                 };
                 cr.onpointermove = function(e) {
                     if (this.getAttribute("d-dg") !== "1") return;
-                    var id = parseInt(this.getAttribute("data-idx"), 10);
-                    var dx = e.clientX - parseFloat(this.getAttribute("d-sx"));
-                    var dy = e.clientY - parseFloat(this.getAttribute("d-sy"));
-                    ePr[id].nx = parseFloat(this.getAttribute("d-ox")) + (iM ? -dx : dx);
-                    ePr[id].ny = parseFloat(this.getAttribute("d-oy")) + (iM ? -dy : dy);
-                    this.style.left = (7 + (iM ? -ePr[id].nx : ePr[id].nx)) + "px";
-                    this.style.top = (131 + (iM ? -ePr[id].ny : ePr[id].ny)) + "px";
+                    var id = parseInt(this.getAttribute("data-idx"), 10); var dx = e.clientX - parseFloat(this.getAttribute("d-sx")); var dy = e.clientY - parseFloat(this.getAttribute("d-sy"));
+                    ePr[id].nx = parseFloat(this.getAttribute("d-ox")) + (iM ? -dx : dx); ePr[id].ny = parseFloat(this.getAttribute("d-oy")) + (iM ? -dy : dy);
+                    this.style.left = (7 + (iM ? -ePr[id].nx : ePr[id].nx)) + "px"; this.style.top = (131 + (iM ? -ePr[id].ny : ePr[id].ny)) + "px";
                 };
-                cr.onpointerup = function(e) {
-                    this.setAttribute("d-dg", "0");
-                    this.releasePointerCapture(e.pointerId);
-                };
-                cr.ondblclick = function() {
-                    var id = parseInt(this.getAttribute("data-idx"), 10);
-                    if (confirm("¿Quieres eliminar este producto?")) { ePr.splice(id, 1); dCamEd(); }
-                };
+                cr.onpointerup = function(e) { this.setAttribute("d-dg", "0"); this.releasePointerCapture(e.pointerId); };
+                cr.ondblclick = function() { var id = parseInt(this.getAttribute("data-idx"), 10); if (confirm("¿Quieres eliminar este producto?")) { ePr.splice(id, 1); dCamEd(); } };
             }
         }
 
         function gBotC() {
-            var l = ["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"];
-            var h = "";
+            var l = ["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL"]; var h = "";
             for (var i = 0; i < l.length; i++) {
-                var f = l[i];
-                var c = gComb(f);
-                h += "<div class='col-6 p-1'><button class='btn w-100 fw-bold shadow-sm' style='background:" + c.b + "; color:" + c.t + "; border-radius:8px;' onclick='addP(this.value)' value='" + f + "'>" + f + "</button></div>";
+                var f = l[i]; var c = gComb(f);
+                h += "<div class='col-6 p-1'><button class='btn w-100 fw-bold shadow-sm' style='background:" + c.b + ";color:" + c.t + ";border-radius:8px' onclick='addP(this.value)' value='" + f + "'>" + f + "</button></div>";
             }
             document.getElementById("g-comb").innerHTML = h;
         }
 
         function aMod() { document.getElementById("m-comb").style.display = "flex"; }
         function cMod() { document.getElementById("m-comb").style.display = "none"; }
-        
         function addP(val) {
-            var cnt = 0;
-            for (var i = 0; i < ePr.length; i++) {
-                if (ePr[i].zonaIndex === eZon) cnt++;
-            }
-            ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 });
-            cMod();
-            dCamEd();
+            var cnt = 0; for (var i = 0; i < ePr.length; i++) { if (ePr[i].zonaIndex === eZon) cnt++; }
+            ePr.push({ codigoProducto: val, zonaIndex: eZon, nx: 0, ny: (cnt * 56) - 100 }); cMod(); dCamEd();
         }
 
         function gGas() {
-            var b = document.getElementById("btn-s-gas");
-            b.innerText = "Guardando..."; b.disabled = true;
+            var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
             var d = {
-                id: eId,
-                marca: document.getElementById("eg-marca").value,
-                nombre: document.getElementById("eg-nom").value.toUpperCase(),
-                direccion: document.getElementById("eg-dir").value.toUpperCase(),
-                telefono: document.getElementById("eg-tel").value.trim(),
-                whatsapp: document.getElementById("eg-wa").value.trim(),
-                ubicacion: document.getElementById("eg-ub").value.trim(),
-                ladoDescarga: document.getElementById("eg-lad").value,
-                zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10),
-                productos: ePr
+                id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(),
+                telefono: document.getElementById("eg-tel").value.trim(), whatsapp: document.getElementById("eg-wa").value.trim(), ubicacion: document.getElementById("eg-ub").value.trim(),
+                ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Gasolinera Guardada."); descargarDatos(); cerrarEditor(); })
-            .catch(function() { alert("Fallo al guardar en Google."); })
-            .finally(function() { b.innerText = "Guardar Estación"; b.disabled = false; });
+            .then(function() { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
         }
 
         function gRut() {
-            var b = document.getElementById("btn-s-rut");
-            b.innerText = "Guardando..."; b.disabled = true;
+            var b = document.getElementById("btn-s-rut"); b.innerText = "Guardando..."; b.disabled = true;
             var d = {
-                id: eId,
-                nombre: document.getElementById("er-nom").value.toUpperCase(),
-                direccion: document.getElementById("er-dir").value.toUpperCase(),
-                telefono: document.getElementById("er-tel").value.trim(),
-                whatsapp: document.getElementById("er-wa").value.trim(),
-                ubicacion: document.getElementById("er-ub").value.trim()
+                id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(),
+                telefono: document.getElementById("er-tel").value.trim(), whatsapp: document.getElementById("er-wa").value.trim(), ubicacion: document.getElementById("er-ub").value.trim()
             };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) })
-            .then(function() { alert("Cliente Guardado."); descargarDatos(); cerrarEditor(); })
-            .catch(function() { alert("Fallo al guardar en Google."); })
-            .finally(function() { b.innerText = "Guardar Cliente"; b.disabled = false; });
+            .then(function() { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(function() { alert("Fallo"); }).finally(function() { b.innerText = "Guardar"; b.disabled = false; });
         }
 
-        function bGas() {
-            if (!confirm("¿Seguro que quieres BORRAR esta gasolinera?")) return;
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) })
-            .then(function() { alert("Borrado de la base de datos."); vGas = null; descargarDatos(); cerrarEditor(); });
-        }
+        function bGas() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) }).then(function() { alert("Borrado"); vGas = null; descargarDatos(); cerrarEditor(); }); }
+        function bRut() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) }).then(function() { alert("Borrado"); descargarDatos(); cerrarEditor(); }); }
 
-        function bRut() {
-            if (!confirm("¿Seguro que quieres BORRAR a este cliente?")) return;
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) })
-            .then(function() { alert("Borrado de la base de datos."); descargarDatos(); cerrarEditor(); });
-        }
-
-        function gC() {
-            var h = "<div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'>";
-            h += "<div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div>";
-            h += "</div></div>";
-            return h;
-        }
-
+        function gC() { return "<div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div></div></div>"; }
         function gL(p, z, m) {
-            var h = "<div class='zone-canvas'>";
-            var l = [];
-            for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); }
-            if (m) l.reverse();
-
+            var h = "<div class='zone-canvas'>"; var l = []; for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); } if (m) l.reverse();
             for (var j = 0; j < l.length; j++) {
-                var t = l[j];
-                var tx = m ? -t.nx : t.nx;
-                var ty = m ? -t.ny : t.ny;
-                var c = gComb(t.codigoProducto);
-                h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px; top:" + (131 + ty) + "px; background:" + c.b + "; color:" + c.t + "'>" + c.s + "</div>";
+                var t = l[j]; var tx = m ? -t.nx : t.nx; var ty = m ? -t.ny : t.ny; var c = gComb(t.codigoProducto);
+                h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + c.b + ";color:" + c.t + "'>" + c.s + "</div>";
             }
             return h + "</div>";
         }
 
-        function gCol(m) {
-            var x = (m || "").toUpperCase();
-            if (x.indexOf("REPSOL") > -1) return "brand-REPSOL";
-            if (x.indexOf("BP") > -1) return "brand-BP";
-            if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE";
-            if (x.indexOf("SHELL") > -1) return "brand-SHELL";
-            if (x.indexOf("GALP") > -1) return "brand-GALP";
-            return "brand-DEFAULT";
-        }
-
-        function gHx(m) {
-            var x = (m || "").toUpperCase();
-            if (x.indexOf("REPSOL") > -1) return "#FF9800";
-            if (x.indexOf("BP") > -1) return "#4CAF50";
-            if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6";
-            if (x.indexOf("SHELL") > -1) return "#FFC107";
-            if (x.indexOf("GALP") > -1) return "#FF5000";
-            return "#673AB7";
-        }
-
+        function gCol(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "brand-REPSOL"; if (x.indexOf("BP") > -1) return "brand-BP"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE"; if (x.indexOf("SHELL") > -1) return "brand-SHELL"; if (x.indexOf("GALP") > -1) return "brand-GALP"; return "brand-DEFAULT"; }
+        function gHx(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "#FF9800"; if (x.indexOf("BP") > -1) return "#4CAF50"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6"; if (x.indexOf("SHELL") > -1) return "#FFC107"; if (x.indexOf("GALP") > -1) return "#FF5000"; return "#673AB7"; }
         function gComb(c) {
-            var n = (c || "").toUpperCase().trim();
-            var b = "#424242"; var t = "#FFF"; var s = n;
+            var n = (c || "").toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n;
             switch(n) {
-                case "A": b = "#FFB300"; break;
-                case "A+5": b = "#F57C00"; break;
-                case "A+": b = "#FF8F00"; break;
-                case "NEXA": b = "#00838F"; s = "NEX"; break;
-                case "B": b = "#D32F2F"; break;
-                case "B MAR PRO": b = "#880E4F"; s = "BPR"; break;
-                case "C": b = "#0288D1"; break;
-                case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break;
-                case "95": b = "#388E3C"; break;
-                case "95+": b = "#1B5E20"; break;
-                case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break;
-                case "98": b = "#1565C0"; break;
-                case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break;
+                case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break;
             }
             return { b: b, t: t, s: s };
         }
