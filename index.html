@@ -208,24 +208,33 @@
 
     <div id="modal-driver" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; justify-content: center; align-items: center;">
         <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
-            <h4 class="text-white fw-bold mb-3" id="md-ttl">Conductor</h4>
-            <input type="text" id="md-user" class="form-control mb-3" placeholder="Usuario / Nº (Inmodificable al crear)">
-            <input type="text" id="md-name" class="form-control mb-3 text-uppercase" placeholder="Nombre Completo">
-            <input type="text" id="md-pass" class="form-control mb-3" placeholder="Contraseña (Dejar en blanco si no cambia)">
+            <div class="d-flex justify-content-between mb-3">
+                <h4 class="text-white fw-bold m-0" id="md-ttl">Conductor</h4>
+                <span onclick="cerrarModalDriver()" style="color: white; font-size: 24px; cursor: pointer;">✕</span>
+            </div>
+            
+            <label class="form-label text-purple fw-bold mt-2">Usuario / Nº Conductor</label>
+            <input type="text" id="md-user" class="form-control mb-3">
+            
+            <label class="form-label text-purple fw-bold">Nombre Completo</label>
+            <input type="text" id="md-name" class="form-control mb-3 text-uppercase">
+            
+            <label class="form-label text-purple fw-bold">Contraseña</label>
+            <input type="text" id="md-pass" class="form-control mb-3" placeholder="(Dejar en blanco si no cambia)">
+            
+            <label class="form-label text-purple fw-bold">Nivel de Acceso</label>
             <select id="md-role" class="form-select mb-4">
                 <option value="CHOFER">CHOFER</option>
                 <option value="ADMIN">ADMIN</option>
                 <option value="INVITADO">INVITADO</option>
             </select>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-light w-50" onclick="cerrarModalDriver()">Cancelar</button>
-                <button class="btn btn-purple w-50 fw-bold" onclick="guardarConductor()" id="btn-s-drv">Guardar</button>
-            </div>
+            
+            <button class="btn btn-purple w-100 py-3 fw-bold fs-5" onclick="guardarConductor()" id="btn-s-drv">Guardar Conductor</button>
         </div>
     </div>
 
     <script>
-        // ¡RECUERDA ASEGURARTE DE QUE ESTA URL ES LA DE TU ÚLTIMA IMPLEMENTACIÓN!
+        // URL DE LA API
         var URL_API = "https://script.google.com/macros/s/AKfycby1Drpq4akhy23GmooDRVDy0xypjUOwNmpZvm1pbgzm3B0Wc-SPGvEeHFDVhEOIfxCU/exec";
         
         var user = null; var deviceId = "";
@@ -234,7 +243,6 @@
         var vGas = null; var vRut = null; var vLad = "RIGHT"; var vZon = 1;
         var eId = null; var ePr = []; var eZon = 1;
 
-        // Generar o recuperar Device ID
         function initDeviceId() {
             deviceId = localStorage.getItem('logistank_device_id');
             if(!deviceId) { deviceId = 'web-' + Math.random().toString(36).substr(2, 12); localStorage.setItem('logistank_device_id', deviceId); }
@@ -299,25 +307,37 @@
             .finally(() => { btn.innerText = "Actualizar Contraseña"; btn.disabled = false; });
         }
 
+        // ==========================================
+        // DESCARGA SEGURA DE DATOS (Antifallos)
+        // ==========================================
+        function safeFetch(url) {
+            // Si una pestaña falla, devuelve un array vacío en lugar de romper toda la web
+            return fetch(url).then(r => r.json()).catch(e => { console.error("Error al descargar:", url); return []; });
+        }
+
         function descargarDatos() {
             var zona = document.getElementById("zona-listas");
-            zona.innerHTML = "<div class='text-center mt-5 text-white'>Descargando base de datos...</div>";
+            zona.innerHTML = "<div class='text-center mt-5 text-white'><div class='spinner-border text-primary mb-3'></div><br>Descargando base de datos...</div>";
 
             var peticiones = [
-                fetch(URL_API + "?action=getGasStations").then(r => r.json()),
-                fetch(URL_API + "?action=getRoutes").then(r => r.json()),
-                fetch(URL_API + "?action=getProducts").then(r => r.json())
+                safeFetch(URL_API + "?action=getGasStations"),
+                safeFetch(URL_API + "?action=getRoutes"),
+                safeFetch(URL_API + "?action=getProducts")
             ];
             
-            if (user && user.r === "ADMIN") { peticiones.push(fetch(URL_API + "?action=getDrivers").then(r => r.json())); }
+            if (user && user.r === "ADMIN") { 
+                peticiones.push(safeFetch(URL_API + "?action=getDrivers")); 
+            } else {
+                peticiones.push(Promise.resolve([]));
+            }
 
-            Promise.all(peticiones)
-            .then(res => { 
-                bdG = res[0]; bdR = res[1]; bdC = res[2]; 
-                if(res.length > 3) bdD = res[3];
+            Promise.all(peticiones).then(res => { 
+                bdG = res[0] || []; 
+                bdR = res[1] || []; 
+                bdC = res[2] || []; 
+                bdD = res[3] || [];
                 irPestana(pst); 
-            })
-            .catch(e => { zona.innerHTML = "<div class='text-center mt-5 text-danger'>Error de red al descargar</div>"; });
+            });
         }
 
         function ocultarTodo() {
@@ -359,12 +379,12 @@
             var _tl = tl ? String(tl).trim().replace(/'/g, "") : "";
             var _wa = encWa ? String(encWa).trim().replace(/'/g, "").replace(/\s+/g, '') : "";
             
-            if (_tl !== "") hL += "<a href='tel:" + _tl + "' class='text-white' style='background:#1976D2; padding:10px 14px; border-radius:50%;'><i class='bi bi-telephone-fill'></i></a>";
+            if (_tl !== "") hL += "<a href='tel:" + _tl + "' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#1976D2; border-radius:50%;'><i class='bi bi-telephone-fill'></i></a>";
             if (_wa !== "") {
                 var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                hL += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='text-white' style='background:#25D366; padding:10px 14px; border-radius:50%;'><i class='bi bi-envelope-fill'></i></a>";
+                hL += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#25D366; border-radius:50%;'><i class='bi bi-chat-dots-fill'></i></a>";
             }
-            if (lat && lon) hL += "<a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank' class='text-white' style='background:#D32F2F; padding:10px 14px; border-radius:50%;'><i class='bi bi-geo-alt-fill'></i></a>";
+            if (lat && lon) hL += "<a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#D32F2F; border-radius:50%;'><i class='bi bi-geo-alt-fill'></i></a>";
             return hL;
         }
 
@@ -440,18 +460,43 @@
             var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdG(this.value)' value='" + s.id + "'>Editar</button>" : "";
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"GAS\")'>← Volver</button>" + bE + "</div>";
-            h += "<div class='card card-station' style='border-top:8px solid " + hx + "; cursor:default'>";
-            h += "<small style='color:" + hx + ";font-weight:bold'>" + (s.marca || "") + "</small>";
+            
+            // CABECERA 1: DATOS GASOLINERA
+            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid " + hx + "; cursor:default'>";
             h += "<h4 class='text-white fw-bold m-0'>" + (s.nombre || "") + "</h4>";
-            h += "<small class='text-muted'>" + (s.direccion || "") + "</small>";
+            h += "<small style='color:" + hx + ";font-weight:bold'>" + (s.marca || "") + "</small>";
             
+            h += "<div class='mt-3'>";
+            if (s.direccion) h += "<div class='text-muted mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + s.direccion + "</div>";
+            
+            var tl = s.telefono ? String(s.telefono).trim().replace(/'/g, "") : "";
+            if (tl !== "") h += "<div class='text-muted mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + tl + "</div>";
+            
+            var lat = s.latitud; var lon = s.longitud;
+            var btnHtml = "<div class='d-flex gap-3'>";
+            if (tl !== "") btnHtml += "<a href='tel:" + tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+            if (lat && lon) btnHtml += "<a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
+            btnHtml += "</div>";
+            if (tl !== "" || (lat && lon)) h += btnHtml;
+            h += "</div></div>";
+            
+            // CABECERA 2: ENCARGADO / CONTACTO
             var nEnc = (s.nombreEncargado||"").trim();
-            if(nEnc !== "") h += "<div class='mt-3 p-2 rounded' style='background:rgba(255,255,255,0.05)'><small class='text-muted d-block'>Encargado</small><strong>" + nEnc + "</strong></div>";
-
-            var iconosGigantes = getContactIconsHtml(s.telefono, s.telefonoEncargado, s.latitud, s.longitud);
-            if(iconosGigantes !== "") h += "<div class='d-flex justify-content-center gap-4 fs-3 mt-3 pb-2 pt-3 border-top border-secondary'>" + iconosGigantes + "</div>";
-            h += "</div>"; 
+            var wa = s.telefonoEncargado ? String(s.telefonoEncargado).trim().replace(/'/g, "").replace(/\s+/g, '') : "";
             
+            if (nEnc !== "" || wa !== "") {
+                h += "<div class='card p-3 mb-3' style='background:#2A2A2A; border-radius:12px;'>";
+                h += "<small class='text-muted fw-bold'>Encargado / Contacto</small>";
+                h += "<h5 class='text-white m-0 mt-1'>" + (nEnc !== "" ? nEnc : "Sin registrar") + "</h5>";
+                if (wa !== "") {
+                    h += "<div class='text-muted mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + wa.replace('+', '') + "</div>";
+                    var finalWa = wa.startsWith("34") || wa.startsWith("+") ? wa : "34" + wa;
+                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
+                }
+                h += "</div>";
+            }
+            
+            // ESQUEMA
             h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
             if (s.ladoDescarga === "BOTH") h += "<div class='d-flex justify-content-center gap-2 mb-3'><button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button><button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
             if (s.zonasDescarga > 1) {
@@ -462,6 +507,7 @@
             var iM = (vLad === "LEFT"); var pZ = gL(s.productos || [], vZon, iM); var dC = gC();
             h += "<div class='d-flex justify-content-center align-items-center mt-4'>" + (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
             
+            // COMENTARIOS
             if(s.comentarios && s.comentarios.trim() !== "") {
                 h += "<div class='mt-4 p-3 rounded' style='background:#FFF3E0; color:#E65100'><strong>Comentarios:</strong><br>" + s.comentarios + "</div>";
             }
@@ -473,17 +519,41 @@
             var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdR(this.value)' value='" + c.id + "'>Editar</button>" : "";
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"RUTAS\")'>← Volver</button>" + bE + "</div>";
-            h += "<div class='card card-station' style='border-top:8px solid #00BCD4; cursor:default'>";
-            h += "<small style='color:#00BCD4;font-weight:bold'>Datos de Ruta</small>";
-            h += "<h4 class='text-white fw-bold m-0'>" + (c.nombre || "") + "</h4>";
-            h += "<small class='text-muted'>" + (c.direccion || "") + "</small>";
             
+            // CABECERA 1: DATOS RUTA
+            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid #00BCD4; cursor:default'>";
+            h += "<h4 class='text-white fw-bold m-0'>" + (c.nombre || "") + "</h4>";
+            h += "<small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small>";
+            
+            h += "<div class='mt-3'>";
+            if (c.direccion) h += "<div class='text-muted mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + c.direccion + "</div>";
+            
+            var tl = c.telefono ? String(c.telefono).trim().replace(/'/g, "") : "";
+            if (tl !== "") h += "<div class='text-muted mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + tl + "</div>";
+            
+            var lat = c.latitud; var lon = c.longitud;
+            var btnHtml = "<div class='d-flex gap-3'>";
+            if (tl !== "") btnHtml += "<a href='tel:" + tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+            if (lat && lon) btnHtml += "<a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
+            btnHtml += "</div>";
+            if (tl !== "" || (lat && lon)) h += btnHtml;
+            h += "</div></div>";
+            
+            // CABECERA 2: ENCARGADO / CONTACTO
             var nEnc = (c.nombreEncargado||"").trim();
-            if(nEnc !== "") h += "<div class='mt-3 p-2 rounded' style='background:rgba(255,255,255,0.05)'><small class='text-muted d-block'>Encargado</small><strong>" + nEnc + "</strong></div>";
-
-            var iconosGigantes = getContactIconsHtml(c.telefono, c.telefonoEncargado, c.latitud, c.longitud);
-            if(iconosGigantes !== "") h += "<div class='d-flex justify-content-center gap-4 fs-3 mt-3 pb-2 pt-3 border-top border-secondary'>" + iconosGigantes + "</div>";
-            h += "</div>"; 
+            var wa = c.telefonoEncargado ? String(c.telefonoEncargado).trim().replace(/'/g, "").replace(/\s+/g, '') : "";
+            
+            if (nEnc !== "" || wa !== "") {
+                h += "<div class='card p-3 mb-3' style='background:#2A2A2A; border-radius:12px;'>";
+                h += "<small class='text-muted fw-bold'>Encargado / Contacto</small>";
+                h += "<h5 class='text-white m-0 mt-1'>" + (nEnc !== "" ? nEnc : "Sin registrar") + "</h5>";
+                if (wa !== "") {
+                    h += "<div class='text-muted mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + wa.replace('+', '') + "</div>";
+                    var finalWa = wa.startsWith("34") || wa.startsWith("+") ? wa : "34" + wa;
+                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
+                }
+                h += "</div>";
+            }
 
             if(c.comentarios && c.comentarios.trim() !== "") {
                 h += "<div class='mt-4 p-3 rounded' style='background:#E0F7FA; color:#006064'><strong>Comentarios:</strong><br>" + c.comentarios + "</div>";
@@ -632,16 +702,32 @@
             document.getElementById("modal-driver").style.display = "flex";
             if(username) {
                 var d = bdD.find(x => x.usuario === username);
-                document.getElementById("md-ttl").innerText = "Editar Conductor"; document.getElementById("md-user").value = d.usuario; document.getElementById("md-user").disabled = true; document.getElementById("md-name").value = d.nombre; document.getElementById("md-pass").value = ""; document.getElementById("md-role").value = d.role;
+                document.getElementById("md-ttl").innerText = "Editar Conductor"; 
+                document.getElementById("md-user").value = d.usuario; 
+                document.getElementById("md-user").disabled = true; 
+                document.getElementById("md-name").value = d.nombre; 
+                document.getElementById("md-pass").value = ""; 
+                document.getElementById("md-pass").placeholder = "(Dejar en blanco si no cambia)";
+                document.getElementById("md-role").value = d.role;
             } else {
-                document.getElementById("md-ttl").innerText = "Nuevo Conductor"; document.getElementById("md-user").value = ""; document.getElementById("md-user").disabled = false; document.getElementById("md-name").value = ""; document.getElementById("md-pass").value = ""; document.getElementById("md-role").value = "CHOFER";
+                document.getElementById("md-ttl").innerText = "Nuevo Conductor"; 
+                document.getElementById("md-user").value = ""; 
+                document.getElementById("md-user").disabled = false; 
+                document.getElementById("md-name").value = ""; 
+                document.getElementById("md-pass").value = ""; 
+                document.getElementById("md-pass").placeholder = "Escribe una contraseña";
+                document.getElementById("md-role").value = "CHOFER";
             }
         }
 
         function cerrarModalDriver() { document.getElementById("modal-driver").style.display = "none"; }
 
         function guardarConductor() {
-            var u = document.getElementById("md-user").value.trim(); var n = document.getElementById("md-name").value.trim().toUpperCase(); var p = document.getElementById("md-pass").value.trim(); var r = document.getElementById("md-role").value;
+            var u = document.getElementById("md-user").value.trim(); 
+            var n = document.getElementById("md-name").value.trim().toUpperCase(); 
+            var p = document.getElementById("md-pass").value.trim(); 
+            var r = document.getElementById("md-role").value;
+            
             if(u==="" || n==="") return alert("Faltan datos");
             var btn = document.getElementById("btn-s-drv"); btn.innerText = "..."; btn.disabled = true;
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveDriver", usuario: u, nombre: n, password: p, role: r }) }).then(() => { alert("Guardado"); cerrarModalDriver(); descargarDatos(); }).finally(() => { btn.innerText = "Guardar"; btn.disabled = false; });
