@@ -16,7 +16,7 @@
         .btn-info-custom { background-color: #00BCD4; color: white; border: none; font-weight: bold; }
         .btn-primary-custom { background-color: #1976D2; color: white; border: none; font-weight: bold; }
         
-        /* 🛡️ Arreglo de los formularios "negros": Cajas grises claras y bordes visibles */
+        /* 🛡️ Cajas grises claras y bordes visibles para que se lea perfecto */
         .form-control, .form-select { background-color: #2A2A2A; color: #FFF; border: 1px solid #555; }
         .form-control:focus, .form-select:focus { border-color: #673AB7; box-shadow: 0 0 0 0.25rem rgba(103, 58, 183, 0.25); background-color: #333; color: white;}
         .form-control::placeholder { color: #bbb; opacity: 1; }
@@ -187,7 +187,7 @@
             <div id="zona-admin-panel" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <button class="btn btn-outline-light" onclick="volverInicio()">← Volver</button>
-                    <h5 class="text-white m-0 fw-bold">Conductores</h5>
+                    <h5 class="text-white m-0 fw-bold">Gestión de Personal</h5>
                 </div>
                 <div id="lista-conductores"></div>
             </div>
@@ -235,19 +235,19 @@
             </div>
             
             <label class="form-label text-purple fw-bold mt-2">Usuario / Nº Conductor</label>
-            <input type="text" id="md-user" class="form-control mb-3">
+            <input type="text" id="md-user" class="form-control mb-3" placeholder="Ej: 001">
             
             <label class="form-label text-purple fw-bold">Nombre Completo</label>
-            <input type="text" id="md-name" class="form-control mb-3 text-uppercase">
+            <input type="text" id="md-name" class="form-control mb-3 text-uppercase" placeholder="Ej: Juan Pérez">
             
             <label class="form-label text-purple fw-bold">Contraseña</label>
             <input type="text" id="md-pass" class="form-control mb-3" placeholder="(Dejar en blanco si no cambia)">
             
             <label class="form-label text-purple fw-bold">Nivel de Acceso</label>
             <select id="md-role" class="form-select mb-4 fw-bold">
-                <option value="CHOFER">CHOFER</option>
-                <option value="ADMIN">ADMIN</option>
-                <option value="INVITADO">INVITADO</option>
+                <option value="CHOFER">CHOFER (Normal)</option>
+                <option value="ADMIN">ADMINISTRADOR</option>
+                <option value="INVITADO">INVITADO (Solo Lectura)</option>
             </select>
             
             <button class="btn btn-purple w-100 py-3 fw-bold fs-5" onclick="guardarConductor()" id="btn-s-drv">Guardar Conductor</button>
@@ -255,8 +255,8 @@
     </div>
 
     <script>
-        // URL DE LA API - (Asegúrate de que sea la de tu "Nueva Implementación" en Google)
-        var URL_API = "https://script.google.com/macros/s/AKfycbzp70w3iMigF8ubUR_w6aKfa8qRmLaDMFACs5bK8pifszY3mJWImkCii7sXXNOw1wH7/exec";
+        // URL DE LA API: LA TUYA DEFINITIVA
+        var URL_API = "https://script.google.com/macros/s/AKfycbxArNzsfQB8_FMEfUWjQkOUnE4X6HS3-3AGb00_hnXnRR5sAZU6n_68xuUgfi_tJmSZ/exec";
         
         var user = null; var deviceId = "";
         var bdG = []; var bdR = []; var bdC = []; var bdD = [];
@@ -264,7 +264,6 @@
         var vGas = null; var vRut = null; var vLad = "RIGHT"; var vZon = 1;
         var eId = null; var ePr = []; var eZon = 1;
 
-        // 🛡️ LECTOR INTELIGENTE ANTIFALLOS PARA GOOGLE SHEETS
         function getProp(obj, keys) {
             if (!obj) return "";
             for (var i = 0; i < keys.length; i++) {
@@ -383,14 +382,14 @@
         function obtenerUbicacion(idLat, idLon, btn) {
             if (navigator.geolocation) {
                 var originalHtml = btn.innerHTML;
-                btn.innerHTML = "<div class='spinner-border spinner-border-sm text-white'></div>"; // Icono de carga
+                btn.innerHTML = "<div class='spinner-border spinner-border-sm text-white'></div>"; 
                 
                 navigator.geolocation.getCurrentPosition(function(position) {
                     document.getElementById(idLat).value = position.coords.latitude;
                     document.getElementById(idLon).value = position.coords.longitude;
                     btn.innerHTML = originalHtml;
                 }, function(error) {
-                    alert("⚠️ No se pudo obtener la ubicación. Por favor, asegúrate de que el GPS de tu dispositivo está encendido y has dado permisos al navegador.");
+                    alert("⚠️ No se pudo obtener la ubicación. Comprueba que el GPS está encendido y permite el acceso al navegador.");
                     btn.innerHTML = originalHtml;
                 }, { enableHighAccuracy: true });
             } else {
@@ -399,7 +398,7 @@
         }
 
         // ==========================================
-        // GESTIÓN DE NAVEGACIÓN LIMPIA (2 BOTONES)
+        // GESTIÓN DE NAVEGACIÓN LIMPIA
         // ==========================================
         function irPestana(p) {
             pst = p;
@@ -425,14 +424,19 @@
             }
 
             var fab = document.getElementById("btn-fab");
-            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS")) fab.style.display = "flex"; 
+            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS" || p === "ADMIN")) fab.style.display = "flex"; 
             else fab.style.display = "none";
         }
 
+        // 🛡️ AQUÍ ESTABA EL ERROR DEL BOTÓN (+) ARREGLADO
         function btnFabClick() {
-            if(pst === "GAS") aEdG(null);
-            else if (pst === "RUTAS") aEdR(null);
-            else if (document.getElementById("zona-admin-panel").style.display === "block") abrirEditorConductor(null);
+            if (pst === "ADMIN") {
+                abrirEditorConductor(null);
+            } else if (pst === "GAS") {
+                aEdG(null);
+            } else if (pst === "RUTAS") {
+                aEdR(null);
+            }
         }
 
         // ==========================================
@@ -456,16 +460,13 @@
                 h += "<div class='card card-station' onclick='abrirVisor(\"" + _id + "\")' id='" + _id + "'>";
                 h += "<div class='brand-indicator " + c + "'></div>";
                 
-                // 1. TÍTULO Y MARCA
                 h += "<h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
                 if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>";
                 
-                // 2. DIRECCIÓN
                 if(_direccion) {
                     h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
                 }
                 
-                // 3. TELÉFONO FIJO (Con botón)
                 if(_tl) {
                     h += "<div class='data-row text-light justify-content-between'>";
                     h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
@@ -473,7 +474,6 @@
                     h += "</div>";
                 }
                 
-                // 4. BLOQUE DEL ENCARGADO
                 if(_nEnc || _wa) {
                     h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
                     h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
@@ -508,15 +508,12 @@
                 h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'>";
                 h += "<div class='brand-indicator brand-RUTA'></div>";
                 
-                // 1. TÍTULO
                 h += "<h5 class='fw-bold m-0 text-white mb-2'>" + _nombre + "</h5>";
                 
-                // 2. DIRECCIÓN
                 if(_direccion) {
                     h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
                 }
                 
-                // 3. TELÉFONO FIJO (Con botón)
                 if(_tl) {
                     h += "<div class='data-row text-light justify-content-between'>";
                     h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
@@ -524,7 +521,6 @@
                     h += "</div>";
                 }
                 
-                // 4. BLOQUE DEL ENCARGADO
                 if(_nEnc || _wa) {
                     h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
                     h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
@@ -563,7 +559,7 @@
         }
 
         // ==========================================
-        // VISORES (GASOLINERA Y RUTA)
+        // VISORES Y EDITORES DE GASOLINERA Y RUTA
         // ==========================================
         function abrirVisor(id) {
             vGas = bdG.find(x => getProp(x, ["id"]) === id); if (!vGas) return;
@@ -599,7 +595,6 @@
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"GAS\")'>← Volver</button>" + bE + "</div>";
             
-            // CABECERA 1: DATOS GASOLINERA
             h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid " + hx + "; cursor:default'>";
             h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4>";
             h += "<small style='color:" + hx + ";font-weight:bold'>" + _marca + "</small>";
@@ -615,7 +610,6 @@
             if (_tl !== "" || (_lat && _lon)) h += btnHtml;
             h += "</div></div>";
             
-            // CABECERA 2: ENCARGADO / CONTACTO
             if (_nEnc !== "" || _wa !== "") {
                 h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
                 h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
@@ -628,7 +622,6 @@
                 h += "</div>";
             }
             
-            // ESQUEMA
             h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
             if (_lado === "BOTH") h += "<div class='d-flex justify-content-center gap-2 mb-3'><button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button><button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
             if (_zonas > 1) {
@@ -639,7 +632,6 @@
             var iM = (vLad === "LEFT"); var pZ = gL(_productos || [], vZon, iM); var dC = gC();
             h += "<div class='d-flex justify-content-center align-items-center mt-4'>" + (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
             
-            // COMENTARIOS
             if(_comentarios && _comentarios.trim() !== "") {
                 h += "<div class='mt-4 p-3 rounded' style='background:#FFF3E0; color:#E65100'><strong>Comentarios:</strong><br>" + _comentarios + "</div>";
             }
@@ -663,7 +655,6 @@
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"RUTAS\")'>← Volver</button>" + bE + "</div>";
             
-            // CABECERA 1: DATOS RUTA
             h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid #00BCD4; cursor:default'>";
             h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4>";
             h += "<small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small>";
@@ -679,7 +670,6 @@
             if (_tl !== "" || (_lat && _lon)) h += btnHtml;
             h += "</div></div>";
             
-            // CABECERA 2: ENCARGADO / CONTACTO
             if (_nEnc !== "" || _wa !== "") {
                 h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
                 h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
@@ -701,9 +691,6 @@
         function cLad(l) { vLad = l; dVis(); }
         function cZon(z) { vZon = parseInt(z, 10); dVis(); }
 
-        // ==========================================
-        // EDITORES
-        // ==========================================
         function cerrarEditor() { if (vGas) abrirVisor(getProp(vGas, ["id"])); else irPestana(pst); }
         function cerrarEditorRuta() { if (vRut) abrirVisorRuta(getProp(vRut, ["id"])); else irPestana(pst); }
 
@@ -799,9 +786,10 @@
         function bRut() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) }).then(() => { alert("Borrado"); vRut = null; descargarDatos(); cerrarEditorRuta(); }); }
 
         // ==========================================
-        // PANEL ADMIN: CONDUCTORES
+        // PANEL ADMIN: CONDUCTORES 
         // ==========================================
         function abrirPanelAdmin() {
+            pst = "ADMIN"; // 🛡️ EL PARCHE ESTÁ AQUÍ
             cerrarAjustes(); ocultarTodo();
             document.getElementById("nav-superior").style.display = "none";
             document.getElementById("btn-fab").style.display = "flex";
@@ -813,11 +801,11 @@
             var h = "";
             for(var i=0; i<bdD.length; i++) {
                 var d = bdD[i];
-                var _usr = getProp(d, ["usuario", "id"]);
-                var _nom = getProp(d, ["nombre"]);
-                var _rol = getProp(d, ["role", "rol"]);
-                var _dev = getProp(d, ["deviceId", "deviceid"]);
-                var _acc = getProp(d, ["ultimoAcceso", "acceso"]);
+                var _usr = d.usuario;
+                var _nom = d.nombre;
+                var _rol = d.role;
+                var _dev = d.deviceId;
+                var _acc = d.ultimoAcceso;
                 
                 var hasDevice = _dev !== "";
                 var roleCol = _rol === "ADMIN" ? "#673AB7" : (_rol === "INVITADO" ? "#FF9800" : "#0288D1");
@@ -846,14 +834,14 @@
         function abrirEditorConductor(username) {
             document.getElementById("modal-driver").style.display = "flex";
             if(username) {
-                var d = bdD.find(x => getProp(x, ["usuario", "id"]) === username);
+                var d = bdD.find(x => x.usuario === username);
                 document.getElementById("md-ttl").innerText = "Editar Conductor"; 
-                document.getElementById("md-user").value = getProp(d, ["usuario", "id"]); 
+                document.getElementById("md-user").value = d.usuario; 
                 document.getElementById("md-user").disabled = true; 
-                document.getElementById("md-name").value = getProp(d, ["nombre"]); 
+                document.getElementById("md-name").value = d.nombre; 
                 document.getElementById("md-pass").value = ""; 
                 document.getElementById("md-pass").placeholder = "(Dejar en blanco si no cambia)";
-                document.getElementById("md-role").value = getProp(d, ["role", "rol"]);
+                document.getElementById("md-role").value = d.role;
             } else {
                 document.getElementById("md-ttl").innerText = "Nuevo Conductor"; 
                 document.getElementById("md-user").value = ""; 
