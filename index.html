@@ -28,11 +28,6 @@
         .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
         .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; } .brand-RUTA { background-color: #00BCD4; }
         
-        /* 🛡️ Estilos para el nuevo diseño de las tarjetas (Contactos y Encargado) */
-        .data-row { display: flex; align-items: center; margin-bottom: 8px; }
-        .data-icon { width: 24px; text-align: center; margin-right: 8px; font-size: 1.1rem; }
-        .encargado-box { background-color: #252525; border-radius: 8px; padding: 12px; margin-top: 12px; border-left: 4px solid #4CAF50; }
-
         /* Camión y Lienzo */
         .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
         .truck-head { width: 70px; height: 45px; background-color: #555555; border-radius: 6px; }
@@ -255,7 +250,7 @@
     </div>
 
     <script>
-        // URL DE LA API: LA TUYA DEFINITIVA
+        // 🔗 URL DE LA API DEFINITIVA APLICADA
         var URL_API = "https://script.google.com/macros/s/AKfycbzp70w3iMigF8ubUR_w6aKfa8qRmLaDMFACs5bK8pifszY3mJWImkCii7sXXNOw1wH7/exec";
         
         var user = null; var deviceId = "";
@@ -376,9 +371,6 @@
 
         function volverInicio() { irPestana('GAS'); }
 
-        // ==========================================
-        // GEOLOCALIZACIÓN (NUEVO BOTÓN)
-        // ==========================================
         function obtenerUbicacion(idLat, idLon, btn) {
             if (navigator.geolocation) {
                 var originalHtml = btn.innerHTML;
@@ -397,9 +389,6 @@
             }
         }
 
-        // ==========================================
-        // GESTIÓN DE NAVEGACIÓN LIMPIA
-        // ==========================================
         function irPestana(p) {
             pst = p;
             ocultarTodo();
@@ -428,7 +417,6 @@
             else fab.style.display = "none";
         }
 
-        // 🛡️ AQUÍ ESTABA EL ERROR DEL BOTÓN (+) ARREGLADO
         function btnFabClick() {
             if (pst === "ADMIN") {
                 abrirEditorConductor(null);
@@ -440,7 +428,7 @@
         }
 
         // ==========================================
-        // RENDER DE LISTAS (CON EL NUEVO DISEÑO)
+        // RENDER DE LISTADOS LIMPIOS Y DIRECTOS
         // ==========================================
         function pG() {
             var h = "";
@@ -453,7 +441,8 @@
                 var _direccion = getProp(s, ["direccion"]);
                 var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
                 var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
+                var _lat = getProp(s, ["latitud"]);
+                var _lon = getProp(s, ["longitud"]);
 
                 var c = gCol(_marca);
                 
@@ -462,29 +451,28 @@
                 
                 h += "<h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
                 if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>";
+                else h += "<div style='margin-bottom:12px;'></div>";
                 
                 if(_direccion) {
-                    h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
-                }
-                
-                if(_tl) {
-                    h += "<div class='data-row text-light justify-content-between'>";
-                    h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
+                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
+                    if (_lat && _lon) {
+                        h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
+                    }
                     h += "</div>";
                 }
                 
-                if(_nEnc || _wa) {
-                    h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
-                    h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
-                    if(_nEnc) h += "<div class='text-white fw-bold mb-1'>" + _nEnc + "</div>";
-                    if(_wa) {
-                        var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                        h += "<div class='d-flex justify-content-between align-items-center mt-2'>";
-                        h += "<div class='text-light'><i class='bi bi-whatsapp text-success me-2'></i>+" + _wa.replace('+', '') + "</div>";
-                        h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold'><i class='bi bi-whatsapp'></i> Chat</a>";
-                        h += "</div>";
-                    }
+                if(_tl) {
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
+                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "</div>";
+                }
+                
+                if(_wa) {
+                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                    h += "<div class='mt-2'>";
+                    h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold w-100 text-center' onclick='event.stopPropagation()'><i class='bi bi-whatsapp'></i> WhatsApp</a>";
                     h += "</div>";
                 }
                 
@@ -503,35 +491,34 @@
                 var _direccion = getProp(s, ["direccion"]);
                 var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
                 var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
+                var _lat = getProp(s, ["latitud"]);
+                var _lon = getProp(s, ["longitud"]);
 
                 h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'>";
                 h += "<div class='brand-indicator brand-RUTA'></div>";
                 
-                h += "<h5 class='fw-bold m-0 text-white mb-2'>" + _nombre + "</h5>";
+                h += "<h5 class='fw-bold m-0 text-white mb-3'>" + _nombre + "</h5>";
                 
                 if(_direccion) {
-                    h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
-                }
-                
-                if(_tl) {
-                    h += "<div class='data-row text-light justify-content-between'>";
-                    h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
+                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
+                    if (_lat && _lon) {
+                        h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
+                    }
                     h += "</div>";
                 }
                 
-                if(_nEnc || _wa) {
-                    h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
-                    h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
-                    if(_nEnc) h += "<div class='text-white fw-bold mb-1'>" + _nEnc + "</div>";
-                    if(_wa) {
-                        var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                        h += "<div class='d-flex justify-content-between align-items-center mt-2'>";
-                        h += "<div class='text-light'><i class='bi bi-whatsapp text-success me-2'></i>+" + _wa.replace('+', '') + "</div>";
-                        h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold'><i class='bi bi-whatsapp'></i> Chat</a>";
-                        h += "</div>";
-                    }
+                if(_tl) {
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
+                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "</div>";
+                }
+                
+                if(_wa) {
+                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                    h += "<div class='mt-2'>";
+                    h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold w-100 text-center' onclick='event.stopPropagation()'><i class='bi bi-whatsapp'></i> WhatsApp</a>";
                     h += "</div>";
                 }
                 
@@ -559,7 +546,7 @@
         }
 
         // ==========================================
-        // VISORES Y EDITORES DE GASOLINERA Y RUTA
+        // VISORES DETALLADOS
         // ==========================================
         function abrirVisor(id) {
             vGas = bdG.find(x => getProp(x, ["id"]) === id); if (!vGas) return;
@@ -610,15 +597,11 @@
             if (_tl !== "" || (_lat && _lon)) h += btnHtml;
             h += "</div></div>";
             
-            if (_nEnc !== "" || _wa !== "") {
+            if (_wa !== "") {
                 h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
-                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
-                h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
-                if (_wa !== "") {
-                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> Chat WhatsApp</a></div>";
-                }
+                h += "<div class='text-light mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
+                var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
                 h += "</div>";
             }
             
@@ -670,15 +653,11 @@
             if (_tl !== "" || (_lat && _lon)) h += btnHtml;
             h += "</div></div>";
             
-            if (_nEnc !== "" || _wa !== "") {
+            if (_wa !== "") {
                 h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
-                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
-                h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
-                if (_wa !== "") {
-                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> Chat WhatsApp</a></div>";
-                }
+                h += "<div class='text-light mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
+                var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
                 h += "</div>";
             }
 
@@ -786,10 +765,10 @@
         function bRut() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) }).then(() => { alert("Borrado"); vRut = null; descargarDatos(); cerrarEditorRuta(); }); }
 
         // ==========================================
-        // PANEL ADMIN: CONDUCTORES 
+        // PANEL ADMIN: CONDUCTORES
         // ==========================================
         function abrirPanelAdmin() {
-            pst = "ADMIN"; // 🛡️ EL PARCHE ESTÁ AQUÍ
+            pst = "ADMIN";
             cerrarAjustes(); ocultarTodo();
             document.getElementById("nav-superior").style.display = "none";
             document.getElementById("btn-fab").style.display = "flex";
