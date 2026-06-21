@@ -16,16 +16,23 @@
         .btn-info-custom { background-color: #00BCD4; color: white; border: none; font-weight: bold; }
         .btn-primary-custom { background-color: #1976D2; color: white; border: none; font-weight: bold; }
         
-        .form-control, .form-select { background-color: #1E1E1E; color: white; border: 1px solid #333; }
-        .form-control:focus, .form-select:focus { border-color: #673AB7; box-shadow: none; background-color: #1E1E1E; color: white;}
+        /* 🛡️ Arreglo de los formularios "negros": Cajas grises claras y bordes visibles */
+        .form-control, .form-select { background-color: #2A2A2A; color: #FFF; border: 1px solid #555; }
+        .form-control:focus, .form-select:focus { border-color: #673AB7; box-shadow: 0 0 0 0.25rem rgba(103, 58, 183, 0.25); background-color: #333; color: white;}
+        .form-control::placeholder { color: #bbb; opacity: 1; }
         
-        .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 12px; position: relative; padding: 15px 15px 15px 25px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;}
+        .card-station { background-color: #1E1E1E; border-radius: 12px; margin-bottom: 16px; position: relative; padding: 16px 16px 16px 24px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;}
         .brand-indicator { width: 8px; height: 100%; position: absolute; left: 0; top: 0; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
         
         .brand-REPSOL { background-color: #FF9800; } .brand-BP { background-color: #4CAF50; }
         .brand-MOEVE { background-color: #005CE6; } .brand-SHELL { background-color: #FFC107; }
         .brand-GALP { background-color: #FF5000; } .brand-DEFAULT { background-color: #673AB7; } .brand-RUTA { background-color: #00BCD4; }
         
+        /* 🛡️ Estilos para el nuevo diseño de las tarjetas (Contactos y Encargado) */
+        .data-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .data-icon { width: 24px; text-align: center; margin-right: 8px; font-size: 1.1rem; }
+        .encargado-box { background-color: #252525; border-radius: 8px; padding: 12px; margin-top: 12px; border-left: 4px solid #4CAF50; }
+
         /* Camión y Lienzo */
         .truck-body { width: 80px; height: 310px; background-color: #333333; border: 2px solid #555; border-radius: 24px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; }
         .truck-head { width: 70px; height: 45px; background-color: #555555; border-radius: 6px; }
@@ -80,46 +87,57 @@
                     <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
                     <button id="b-del-gas" class="btn btn-danger" style="display: none;" onclick="bGas()">Borrar</button>
                 </div>
-                <div class="card card-station" style="cursor: default;">
+                <div class="card p-3 shadow" style="background-color: #1E1E1E; border-radius: 12px; border: none;">
                     <h4 class="fw-bold mb-3 text-white" id="ttl-e-g">Nueva Estación</h4>
                     
-                    <label class="form-label text-muted">Marca</label>
-                    <select id="eg-marca" class="form-select mb-3">
+                    <label class="form-label text-light fw-bold mt-2">Marca</label>
+                    <select id="eg-marca" class="form-select mb-3 fw-bold">
                         <option value="REPSOL">REPSOL</option><option value="MOEVE">MOEVE</option><option value="BP">BP</option><option value="SHELL">SHELL</option><option value="GALP">GALP</option><option value="LOW COST">LOW COST</option>
                     </select>
                     
-                    <label class="form-label text-muted">Nombre</label>
-                    <input type="text" id="eg-nom" class="form-control mb-3 text-uppercase">
-                    <label class="form-label text-muted">Dirección</label>
-                    <input type="text" id="eg-dir" class="form-control mb-3 text-uppercase">
-
-                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación GPS</label>
-                    <input type="text" id="eg-tel" class="form-control mb-2" placeholder="Teléfono Fijo">
-                    <div class="p-3 mb-3 mt-2 rounded" style="background-color: rgba(255,255,255,0.05);">
-                        <label class="form-label text-muted m-0">Encargado / Contacto Alternativo</label>
-                        <input type="text" id="eg-enc-nom" class="form-control mb-2 mt-2" placeholder="Nombre">
-                        <input type="text" id="eg-wa" class="form-control" placeholder="Móvil (WhatsApp)">
-                    </div>
-                    <div class="d-flex gap-2 mb-4">
-                        <input type="number" id="eg-lat" class="form-control" placeholder="Latitud">
-                        <input type="number" id="eg-lon" class="form-control" placeholder="Longitud">
-                    </div>
+                    <label class="form-label text-light fw-bold">Nombre de la Gasolinera</label>
+                    <input type="text" id="eg-nom" class="form-control mb-3 text-uppercase" placeholder="Ej: REPSOL MADRID CENTRO">
                     
-                    <label class="form-label text-muted">Lado de Descarga</label>
-                    <select id="eg-lad" class="form-select mb-3" onchange="dCamEd()">
+                    <label class="form-label text-light fw-bold">Dirección Completa</label>
+                    <input type="text" id="eg-dir" class="form-control mb-3 text-uppercase" placeholder="Ej: Calle Principal 123, Madrid">
+
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+
+                    <label class="form-label text-purple fw-bold">Teléfono Fijo Gasolinera</label>
+                    <input type="text" id="eg-tel" class="form-control mb-3" placeholder="Ej: 912345678">
+                    
+                    <label class="form-label text-purple fw-bold mt-2">Datos del Encargado</label>
+                    <div class="p-3 mb-3 rounded" style="background-color: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50;">
+                        <input type="text" id="eg-enc-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre del Encargado">
+                        <input type="text" id="eg-wa" class="form-control" placeholder="Móvil (Para WhatsApp)">
+                    </div>
+
+                    <label class="form-label text-purple fw-bold mt-2">Ubicación GPS</label>
+                    <div class="d-flex gap-2 mb-4">
+                        <input type="number" id="eg-lat" class="form-control" placeholder="Latitud (Ej: 40.4167)">
+                        <input type="number" id="eg-lon" class="form-control" placeholder="Longitud (Ej: -3.7032)">
+                        <button type="button" class="btn btn-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 60px;" onclick="obtenerUbicacion('eg-lat', 'eg-lon', this)">
+                            <i class="bi bi-geo-alt-fill fs-5"></i>
+                        </button>
+                    </div>
+
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+                    
+                    <label class="form-label text-light fw-bold">Lado de Descarga</label>
+                    <select id="eg-lad" class="form-select mb-3 fw-bold" onchange="dCamEd()">
                         <option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option>
                     </select>
                     
-                    <label class="form-label text-muted">Zonas de Descarga (1 a 4)</label>
-                    <input type="number" id="eg-zon" class="form-control mb-3" min="1" max="4" value="1" onchange="dCamEd()">
+                    <label class="form-label text-light fw-bold">Zonas de Descarga (1 a 4)</label>
+                    <input type="number" id="eg-zon" class="form-control mb-3 fw-bold" min="1" max="4" value="1" onchange="dCamEd()">
                     
-                    <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema</h5>
+                    <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema de Producto</h5>
                     <div id="eg-canv" class="my-3"></div>
                     
-                    <label class="form-label text-muted mt-3">Comentarios</label>
-                    <textarea id="eg-com" class="form-control mb-3 text-uppercase" rows="2"></textarea>
+                    <label class="form-label text-light fw-bold mt-3">Comentarios / Notas</label>
+                    <textarea id="eg-com" class="form-control mb-3 text-uppercase" rows="3" placeholder="Peligros, instrucciones de acceso, códigos..."></textarea>
 
-                    <button id="btn-s-gas" onclick="gGas()" class="btn btn-purple w-100 py-3 mt-2 fs-5">Guardar Estación</button>
+                    <button id="btn-s-gas" onclick="gGas()" class="btn btn-purple w-100 py-3 mt-2 fs-5">Guardar Gasolinera</button>
                 </div>
             </div>
 
@@ -128,26 +146,39 @@
                     <button class="btn btn-outline-light" onclick="cerrarEditorRuta()">← Volver</button>
                     <button id="b-del-rut" class="btn btn-danger" style="display: none;" onclick="bRut()">Borrar</button>
                 </div>
-                <div class="card card-station" style="cursor: default;">
-                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Ficha de Cliente</h4>
-                    <label class="form-label text-muted mt-2">Nombre y Dirección</label>
-                    <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre">
-                    <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Dirección">
+                <div class="card p-3 shadow" style="background-color: #1E1E1E; border-radius: 12px; border: none;">
+                    <h4 class="fw-bold mb-3 text-white" id="ttl-e-r">Ficha de Cliente Ruta</h4>
+                    
+                    <label class="form-label text-light fw-bold mt-2">Nombre del Cliente</label>
+                    <input type="text" id="er-nom" class="form-control mb-3 text-uppercase" placeholder="Ej: EMPRESA LOGÍSTICA S.L.">
+                    
+                    <label class="form-label text-light fw-bold">Dirección Completa</label>
+                    <input type="text" id="er-dir" class="form-control mb-3 text-uppercase" placeholder="Ej: Polígono Industrial Nave 4">
 
-                    <label class="form-label text-purple fw-bold mt-2">Contactos y Ubicación GPS</label>
-                    <input type="text" id="er-tel" class="form-control mb-2" placeholder="Teléfono Fijo">
-                    <div class="p-3 mb-3 mt-2 rounded" style="background-color: rgba(255,255,255,0.05);">
-                        <label class="form-label text-muted m-0">Encargado / Contacto Alternativo</label>
-                        <input type="text" id="er-enc-nom" class="form-control mb-2 mt-2" placeholder="Nombre">
-                        <input type="text" id="er-wa" class="form-control" placeholder="Móvil (WhatsApp)">
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+
+                    <label class="form-label text-purple fw-bold mt-2">Teléfono Fijo / Centralita</label>
+                    <input type="text" id="er-tel" class="form-control mb-3" placeholder="Ej: 912345678">
+                    
+                    <label class="form-label text-purple fw-bold mt-2">Datos del Encargado / Recepción</label>
+                    <div class="p-3 mb-3 rounded" style="background-color: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50;">
+                        <input type="text" id="er-enc-nom" class="form-control mb-3 text-uppercase" placeholder="Nombre de la persona">
+                        <input type="text" id="er-wa" class="form-control" placeholder="Móvil (Para WhatsApp)">
                     </div>
+
+                    <label class="form-label text-purple fw-bold mt-2">Ubicación GPS</label>
                     <div class="d-flex gap-2 mb-4">
-                        <input type="number" id="er-lat" class="form-control" placeholder="Latitud">
-                        <input type="number" id="er-lon" class="form-control" placeholder="Longitud">
+                        <input type="number" id="er-lat" class="form-control" placeholder="Latitud (Ej: 40.4167)">
+                        <input type="number" id="er-lon" class="form-control" placeholder="Longitud (Ej: -3.7032)">
+                        <button type="button" class="btn btn-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 60px;" onclick="obtenerUbicacion('er-lat', 'er-lon', this)">
+                            <i class="bi bi-geo-alt-fill fs-5"></i>
+                        </button>
                     </div>
                     
-                    <label class="form-label text-muted mt-2">Comentarios</label>
-                    <textarea id="er-com" class="form-control mb-3 text-uppercase" rows="2"></textarea>
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+
+                    <label class="form-label text-light fw-bold mt-2">Comentarios / Notas</label>
+                    <textarea id="er-com" class="form-control mb-3 text-uppercase" rows="3" placeholder="Horarios, instrucciones de entrada..."></textarea>
 
                     <button id="btn-s-rut" onclick="gRut()" class="btn btn-purple w-100 py-3 mt-2 fs-5">Guardar Cliente</button>
                 </div>
@@ -188,7 +219,7 @@
                 <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
             </div>
 
-            <label class="form-label text-muted fw-bold">Cambiar mi Contraseña</label>
+            <label class="form-label text-light fw-bold">Cambiar mi Contraseña</label>
             <input type="password" id="nueva-pass" class="form-control mb-3 py-2" placeholder="Escribe tu nueva contraseña">
             <button class="btn btn-warning w-100 fw-bold mb-4" onclick="cambiarMiContrasena(this)">Actualizar Contraseña</button>
             <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
@@ -213,7 +244,7 @@
             <input type="text" id="md-pass" class="form-control mb-3" placeholder="(Dejar en blanco si no cambia)">
             
             <label class="form-label text-purple fw-bold">Nivel de Acceso</label>
-            <select id="md-role" class="form-select mb-4">
+            <select id="md-role" class="form-select mb-4 fw-bold">
                 <option value="CHOFER">CHOFER</option>
                 <option value="ADMIN">ADMIN</option>
                 <option value="INVITADO">INVITADO</option>
@@ -239,7 +270,6 @@
             for (var i = 0; i < keys.length; i++) {
                 if (obj[keys[i]] !== undefined && obj[keys[i]] !== null && obj[keys[i]] !== "") return obj[keys[i]];
             }
-            // Fallback para ignorar mayúsculas, minúsculas o tildes
             for (var prop in obj) {
                 for (var j = 0; j < keys.length; j++) {
                     if (prop.toLowerCase().replace(/[^a-z0-9]/g, '') === keys[j].toLowerCase().replace(/[^a-z0-9]/g, '')) {
@@ -348,6 +378,27 @@
         function volverInicio() { irPestana('GAS'); }
 
         // ==========================================
+        // GEOLOCALIZACIÓN (NUEVO BOTÓN)
+        // ==========================================
+        function obtenerUbicacion(idLat, idLon, btn) {
+            if (navigator.geolocation) {
+                var originalHtml = btn.innerHTML;
+                btn.innerHTML = "<div class='spinner-border spinner-border-sm text-white'></div>"; // Icono de carga
+                
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById(idLat).value = position.coords.latitude;
+                    document.getElementById(idLon).value = position.coords.longitude;
+                    btn.innerHTML = originalHtml;
+                }, function(error) {
+                    alert("⚠️ No se pudo obtener la ubicación. Por favor, asegúrate de que el GPS de tu dispositivo está encendido y has dado permisos al navegador.");
+                    btn.innerHTML = originalHtml;
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("Tu navegador no soporta geolocalización automática.");
+            }
+        }
+
+        // ==========================================
         // GESTIÓN DE NAVEGACIÓN LIMPIA (2 BOTONES)
         // ==========================================
         function irPestana(p) {
@@ -384,19 +435,8 @@
             else if (document.getElementById("zona-admin-panel").style.display === "block") abrirEditorConductor(null);
         }
 
-        function getContactIconsHtml(tl, encWa, lat, lon) {
-            var hL = "";
-            if (tl !== "") hL += "<a href='tel:" + tl + "' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#1976D2; border-radius:50%;'><i class='bi bi-telephone-fill'></i></a>";
-            if (encWa !== "") {
-                var finalWa = encWa.startsWith("34") || encWa.startsWith("+") ? encWa : "34" + encWa;
-                hL += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#25D366; border-radius:50%;'><i class='bi bi-chat-dots-fill'></i></a>";
-            }
-            if (lat && lon) hL += "<a href='https://www.google.com/maps?q=" + lat + "," + lon + "' target='_blank' class='text-white d-flex justify-content-center align-items-center' style='width:42px; height:42px; background:#D32F2F; border-radius:50%;'><i class='bi bi-geo-alt-fill'></i></a>";
-            return hL;
-        }
-
         // ==========================================
-        // RENDER DE LISTAS Y CÓDIGOS (AHORA SEGUROS)
+        // RENDER DE LISTAS (CON EL NUEVO DISEÑO)
         // ==========================================
         function pG() {
             var h = "";
@@ -409,19 +449,46 @@
                 var _direccion = getProp(s, ["direccion"]);
                 var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
                 var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]);
-                var _lon = getProp(s, ["longitud"]);
+                var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
 
                 var c = gCol(_marca);
                 
                 h += "<div class='card card-station' onclick='abrirVisor(\"" + _id + "\")' id='" + _id + "'>";
                 h += "<div class='brand-indicator " + c + "'></div>";
-                h += "<div class='d-flex justify-content-between align-items-center'>";
-                h += "<div><h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
-                h += "<small style='color: #aaa;'>" + _marca + " • " + _direccion + "</small></div>";
-                var iconos = getContactIconsHtml(_tl, _wa, _lat, _lon);
-                if(iconos !== "") h += "<div class='d-flex gap-2 fs-5' onclick='event.stopPropagation()'>" + iconos + "</div>";
-                h += "</div></div>";
+                
+                // 1. TÍTULO Y MARCA
+                h += "<h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
+                if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>";
+                
+                // 2. DIRECCIÓN
+                if(_direccion) {
+                    h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
+                }
+                
+                // 3. TELÉFONO FIJO (Con botón)
+                if(_tl) {
+                    h += "<div class='data-row text-light justify-content-between'>";
+                    h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "</div>";
+                }
+                
+                // 4. BLOQUE DEL ENCARGADO
+                if(_nEnc || _wa) {
+                    h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
+                    h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
+                    if(_nEnc) h += "<div class='text-white fw-bold mb-1'>" + _nEnc + "</div>";
+                    if(_wa) {
+                        var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                        h += "<div class='d-flex justify-content-between align-items-center mt-2'>";
+                        h += "<div class='text-light'><i class='bi bi-whatsapp text-success me-2'></i>+" + _wa.replace('+', '') + "</div>";
+                        h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold'><i class='bi bi-whatsapp'></i> Chat</a>";
+                        h += "</div>";
+                    }
+                    h += "</div>";
+                }
+                
+                h += "</div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
@@ -436,17 +503,43 @@
                 var _direccion = getProp(s, ["direccion"]);
                 var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
                 var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]);
-                var _lon = getProp(s, ["longitud"]);
+                var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
 
                 h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'>";
                 h += "<div class='brand-indicator brand-RUTA'></div>";
-                h += "<div class='d-flex justify-content-between align-items-center'>";
-                h += "<div><h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
-                h += "<small style='color: #aaa;'>" + _direccion + "</small></div>";
-                var iconos = getContactIconsHtml(_tl, _wa, _lat, _lon);
-                if(iconos !== "") h += "<div class='d-flex gap-2 fs-5' onclick='event.stopPropagation()'>" + iconos + "</div>";
-                h += "</div></div>";
+                
+                // 1. TÍTULO
+                h += "<h5 class='fw-bold m-0 text-white mb-2'>" + _nombre + "</h5>";
+                
+                // 2. DIRECCIÓN
+                if(_direccion) {
+                    h += "<div class='data-row text-light'><i class='bi bi-geo-alt-fill text-danger data-icon'></i><span style='font-size:14px;'>" + _direccion + "</span></div>";
+                }
+                
+                // 3. TELÉFONO FIJO (Con botón)
+                if(_tl) {
+                    h += "<div class='data-row text-light justify-content-between'>";
+                    h += "<div><i class='bi bi-telephone-fill text-primary data-icon'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
+                    h += "</div>";
+                }
+                
+                // 4. BLOQUE DEL ENCARGADO
+                if(_nEnc || _wa) {
+                    h += "<div class='encargado-box' onclick='event.stopPropagation()'>";
+                    h += "<small class='text-success fw-bold d-block mb-1'>ENCARGADO / CONTACTO</small>";
+                    if(_nEnc) h += "<div class='text-white fw-bold mb-1'>" + _nEnc + "</div>";
+                    if(_wa) {
+                        var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
+                        h += "<div class='d-flex justify-content-between align-items-center mt-2'>";
+                        h += "<div class='text-light'><i class='bi bi-whatsapp text-success me-2'></i>+" + _wa.replace('+', '') + "</div>";
+                        h += "<a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold'><i class='bi bi-whatsapp'></i> Chat</a>";
+                        h += "</div>";
+                    }
+                    h += "</div>";
+                }
+                
+                h += "</div>";
             }
             document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
         }
@@ -512,8 +605,8 @@
             h += "<small style='color:" + hx + ";font-weight:bold'>" + _marca + "</small>";
             
             h += "<div class='mt-3'>";
-            if (_direccion) h += "<div class='text-muted mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
-            if (_tl !== "") h += "<div class='text-muted mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
+            if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
+            if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
             
             var btnHtml = "<div class='d-flex gap-3'>";
             if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
@@ -524,13 +617,13 @@
             
             // CABECERA 2: ENCARGADO / CONTACTO
             if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#2A2A2A; border-radius:12px;'>";
-                h += "<small class='text-muted fw-bold'>Encargado / Contacto</small>";
+                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
+                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
                 h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
                 if (_wa !== "") {
-                    h += "<div class='text-muted mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
+                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
                     var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
+                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> Chat WhatsApp</a></div>";
                 }
                 h += "</div>";
             }
@@ -576,8 +669,8 @@
             h += "<small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small>";
             
             h += "<div class='mt-3'>";
-            if (_direccion) h += "<div class='text-muted mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
-            if (_tl !== "") h += "<div class='text-muted mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
+            if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
+            if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
             
             var btnHtml = "<div class='d-flex gap-3'>";
             if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
@@ -588,13 +681,13 @@
             
             // CABECERA 2: ENCARGADO / CONTACTO
             if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#2A2A2A; border-radius:12px;'>";
-                h += "<small class='text-muted fw-bold'>Encargado / Contacto</small>";
+                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
+                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
                 h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
                 if (_wa !== "") {
-                    h += "<div class='text-muted mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
+                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
                     var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
+                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> Chat WhatsApp</a></div>";
                 }
                 h += "</div>";
             }
@@ -693,13 +786,13 @@
         function gGas() {
             var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
             var d = { id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(), telefono: document.getElementById("eg-tel").value.trim(), nombreEncargado: document.getElementById("eg-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("eg-wa").value.trim(), latitud: document.getElementById("eg-lat").value, longitud: document.getElementById("eg-lon").value, ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr, comentarios: document.getElementById("eg-com").value.toUpperCase() };
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar"; b.disabled = false; });
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Gasolinera"; b.disabled = false; });
         }
 
         function gRut() {
             var b = document.getElementById("btn-s-rut"); b.innerText = "Guardando..."; b.disabled = true;
             var d = { id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(), telefono: document.getElementById("er-tel").value.trim(), nombreEncargado: document.getElementById("er-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("er-wa").value.trim(), latitud: document.getElementById("er-lat").value, longitud: document.getElementById("er-lon").value, comentarios: document.getElementById("er-com").value.toUpperCase() };
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditorRuta(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar"; b.disabled = false; });
+            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditorRuta(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Cliente"; b.disabled = false; });
         }
 
         function bGas() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) }).then(() => { alert("Borrado"); vGas = null; descargarDatos(); cerrarEditor(); }); }
