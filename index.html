@@ -214,7 +214,7 @@
         <div class="p-3 d-flex justify-content-between align-items-center" style="background-color: #673AB7; padding-top: max(16px, env(safe-area-inset-top));">
             <h5 class="text-white m-0 fw-bold"><i class="bi bi-pin-map-fill me-2"></i> Sitúa la chincheta</h5>
             <button class="btn btn-warning btn-sm fw-bold px-3 py-2 rounded-pill" onclick="reubicarGpsWeb()">
-                <i class="bi bi-crosshair me-1"></i> GPS
+                <i class="bi bi-crosshair me-1"></i> Reubicar
             </button>
         </div>
         <div id="map-web" style="flex-grow: 1; width: 100%; background-color: #e5e3df;"></div>
@@ -296,6 +296,7 @@
     </div>
 
     <script>
+        // LA NUEVA URL QUE HAS CREADO
         var URL_API = "https://script.google.com/macros/s/AKfycbybpGrI2fOfGvdmH0LUZXR0_6PDOtTC9MtM_6nPC6s1-g9DmEOqWDb50uCVYr0Izul8/exec";
         
         var user = null; var deviceId = "";
@@ -338,7 +339,6 @@
                 tempLat = currentLat;
                 tempLon = currentLon;
             } else {
-                // Coordenadas Baleares por defecto
                 tempLat = 39.5696; 
                 tempLon = 2.6502;
             }
@@ -361,7 +361,6 @@
                 markerWeb.setLatLng([tempLat, tempLon]);
             }
             
-            // Solución mágica a un error clásico donde el mapa web se queda gris si se carga oculto
             setTimeout(function(){ mapWeb.invalidateSize(); }, 200);
         }
 
