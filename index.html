@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LogisTank - Web</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         body { background-color: #121212; color: #FFF; font-family: sans-serif; margin: 0; padding: 0; }
         .bg-purple { background-color: #673AB7 !important; }
@@ -68,11 +72,8 @@
         </header>
 
         <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative;">
-            
             <div id="nav-superior" class="d-flex gap-2 mb-3"></div>
-
             <div id="zona-listas" class="mt-2" style="display: block;"></div>
-            
             <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
             <div id="zona-visor-ruta" style="display: none; padding-bottom: 50px;"></div>
 
@@ -106,13 +107,22 @@
                         <input type="text" id="eg-wa" class="form-control" placeholder="Móvil (Para WhatsApp)">
                     </div>
 
-                    <label class="form-label text-purple fw-bold mt-2">Ubicación GPS</label>
-                    <div class="d-flex gap-2 mb-4">
-                        <input type="number" id="eg-lat" class="form-control" placeholder="Latitud">
-                        <input type="number" id="eg-lon" class="form-control" placeholder="Longitud">
-                        <button type="button" class="btn btn-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 60px;" onclick="obtenerUbicacion('eg-lat', 'eg-lon', this)">
-                            <i class="bi bi-geo-alt-fill fs-5"></i>
-                        </button>
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+
+                    <label class="form-label text-purple fw-bold mt-2">📍 Geolocalización</label>
+                    <button type="button" class="btn w-100 py-3 mb-3 text-white fw-bold d-flex align-items-center justify-content-center" style="background-color: #673AB7; border-radius: 12px; border: none; font-size: 16px;" onclick="abrirMapaWeb('eg-lat', 'eg-lon')">
+                        <i class="bi bi-geo-alt-fill me-2 fs-5"></i> Abrir Mapa y Posicionar
+                    </button>
+
+                    <div class="d-flex gap-2 mb-4 p-3 rounded" style="background-color: #2A2A2A;">
+                        <div class="flex-fill">
+                            <small class="text-muted fw-bold">Latitud asignada:</small>
+                            <input type="text" id="eg-lat" class="form-control mt-1" placeholder="Ej: 39.5696" readonly style="background-color: #1E1E1E; border: none;">
+                        </div>
+                        <div class="flex-fill">
+                            <small class="text-muted fw-bold">Longitud asignada:</small>
+                            <input type="text" id="eg-lon" class="form-control mt-1" placeholder="Ej: 2.6502" readonly style="background-color: #1E1E1E; border: none;">
+                        </div>
                     </div>
 
                     <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
@@ -160,13 +170,22 @@
                         <input type="text" id="er-wa" class="form-control" placeholder="Móvil (WhatsApp)">
                     </div>
 
-                    <label class="form-label text-purple fw-bold mt-2">Ubicación GPS</label>
-                    <div class="d-flex gap-2 mb-4">
-                        <input type="number" id="er-lat" class="form-control" placeholder="Latitud">
-                        <input type="number" id="er-lon" class="form-control" placeholder="Longitud">
-                        <button type="button" class="btn btn-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 60px;" onclick="obtenerUbicacion('er-lat', 'er-lon', this)">
-                            <i class="bi bi-geo-alt-fill fs-5"></i>
-                        </button>
+                    <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+
+                    <label class="form-label text-purple fw-bold mt-2">📍 Geolocalización</label>
+                    <button type="button" class="btn w-100 py-3 mb-3 text-white fw-bold d-flex align-items-center justify-content-center" style="background-color: #00BCD4; border-radius: 12px; border: none; font-size: 16px;" onclick="abrirMapaWeb('er-lat', 'er-lon')">
+                        <i class="bi bi-geo-alt-fill me-2 fs-5"></i> Abrir Mapa y Posicionar
+                    </button>
+
+                    <div class="d-flex gap-2 mb-4 p-3 rounded" style="background-color: #2A2A2A;">
+                        <div class="flex-fill">
+                            <small class="text-muted fw-bold">Latitud asignada:</small>
+                            <input type="text" id="er-lat" class="form-control mt-1" placeholder="Ej: 39.5696" readonly style="background-color: #1E1E1E; border: none;">
+                        </div>
+                        <div class="flex-fill">
+                            <small class="text-muted fw-bold">Longitud asignada:</small>
+                            <input type="text" id="er-lon" class="form-control mt-1" placeholder="Ej: 2.6502" readonly style="background-color: #1E1E1E; border: none;">
+                        </div>
                     </div>
                     
                     <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
@@ -189,6 +208,20 @@
         </main>
 
         <button id="btn-fab" onclick="btnFabClick()" class="shadow-lg" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; justify-content: center; align-items: center; z-index: 1000;">+</button>
+    </div>
+
+    <div id="modal-mapa" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 4000; flex-direction: column;">
+        <div class="p-3 d-flex justify-content-between align-items-center" style="background-color: #673AB7; padding-top: max(16px, env(safe-area-inset-top));">
+            <h5 class="text-white m-0 fw-bold"><i class="bi bi-pin-map-fill me-2"></i> Sitúa la chincheta</h5>
+            <button class="btn btn-warning btn-sm fw-bold px-3 py-2 rounded-pill" onclick="reubicarGpsWeb()">
+                <i class="bi bi-crosshair me-1"></i> GPS
+            </button>
+        </div>
+        <div id="map-web" style="flex-grow: 1; width: 100%; background-color: #e5e3df;"></div>
+        <div class="p-3 d-flex gap-3" style="background-color: #1E1E1E; padding-bottom: max(16px, env(safe-area-inset-bottom));">
+            <button class="btn btn-outline-light flex-fill py-2" onclick="cerrarMapaWeb()">Cancelar</button>
+            <button class="btn btn-primary-custom flex-fill py-2" style="background-color: #4CAF50;" onclick="guardarMapaWeb()">Guardar Ubicación</button>
+        </div>
     </div>
 
     <div id="m-comb" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
@@ -271,6 +304,92 @@
         var vGas = null; var vRut = null; var vLad = "RIGHT"; var vZon = 1;
         var eId = null; var ePr = []; var eZon = 1;
 
+        // --- HUELLA DIGITAL AVANZADA PARA WEB ---
+        function initDeviceId() {
+            deviceId = localStorage.getItem('logistank_device_id');
+            if(!deviceId) { 
+                var resolucion = window.screen.width + "x" + window.screen.height;
+                var nav = navigator.userAgent.replace(/[^a-zA-Z0-9]/g, "").substring(0, 15);
+                deviceId = 'web-' + nav + '-' + resolucion + '-' + Math.random().toString(36).substr(2, 6); 
+                localStorage.setItem('logistank_device_id', deviceId); 
+            }
+        }
+
+        // --- SISTEMA DEL MAPA LEAFLET WEB ---
+        var mapWeb = null;
+        var markerWeb = null;
+        var targetLatId = "";
+        var targetLonId = "";
+        var tempLat = 39.5696;
+        var tempLon = 2.6502;
+
+        function abrirMapaWeb(latId, lonId) {
+            targetLatId = latId;
+            targetLonId = lonId;
+            document.getElementById('modal-mapa').style.display = 'flex';
+
+            var strLat = document.getElementById(latId).value;
+            var strLon = document.getElementById(lonId).value;
+            
+            var currentLat = parseFloat(strLat);
+            var currentLon = parseFloat(strLon);
+            
+            if (!isNaN(currentLat) && !isNaN(currentLon) && currentLat >= -90 && currentLat <= 90 && strLat !== "") {
+                tempLat = currentLat;
+                tempLon = currentLon;
+            } else {
+                // Coordenadas Baleares por defecto
+                tempLat = 39.5696; 
+                tempLon = 2.6502;
+            }
+
+            if (mapWeb == null) {
+                mapWeb = L.map('map-web').setView([tempLat, tempLon], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapWeb);
+                markerWeb = L.marker([tempLat, tempLon], {draggable: true}).addTo(mapWeb);
+                
+                markerWeb.on('dragend', function(e) {
+                    var pos = markerWeb.getLatLng();
+                    tempLat = pos.lat; tempLon = pos.lng;
+                });
+                mapWeb.on('click', function(e) {
+                    markerWeb.setLatLng(e.latlng);
+                    tempLat = e.latlng.lat; tempLon = e.latlng.lng;
+                });
+            } else {
+                mapWeb.setView([tempLat, tempLon], 15);
+                markerWeb.setLatLng([tempLat, tempLon]);
+            }
+            
+            // Solución mágica a un error clásico donde el mapa web se queda gris si se carga oculto
+            setTimeout(function(){ mapWeb.invalidateSize(); }, 200);
+        }
+
+        function reubicarGpsWeb() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    tempLat = pos.coords.latitude;
+                    tempLon = pos.coords.longitude;
+                    mapWeb.setView([tempLat, tempLon], 17);
+                    markerWeb.setLatLng([tempLat, tempLon]);
+                }, function(err) {
+                    alert("Asegúrate de que el navegador tiene permisos de Ubicación / GPS activados.");
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("Tu dispositivo o navegador no soporta geolocalización.");
+            }
+        }
+
+        function cerrarMapaWeb() { document.getElementById('modal-mapa').style.display = 'none'; }
+        
+        function guardarMapaWeb() {
+            document.getElementById(targetLatId).value = tempLat.toFixed(6);
+            document.getElementById(targetLonId).value = tempLon.toFixed(6);
+            cerrarMapaWeb();
+        }
+
+        // --- FIN MAPA WEB ---
+
         function getProp(obj, keys) {
             if (!obj) return "";
             for (var i = 0; i < keys.length; i++) {
@@ -284,11 +403,6 @@
                 }
             }
             return "";
-        }
-
-        function initDeviceId() {
-            deviceId = localStorage.getItem('logistank_device_id');
-            if(!deviceId) { deviceId = 'web-' + Math.random().toString(36).substr(2, 12); localStorage.setItem('logistank_device_id', deviceId); }
         }
 
         window.onload = function() {
@@ -349,26 +463,17 @@
             .catch(e => alert("Fallo de red")).finally(() => { btn.innerText = "Actualizar Contraseña"; btn.disabled = false; });
         }
 
-        function safeFetch(url) {
-            return fetch(url).then(r => r.json()).catch(e => { return []; });
-        }
+        function safeFetch(url) { return fetch(url).then(r => r.json()).catch(e => { return []; }); }
 
         function descargarDatos() {
             var zona = document.getElementById("zona-listas");
             zona.innerHTML = "<div class='text-center mt-5 text-white'><div class='spinner-border text-primary mb-3'></div><br>Descargando base de datos...</div>";
 
-            var peticiones = [
-                safeFetch(URL_API + "?action=getGasStations"),
-                safeFetch(URL_API + "?action=getRoutes"),
-                safeFetch(URL_API + "?action=getProducts")
-            ];
+            var peticiones = [ safeFetch(URL_API + "?action=getGasStations"), safeFetch(URL_API + "?action=getRoutes"), safeFetch(URL_API + "?action=getProducts") ];
             if (user && user.r === "ADMIN") { peticiones.push(safeFetch(URL_API + "?action=getDrivers")); } 
             else { peticiones.push(Promise.resolve([])); }
 
-            Promise.all(peticiones).then(res => { 
-                bdG = res[0] || []; bdR = res[1] || []; bdC = res[2] || []; bdD = res[3] || [];
-                irPestana(pst); 
-            });
+            Promise.all(peticiones).then(res => { bdG = res[0] || []; bdR = res[1] || []; bdC = res[2] || []; bdD = res[3] || []; irPestana(pst); });
         }
 
         function ocultarTodo() {
@@ -382,29 +487,12 @@
 
         function volverInicio() { irPestana('GAS'); }
 
-        function obtenerUbicacion(idLat, idLon, btn) {
-            if (navigator.geolocation) {
-                var originalHtml = btn.innerHTML;
-                btn.innerHTML = "<div class='spinner-border spinner-border-sm text-white'></div>"; 
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById(idLat).value = position.coords.latitude;
-                    document.getElementById(idLon).value = position.coords.longitude;
-                    btn.innerHTML = originalHtml;
-                }, function(error) {
-                    alert("⚠️ No se pudo obtener la ubicación. Comprueba el GPS.");
-                    btn.innerHTML = originalHtml;
-                }, { enableHighAccuracy: true });
-            } else { alert("Tu navegador no soporta geolocalización."); }
-        }
-
         function irPestana(p) {
             pst = p;
             ocultarTodo();
             document.getElementById("zona-listas").style.display = "block";
-
             var nav = document.getElementById("nav-superior");
-            nav.innerHTML = "";
-            nav.style.display = "flex";
+            nav.innerHTML = ""; nav.style.display = "flex";
 
             if (p === "GAS") {
                 nav.innerHTML += `<button class="btn btn-purple flex-fill py-2" onclick="irPestana('CODIGOS')">Códigos</button>`;
@@ -436,36 +524,23 @@
             var l = bdG.slice().sort((a, b) => getProp(a, ["nombre"]).localeCompare(getProp(b, ["nombre"])));
             for (var i = 0; i < l.length; i++) {
                 var s = l[i]; 
-                var _id = getProp(s, ["id"]);
-                var _nombre = getProp(s, ["nombre"]);
-                var _marca = getProp(s, ["marca"]);
-                var _direccion = getProp(s, ["direccion"]);
-                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
-                var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]);
-                var _lon = getProp(s, ["longitud"]);
-
-                var c = gCol(_marca);
+                var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _marca = getProp(s, ["marca"]); var _direccion = getProp(s, ["direccion"]);
+                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
+                var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]); var c = gCol(_marca);
                 
-                h += "<div class='card card-station' onclick='abrirVisor(\"" + _id + "\")' id='" + _id + "'>";
-                h += "<div class='brand-indicator " + c + "'></div>";
-                
+                h += "<div class='card card-station' onclick='abrirVisor(\"" + _id + "\")' id='" + _id + "'><div class='brand-indicator " + c + "'></div>";
                 h += "<h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
-                if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>";
-                else h += "<div style='margin-bottom:12px;'></div>";
+                if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>"; else h += "<div style='margin-bottom:12px;'></div>";
                 
                 if(_direccion) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
-                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
                     if (_lat && _lon) h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
                     h += "</div>";
                 }
                 
                 if(_tl) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
-                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
-                    h += "</div>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a></div>";
                 }
                 
                 if(_wa) {
@@ -482,30 +557,21 @@
             var l = bdR.slice().sort((a, b) => getProp(a, ["nombre"]).localeCompare(getProp(b, ["nombre"])));
             for (var i = 0; i < l.length; i++) {
                 var s = l[i];
-                var _id = getProp(s, ["id"]);
-                var _nombre = getProp(s, ["nombre"]);
-                var _direccion = getProp(s, ["direccion"]);
-                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
-                var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]);
-                var _lon = getProp(s, ["longitud"]);
+                var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _direccion = getProp(s, ["direccion"]);
+                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
+                var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]);
 
-                h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'>";
-                h += "<div class='brand-indicator brand-RUTA'></div>";
-                h += "<h5 class='fw-bold m-0 text-white mb-3'>" + _nombre + "</h5>";
+                h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'><div class='brand-indicator brand-RUTA'></div><h5 class='fw-bold m-0 text-white mb-3'>" + _nombre + "</h5>";
                 
                 if(_direccion) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
-                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
                     if (_lat && _lon) h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
                     h += "</div>";
                 }
                 
                 if(_tl) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'>";
-                    h += "<div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a>";
-                    h += "</div>";
+                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
+                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a></div>";
                 }
                 
                 if(_wa) {
@@ -522,10 +588,8 @@
             if(bdC.length === 0) h += "<div class='text-center text-muted w-100 mt-4'>No códigos.</div>";
             for (var i = 0; i < bdC.length; i++) {
                 var p = bdC[i]; 
-                var cBg = getProp(p, ["colorFondo", "fondo"]) || "#333333"; 
-                var cTxt = getProp(p, ["colorTexto", "texto"]) || "#FFFFFF";
-                var nombreCorto = getProp(p, ["codigo", "id"]) || "??";
-                var nombreLargo = getProp(p, ["nombreApp", "nombreOficial", "nombre", "producto"]) || "";
+                var cBg = getProp(p, ["colorFondo", "fondo"]) || "#333333"; var cTxt = getProp(p, ["colorTexto", "texto"]) || "#FFFFFF";
+                var nombreCorto = getProp(p, ["codigo", "id"]) || "??"; var nombreLargo = getProp(p, ["nombreApp", "nombreOficial", "nombre", "producto"]) || "";
                 
                 h += "<div class='col-6 p-2'><div class='shadow-sm' style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:20px; text-align:center;'>";
                 h += "<h3 class='fw-bold m-0'>" + nombreCorto + "</h3>";
@@ -549,19 +613,11 @@
 
         function dVis() {
             var s = vGas;
-            var _id = getProp(s, ["id"]);
-            var _nombre = getProp(s, ["nombre"]);
-            var _marca = getProp(s, ["marca"]);
-            var _direccion = getProp(s, ["direccion"]);
-            var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, "");
-            var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-            var _lat = getProp(s, ["latitud"]);
-            var _lon = getProp(s, ["longitud"]);
-            var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
-            var _lado = getProp(s, ["ladoDescarga", "lado"]);
-            var _zonas = parseInt(getProp(s, ["zonasDescarga", "zonas"])) || 1;
-            var _comentarios = getProp(s, ["comentarios"]);
-            var _productos = getProp(s, ["productos", "tanques"]);
+            var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _marca = getProp(s, ["marca"]); var _direccion = getProp(s, ["direccion"]);
+            var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
+            var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]); var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
+            var _lado = getProp(s, ["ladoDescarga", "lado"]); var _zonas = parseInt(getProp(s, ["zonasDescarga", "zonas"])) || 1;
+            var _comentarios = getProp(s, ["comentarios"]); var _productos = getProp(s, ["productos", "tanques"]);
             if(typeof _productos === "string") { try{ _productos = JSON.parse(_productos); }catch(e){ _productos = []; } }
 
             var hx = gHx(_marca); var h = "";
@@ -569,21 +625,16 @@
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"GAS\")'>← Volver</button>" + bE + "</div>";
             h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid " + hx + "; cursor:default'>";
-            h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:" + hx + ";font-weight:bold'>" + _marca + "</small>";
-            h += "<div class='mt-3'>";
+            h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:" + hx + ";font-weight:bold'>" + _marca + "</small><div class='mt-3'>";
             if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
             if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
             var btnHtml = "<div class='d-flex gap-3'>";
             if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
             if (_lat && _lon) btnHtml += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-            btnHtml += "</div>";
-            if (_tl !== "" || (_lat && _lon)) h += btnHtml;
-            h += "</div></div>";
+            btnHtml += "</div>"; if (_tl !== "" || (_lat && _lon)) h += btnHtml; h += "</div></div>";
             
             if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
-                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
-                h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
+                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'><small class='text-success fw-bold'>Encargado / Contacto</small><h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
                 if (_wa !== "") {
                     h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
                     var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
@@ -608,36 +659,23 @@
 
         function dVisRut() {
             var c = vRut;
-            var _id = getProp(c, ["id"]);
-            var _nombre = getProp(c, ["nombre"]);
-            var _direccion = getProp(c, ["direccion"]);
-            var _tl = getProp(c, ["telefono", "fijo"]).toString().replace(/'/g, "");
-            var _wa = getProp(c, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-            var _lat = getProp(c, ["latitud"]);
-            var _lon = getProp(c, ["longitud"]);
-            var _nEnc = getProp(c, ["nombreEncargado", "encargado"]);
-            var _comentarios = getProp(c, ["comentarios"]);
+            var _id = getProp(c, ["id"]); var _nombre = getProp(c, ["nombre"]); var _direccion = getProp(c, ["direccion"]);
+            var _tl = getProp(c, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(c, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
+            var _lat = getProp(c, ["latitud"]); var _lon = getProp(c, ["longitud"]); var _nEnc = getProp(c, ["nombreEncargado", "encargado"]); var _comentarios = getProp(c, ["comentarios"]);
 
-            var h = "";
-            var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdR(this.value)' value='" + _id + "'>Editar</button>" : "";
+            var h = ""; var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdR(this.value)' value='" + _id + "'>Editar</button>" : "";
             
             h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"RUTAS\")'>← Volver</button>" + bE + "</div>";
-            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid #00BCD4; cursor:default'>";
-            h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small>";
-            h += "<div class='mt-3'>";
+            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid #00BCD4; cursor:default'><h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small><div class='mt-3'>";
             if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
             if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
             var btnHtml = "<div class='d-flex gap-3'>";
             if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
             if (_lat && _lon) btnHtml += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-            btnHtml += "</div>";
-            if (_tl !== "" || (_lat && _lon)) h += btnHtml;
-            h += "</div></div>";
+            btnHtml += "</div>"; if (_tl !== "" || (_lat && _lon)) h += btnHtml; h += "</div></div>";
             
             if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'>";
-                h += "<small class='text-success fw-bold'>Encargado / Contacto</small>";
-                h += "<h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
+                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'><small class='text-success fw-bold'>Encargado / Contacto</small><h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
                 if (_wa !== "") {
                     h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
                     var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
@@ -713,9 +751,7 @@
 
         function gBotC() {
             var l = ["A","A+5","A+","NEXA","B","B MAR PRO","C","BiEnergi 10","95","95+","95 MAR SPORT","98","MARBIDIESEL","MARDIESEL"]; var h = "";
-            for (var i = 0; i < l.length; i++) {
-                var f = l[i]; var c = gComb(f); h += "<div class='col-6 p-1'><button class='btn w-100 fw-bold shadow-sm' style='background:" + c.b + ";color:" + c.t + ";border-radius:8px' onclick='addP(this.value)' value='" + f + "'>" + f + "</button></div>";
-            }
+            for (var i = 0; i < l.length; i++) { var f = l[i]; var c = gComb(f); h += "<div class='col-6 p-1'><button class='btn w-100 fw-bold shadow-sm' style='background:" + c.b + ";color:" + c.t + ";border-radius:8px' onclick='addP(this.value)' value='" + f + "'>" + f + "</button></div>"; }
             document.getElementById("g-comb").innerHTML = h;
         }
 
@@ -727,13 +763,17 @@
 
         function gGas() {
             var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
-            var d = { id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(), telefono: document.getElementById("eg-tel").value.trim(), nombreEncargado: document.getElementById("eg-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("eg-wa").value.trim(), latitud: document.getElementById("eg-lat").value, longitud: document.getElementById("eg-lon").value, ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr, comentarios: document.getElementById("eg-com").value.toUpperCase() };
+            var latFinal = parseFloat(document.getElementById("eg-lat").value) || "";
+            var lonFinal = parseFloat(document.getElementById("eg-lon").value) || "";
+            var d = { id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(), telefono: document.getElementById("eg-tel").value.trim(), nombreEncargado: document.getElementById("eg-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("eg-wa").value.trim(), latitud: latFinal, longitud: lonFinal, ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr, comentarios: document.getElementById("eg-com").value.toUpperCase() };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Gasolinera"; b.disabled = false; });
         }
 
         function gRut() {
             var b = document.getElementById("btn-s-rut"); b.innerText = "Guardando..."; b.disabled = true;
-            var d = { id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(), telefono: document.getElementById("er-tel").value.trim(), nombreEncargado: document.getElementById("er-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("er-wa").value.trim(), latitud: document.getElementById("er-lat").value, longitud: document.getElementById("er-lon").value, comentarios: document.getElementById("er-com").value.toUpperCase() };
+            var latFinal = parseFloat(document.getElementById("er-lat").value) || "";
+            var lonFinal = parseFloat(document.getElementById("er-lon").value) || "";
+            var d = { id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(), telefono: document.getElementById("er-tel").value.trim(), nombreEncargado: document.getElementById("er-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("er-wa").value.trim(), latitud: latFinal, longitud: lonFinal, comentarios: document.getElementById("er-com").value.toUpperCase() };
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditorRuta(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Cliente"; b.disabled = false; });
         }
 
@@ -741,39 +781,22 @@
         function bRut() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) }).then(() => { alert("Borrado"); vRut = null; descargarDatos(); cerrarEditorRuta(); }); }
 
         function abrirPanelAdmin() {
-            pst = "ADMIN";
-            cerrarAjustes(); ocultarTodo();
-            document.getElementById("nav-superior").style.display = "none";
-            document.getElementById("btn-fab").style.display = "flex";
-            document.getElementById("zona-admin-panel").style.display = "block";
+            pst = "ADMIN"; cerrarAjustes(); ocultarTodo();
+            document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "flex"; document.getElementById("zona-admin-panel").style.display = "block";
             renderAdminPanel();
         }
 
         function renderAdminPanel() {
             var h = "";
             for(var i=0; i<bdD.length; i++) {
-                var d = bdD[i];
-                var _usr = d.usuario;
-                var _nom = d.nombre;
-                var _rol = d.role;
-                var _dev = d.deviceId;
-                var _acc = d.ultimoAcceso;
-                
-                var hasDevice = _dev !== "";
-                var roleCol = _rol === "ADMIN" ? "#673AB7" : (_rol === "INVITADO" ? "#FF9800" : "#0288D1");
-                
-                h += "<div class='card card-station' style='cursor:default'><div class='d-flex justify-content-between align-items-center mb-2'>";
-                h += "<div><h5 class='fw-bold m-0 text-white'>" + _nom + "</h5><small class='text-muted'>ID: " + _usr + "</small></div>";
-                h += "<span class='badge' style='background:" + roleCol + "'>" + _rol + "</span></div>";
-                h += "<div style='border-top: 1px solid #444; margin: 8px 0;'></div><div class='mb-2'>";
-                if(hasDevice) h += "<span style='color:#D32F2F; font-weight:bold;'>🔒 Vinculado a un móvil</span>";
-                else h += "<span style='color:#2E7D32; font-weight:bold;'>🔓 Libre (Sin vincular)</span>";
+                var d = bdD[i]; var _usr = d.usuario; var _nom = d.nombre; var _rol = d.role; var _dev = d.deviceId; var _acc = d.ultimoAcceso;
+                var hasDevice = _dev !== ""; var roleCol = _rol === "ADMIN" ? "#673AB7" : (_rol === "INVITADO" ? "#FF9800" : "#0288D1");
+                h += "<div class='card card-station' style='cursor:default'><div class='d-flex justify-content-between align-items-center mb-2'><div><h5 class='fw-bold m-0 text-white'>" + _nom + "</h5><small class='text-muted'>ID: " + _usr + "</small></div><span class='badge' style='background:" + roleCol + "'>" + _rol + "</span></div><div style='border-top: 1px solid #444; margin: 8px 0;'></div><div class='mb-2'>";
+                if(hasDevice) h += "<span style='color:#D32F2F; font-weight:bold;'>🔒 Vinculado a un móvil / navegador</span>"; else h += "<span style='color:#2E7D32; font-weight:bold;'>🔓 Libre (Sin vincular)</span>";
                 if(_acc) h += "<br><small style='color:#aaa'>⏱️ Último login: " + _acc + "</small>";
                 h += "</div><div class='d-flex justify-content-end gap-2 mt-2'>";
-                if(hasDevice && _rol !== "ADMIN") h += "<button class='btn btn-outline-danger btn-sm' onclick='liberarMovil(\"" + _usr + "\")'>Liberar Móvil</button>";
-                h += "<button class='btn btn-outline-primary btn-sm' onclick='abrirEditorConductor(\"" + _usr + "\")'><i class='bi bi-pencil-fill'></i></button>";
-                h += "<button class='btn btn-danger btn-sm' onclick='borrarConductor(\"" + _usr + "\")'><i class='bi bi-trash-fill'></i></button>";
-                h += "</div></div>";
+                if(hasDevice && _rol !== "ADMIN") h += "<button class='btn btn-outline-danger btn-sm' onclick='liberarMovil(\"" + _usr + "\")'>Liberar</button>";
+                h += "<button class='btn btn-outline-primary btn-sm' onclick='abrirEditorConductor(\"" + _usr + "\")'><i class='bi bi-pencil-fill'></i></button><button class='btn btn-danger btn-sm' onclick='borrarConductor(\"" + _usr + "\")'><i class='bi bi-trash-fill'></i></button></div></div>";
             }
             document.getElementById("lista-conductores").innerHTML = h || "<p class='text-center text-muted'>No hay conductores</p>";
         }
@@ -781,75 +804,27 @@
         function abrirEditorConductor(username) {
             document.getElementById("modal-driver").style.display = "flex";
             if(username) {
-                var d = bdD.find(x => x.usuario === username);
-                document.getElementById("md-ttl").innerText = "Editar Conductor"; 
-                document.getElementById("md-user").value = d.usuario; 
-                document.getElementById("md-user").disabled = true; 
-                document.getElementById("md-name").value = d.nombre; 
-                document.getElementById("md-pass").value = ""; 
-                document.getElementById("md-pass").placeholder = "(Dejar en blanco si no cambia)";
-                document.getElementById("md-role").value = d.role;
+                var d = bdD.find(x => x.usuario === username); document.getElementById("md-ttl").innerText = "Editar Conductor"; document.getElementById("md-user").value = d.usuario; document.getElementById("md-user").disabled = true; document.getElementById("md-name").value = d.nombre; document.getElementById("md-pass").value = ""; document.getElementById("md-pass").placeholder = "(Dejar en blanco si no cambia)"; document.getElementById("md-role").value = d.role;
             } else {
-                document.getElementById("md-ttl").innerText = "Nuevo Conductor"; 
-                document.getElementById("md-user").value = ""; 
-                document.getElementById("md-user").disabled = false; 
-                document.getElementById("md-name").value = ""; 
-                document.getElementById("md-pass").value = ""; 
-                document.getElementById("md-pass").placeholder = "Escribe una contraseña";
-                document.getElementById("md-role").value = "CHOFER";
+                document.getElementById("md-ttl").innerText = "Nuevo Conductor"; document.getElementById("md-user").value = ""; document.getElementById("md-user").disabled = false; document.getElementById("md-name").value = ""; document.getElementById("md-pass").value = ""; document.getElementById("md-pass").placeholder = "Escribe una contraseña"; document.getElementById("md-role").value = "CHOFER";
             }
         }
 
         function cerrarModalDriver() { document.getElementById("modal-driver").style.display = "none"; }
-
         function guardarConductor() {
-            var u = document.getElementById("md-user").value.trim(); 
-            var n = document.getElementById("md-name").value.trim().toUpperCase(); 
-            var p = document.getElementById("md-pass").value.trim(); 
-            var r = document.getElementById("md-role").value;
-            if(u==="" || n==="") return alert("Faltan datos");
-            var btn = document.getElementById("btn-s-drv"); btn.innerText = "..."; btn.disabled = true;
+            var u = document.getElementById("md-user").value.trim(); var n = document.getElementById("md-name").value.trim().toUpperCase(); var p = document.getElementById("md-pass").value.trim(); var r = document.getElementById("md-role").value;
+            if(u==="" || n==="") return alert("Faltan datos"); var btn = document.getElementById("btn-s-drv"); btn.innerText = "..."; btn.disabled = true;
             fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveDriver", usuario: u, nombre: n, password: p, role: r }) }).then(() => { alert("Guardado"); cerrarModalDriver(); descargarDatos(); }).finally(() => { btn.innerText = "Guardar Conductor"; btn.disabled = false; });
         }
 
-        function borrarConductor(username) {
-            if(!confirm("¿Eliminar usuario?")) return;
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteDriver", username: username }) }).then(() => { alert("Eliminado"); descargarDatos(); });
-        }
+        function borrarConductor(username) { if(!confirm("¿Eliminar usuario?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteDriver", username: username }) }).then(() => { alert("Eliminado"); descargarDatos(); }); }
+        function liberarMovil(username) { if(!confirm("¿Liberar dispositivo?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "resetDriverDevice", username: username }) }).then(() => { alert("Liberado"); descargarDatos(); }); }
 
-        function liberarMovil(username) {
-            if(!confirm("¿Liberar dispositivo?")) return;
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "resetDriverDevice", username: username }) }).then(() => { alert("Liberado"); descargarDatos(); });
-        }
-
-        // 🛡️ AQUÍ ESTÁ EL BOTÓN DE LEYENDA (i) INTEGRADO EN EL CAMIÓN
-        function gC() { 
-            return "<div class='d-flex align-items-center'>" +
-                   "<div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div></div></div>" +
-                   "<div style='margin-left: 16px; cursor: pointer;' onclick='mostrarLeyenda()'><i class='bi bi-info-circle-fill fs-3 text-secondary'></i></div>" +
-                   "</div>"; 
-        }
-
-        function gL(p, z, m) {
-            var h = "<div class='zone-canvas'>"; var l = []; for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); } if (m) l.reverse();
-            for (var j = 0; j < l.length; j++) { var t = l[j]; var tx = m ? -t.nx : t.nx; var ty = m ? -t.ny : t.ny; var c = gComb(t.codigoProducto); h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + c.b + ";color:" + c.t + "'>" + c.s + "</div>"; } return h + "</div>";
-        }
+        function gC() { return "<div class='d-flex align-items-center'><div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div></div></div><div style='margin-left: 16px; cursor: pointer;' onclick='mostrarLeyenda()'><i class='bi bi-info-circle-fill fs-3 text-secondary'></i></div></div>"; }
+        function gL(p, z, m) { var h = "<div class='zone-canvas'>"; var l = []; for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); } if (m) l.reverse(); for (var j = 0; j < l.length; j++) { var t = l[j]; var tx = m ? -t.nx : t.nx; var ty = m ? -t.ny : t.ny; var c = gComb(t.codigoProducto); h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + c.b + ";color:" + c.t + "'>" + c.s + "</div>"; } return h + "</div>"; }
         function gCol(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "brand-REPSOL"; if (x.indexOf("BP") > -1) return "brand-BP"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE"; if (x.indexOf("SHELL") > -1) return "brand-SHELL"; if (x.indexOf("GALP") > -1) return "brand-GALP"; return "brand-DEFAULT"; }
         function gHx(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "#FF9800"; if (x.indexOf("BP") > -1) return "#4CAF50"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6"; if (x.indexOf("SHELL") > -1) return "#FFC107"; if (x.indexOf("GALP") > -1) return "#FF5000"; return "#673AB7"; }
-        
-        // 🛡️ MARDIESEL AÑADIDO AQUÍ
-        function gComb(c) { 
-            var n = (c || "").toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n; 
-            switch(n) { 
-                case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; 
-                case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; 
-                case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; 
-                case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; 
-                case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; 
-                case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break; 
-                case "MARDIESEL": b = "#455A64"; s = "MDS"; break; 
-            } return { b: b, t: t, s: s }; 
-        }
+        function gComb(c) { var n = (c || "").toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n; switch(n) { case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break; case "MARDIESEL": b = "#455A64"; s = "MDS"; break; } return { b: b, t: t, s: s }; }
     </script>
 </body>
 </html>
