@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LogisTank - Web</title>
+    <title>LogisTank · Web</title>
+    <meta name="theme-color" content="#45318C">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -40,6 +41,71 @@
         .fuel-circle { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 12px; position: absolute; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none; }
         .draggable { touch-action: none; cursor: grab; }
         .btn-add-fuel { width: 48px; height: 48px; border-radius: 50%; background-color: #673AB7; border: none; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; position: absolute; bottom: -20px; left: 7px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+    
+        /* Estilo equivalente a LogisTank Android: fondo claro, cabecera morada y tarjetas. */
+        :root { color-scheme: light; --lt-purple: #45318C; --lt-ink: #17203A; --lt-muted:#697386; --lt-surface:#ffffff; }
+        body { background: #F5F6FA; color: var(--lt-ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        .bg-purple, header.bg-purple { background: var(--lt-purple) !important; }
+        header #nombre-usuario {display:block;max-width:35vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        #pantalla-app header .btn {font-size:12px;}
+        #pantalla-app header #btn-pendientes {white-space:nowrap;}
+        .btn-purple { background: var(--lt-purple); color: #fff; }
+        .btn-purple:hover, .btn-purple:focus { background:#362674; color: #fff; }
+        .text-purple { color: var(--lt-purple) !important; }
+        .form-control, .form-select { background-color: #fff; color: var(--lt-ink); border-color: #cbd5e1; }
+        .form-control:focus, .form-select:focus { background:#fff; color: var(--lt-ink); border-color: var(--lt-purple); }
+        .form-control::placeholder { color: #768296; }
+        .card-station { background: var(--lt-surface); color: var(--lt-ink); box-shadow: 0 2px 10px rgba(29,38,65,.09); border: 1px solid #e4e9f2; overflow:hidden; }
+        #pantalla-login .card, #zona-editor-gas > .card, #zona-editor-ruta > .card,
+        #zona-visor .card, #zona-visor-ruta .card, #modal-ajustes > div,
+        #modal-driver > div, #m-comb > div, #m-leyenda > div {
+            background: var(--lt-surface) !important; color:var(--lt-ink)!important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        #pantalla-app main .text-white:not(.btn), #pantalla-login .text-white:not(.btn),
+        #pantalla-app main .text-light:not(.btn), #modal-ajustes .text-light:not(.btn),
+        #modal-driver .text-light:not(.btn), #m-leyenda .text-white:not(.btn),
+        #zona-editor-gas h4, #zona-editor-ruta h4, #modal-driver h4,
+        #modal-ajustes h4, #m-comb h5, #m-leyenda h5 {
+            color: var(--lt-ink)!important;
+        }
+        #pantalla-app main .text-muted { color: var(--lt-muted) !important; }
+        #zona-editor-gas .form-label, #zona-editor-ruta .form-label { color: #26334d !important; }
+        #zona-visor .card, #zona-visor-ruta .card { border-radius: 14px !important; }
+        .lt-search-panel { background:var(--lt-purple);color:white; padding:16px;
+            border-radius:0 0 20px 20px; margin: -8px -12px 14px; }
+        .lt-search-panel h2 { font-size:22px; font-weight:800; margin:0; }
+        .lt-search-panel .form-control { background:white; color:var(--lt-ink); min-height:44px; border-radius:12px; }
+        .lt-counter { display:inline-flex;align-items:center;justify-content:center; padding:3px 9px;
+            background:rgba(255,255,255,.2);font-size:13px; border-radius:100px;font-weight:700; }
+        .lt-chips { display:flex;gap:8px;overflow:auto;scrollbar-width:thin;padding:8px 0 4px; }
+        .lt-chip { flex:0 0 auto; font-size:13px; padding:6px 12px; border-radius:100px;
+            border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.14);color:white; }
+        .lt-chip.active {background:white;color:var(--lt-purple);font-weight:700;}
+        .lt-summary { display:flex;justify-content:space-between;align-items:center;gap:8px;
+            font-size:13px;color:var(--lt-muted);padding:4px 6px 12px; }
+        .lt-alert { border-radius:12px;padding:13px;background:#fff4e2;border:1px solid #f9c77c;color:#814a03; }
+        .lt-empty {padding:26px 12px;color:var(--lt-muted);text-align:center;}
+        .lt-pending {background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #e3e8f0;box-shadow:0 2px 9px #202f4010;}
+        .lt-pending .lt-detail {white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#45566d;}
+        .lt-scheme-wrap {width:100%; overflow-x:auto; overscroll-behavior-x:contain;padding:8px 0 22px;}
+        .lt-scheme-inner {display:flex;gap:14px;justify-content:center;align-items:center;min-width:max-content;padding:0 10px;}
+        .fuel-circle {touch-action:none;}
+        .zone-canvas {width:100px;flex-shrink:0;}
+        .truck-body {flex-shrink:0;}
+        .lt-remove-fuel {position:absolute;right:-9px;top:-12px;border:0;border-radius:50%;width:22px;height:22px;line-height:21px;background:#b91c1c;color:#fff;font-weight:800;z-index:5;cursor:pointer;}
+        .lt-fuel-delete {font-size:11px;color:#a61a1a; cursor:pointer; display:block;padding:4px 0;text-align:center;}
+        .lt-admin-tabs {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+        .lt-admin-tabs button {font-size:14px;}
+        #modal-mapa { color:white; }
+        #modal-mapa .btn-warning {color:#111!important;}
+        #modal-ajustes, #modal-driver, #m-comb, #m-leyenda {padding:14px;overflow-y:auto;}
+        #modal-ajustes > div, #modal-driver > div, #m-comb > div, #m-leyenda > div {max-height:90vh;overflow-y:auto;}
+        @media (max-width:480px){
+            .lt-search-panel{margin-left:-16px;margin-right:-16px;border-radius:0 0 18px 18px;}
+            .card-station{padding:15px 12px 15px 20px;}
+            .lt-scheme-inner{justify-content:flex-start;}
+        }
     </style>
 </head>
 <body>
@@ -50,11 +116,10 @@
                 <h1 class="fw-bold" style="color: #D1C4E9;">LogisTank</h1>
                 <p style="color: #aaa; font-weight: bold;">Control Logístico Web</p>
             </div>
-            <input type="text" id="login-user" class="form-control mb-3 py-3" placeholder="Nº Conductor / Usuario">
-            <input type="password" id="login-pass" class="form-control mb-4 py-3" placeholder="Contraseña">
+            <input type="text" id="login-user" autocomplete="username" class="form-control mb-3 py-3" placeholder="Nº Conductor / Usuario">
+            <input type="password" id="login-pass" autocomplete="current-password" class="form-control mb-4 py-3" placeholder="Contraseña">
             <button onclick="hacerLogin()" id="btn-login" class="btn btn-purple w-100 mb-3 py-3 fs-5">Iniciar Sesión</button>
-            <div style="border-top: 1px solid #333; margin: 16px 0;"></div>
-            <button onclick="entrarInvitado()" class="btn btn-outline-light w-100 py-3 fs-5">Entrar como Invitado</button>
+            <div class="mt-3 text-center" style="font-size:13px;color:#64748b;">Los usuarios invitados también deben iniciar sesión con sus credenciales.</div>
         </div>
     </div>
 
@@ -65,21 +130,24 @@
                     <h3 class="m-0 fw-bold" onclick="volverInicio()" style="cursor: pointer;">LogisTank</h3>
                     <small id="nombre-usuario" style="opacity: 0.8;">Cargando...</small>
                 </div>
+                <div class="d-flex align-items-center gap-2">
+                <button id="btn-pendientes" onclick="abrirPendientes()" class="btn btn-outline-light btn-sm fw-bold" style="display:none;border-radius:8px;" title="Bandeja de aprobación">Pendientes <span id="badge-pendientes" class="badge bg-warning text-dark">0</span></button>
                 <button onclick="abrirAjustes()" class="btn btn-outline-light btn-sm px-3 py-2 fw-bold" style="border-radius:6px; border: 1px solid rgba(255,255,255,0.5);">
                     ⚙️ Ajustes
-                </button>
+                </button></div>
             </div>
         </header>
 
         <main class="flex-grow-1 p-3 w-100 mx-auto" style="max-width: 1200px; position: relative;">
             <div id="nav-superior" class="d-flex gap-2 mb-3"></div>
+            <div id="app-message" role="alert" style="display:none;"></div>
             <div id="zona-listas" class="mt-2" style="display: block;"></div>
             <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
             <div id="zona-visor-ruta" style="display: none; padding-bottom: 50px;"></div>
 
             <div id="zona-editor-gas" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between mb-3">
-                    <button class="btn btn-outline-light" onclick="cerrarEditor()">← Volver</button>
+                    <button class="btn btn-outline-secondary" onclick="cerrarEditor()">← Volver</button>
                     <button id="b-del-gas" class="btn btn-danger" style="display: none;" onclick="bGas()">Borrar</button>
                 </div>
                 <div class="card p-3 shadow" style="background-color: #1E1E1E; border-radius: 12px; border: none;">
@@ -132,8 +200,8 @@
                         <option value="RIGHT">DERECHA</option><option value="LEFT">IZQUIERDA</option><option value="BOTH">AMBOS</option>
                     </select>
                     
-                    <label class="form-label text-light fw-bold">Zonas de Descarga (1 a 4)</label>
-                    <input type="number" id="eg-zon" class="form-control mb-3 fw-bold" min="1" max="4" value="1" onchange="dCamEd()">
+                    <label class="form-label text-light fw-bold">Zonas de Descarga (1 a 10)</label>
+                    <input type="number" id="eg-zon" class="form-control mb-3 fw-bold" min="1" max="10" value="1" onchange="dCamEd()">
                     
                     <h5 class="fw-bold mt-4 mb-2 text-center text-white">Esquema de Producto</h5>
                     <div id="eg-canv" class="my-3"></div>
@@ -147,7 +215,7 @@
 
             <div id="zona-editor-ruta" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between mb-3">
-                    <button class="btn btn-outline-light" onclick="cerrarEditorRuta()">← Volver</button>
+                    <button class="btn btn-outline-secondary" onclick="cerrarEditorRuta()">← Volver</button>
                     <button id="b-del-rut" class="btn btn-danger" style="display: none;" onclick="bRut()">Borrar</button>
                 </div>
                 <div class="card p-3 shadow" style="background-color: #1E1E1E; border-radius: 12px; border: none;">
@@ -199,10 +267,17 @@
 
             <div id="zona-admin-panel" style="display: none; padding-bottom: 80px;" class="mt-2">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button class="btn btn-outline-light" onclick="volverInicio()">← Volver</button>
+                    <button class="btn btn-outline-secondary" onclick="volverInicio()">← Volver</button>
                     <h5 class="text-white m-0 fw-bold">Gestión de Personal</h5>
                 </div>
                 <div id="lista-conductores"></div>
+            </div>
+            <div id="zona-pendientes" style="display:none;padding-bottom:90px;" class="mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-outline-secondary" onclick="volverInicio()">← Volver</button>
+                    <h5 class="m-0 fw-bold">Bandeja de pendientes</h5>
+                </div>
+                <div id="contenido-pendientes"></div>
             </div>
 
         </main>
@@ -228,7 +303,7 @@
         <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
             <div class="d-flex justify-content-between mb-3">
                 <h5 class="text-white fw-bold m-0">Añadir Producto</h5>
-                <span onclick="cMod()" style="color: white; font-size: 20px; cursor: pointer;">✕</span>
+                <span onclick="cMod()" style="color: #334155; font-size: 20px; cursor: pointer;">✕</span>
             </div>
             <div class="row m-0" id="g-comb"></div>
         </div>
@@ -238,7 +313,7 @@
         <div style="background: #1E1E1E; width: 90%; max-width: 350px; border-radius: 16px; padding: 20px; color: white;">
             <div class="d-flex justify-content-between mb-3">
                 <h5 class="fw-bold m-0">Leyenda de Códigos</h5>
-                <span onclick="ocultarLeyenda()" style="font-size: 20px; cursor: pointer;">✕</span>
+                <span onclick="ocultarLeyenda()" style="color:#334155;font-size: 20px; cursor: pointer;">✕</span>
             </div>
             <ul class="list-unstyled fw-bold text-muted">
                 <li class="mb-2"><span class="text-white">NEX:</span> NEXA</li>
@@ -256,7 +331,7 @@
         <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
             <div class="d-flex justify-content-between mb-4">
                 <h4 class="text-white fw-bold m-0">Ajustes</h4>
-                <span onclick="cerrarAjustes()" style="color: white; font-size: 24px; cursor: pointer;">✕</span>
+                <span onclick="cerrarAjustes()" style="color: #334155; font-size: 24px; cursor: pointer;">✕</span>
             </div>
             
             <div id="btn-abrir-admin" style="display: none;">
@@ -264,8 +339,10 @@
                 <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
             </div>
 
-            <label class="form-label text-light fw-bold">Cambiar mi Contraseña</label>
-            <input type="password" id="nueva-pass" class="form-control mb-3 py-2" placeholder="Escribe tu nueva contraseña">
+            <label class="form-label text-light fw-bold">Contraseña actual</label>
+            <input type="password" id="actual-pass" autocomplete="current-password" class="form-control mb-3 py-2" placeholder="Tu contraseña actual">
+            <label class="form-label text-light fw-bold">Nueva contraseña (mínimo 10 caracteres)</label>
+            <input type="password" id="nueva-pass" autocomplete="new-password" class="form-control mb-3 py-2" placeholder="Escribe tu nueva contraseña">
             <button class="btn btn-warning w-100 fw-bold mb-4" onclick="cambiarMiContrasena(this)">Actualizar Contraseña</button>
             <div style="border-top: 1px solid #444; margin-bottom: 20px;"></div>
             <button class="btn btn-danger w-100 py-3 fs-5" onclick="cerrarSesion()">Cerrar Sesión</button>
@@ -276,7 +353,7 @@
         <div style="background: #1E1E1E; width: 90%; max-width: 400px; border-radius: 16px; padding: 20px;">
             <div class="d-flex justify-content-between mb-3">
                 <h4 class="text-white fw-bold m-0" id="md-ttl">Conductor</h4>
-                <span onclick="cerrarModalDriver()" style="color: white; font-size: 24px; cursor: pointer;">✕</span>
+                <span onclick="cerrarModalDriver()" style="color: #334155; font-size: 24px; cursor: pointer;">✕</span>
             </div>
             
             <label class="form-label text-purple fw-bold mt-2">Usuario / Nº Conductor</label>
@@ -284,7 +361,7 @@
             <label class="form-label text-purple fw-bold">Nombre Completo</label>
             <input type="text" id="md-name" class="form-control mb-3 text-uppercase">
             <label class="form-label text-purple fw-bold">Contraseña</label>
-            <input type="text" id="md-pass" class="form-control mb-3" placeholder="(Dejar en blanco si no cambia)">
+            <input type="password" id="md-pass" class="form-control mb-3" autocomplete="new-password" placeholder="(Dejar en blanco si no cambia)">
             <label class="form-label text-purple fw-bold">Nivel de Acceso</label>
             <select id="md-role" class="form-select mb-4 fw-bold">
                 <option value="CHOFER">CHOFER (Normal)</option>
@@ -296,10 +373,46 @@
     </div>
 
     <script>
-        // LA NUEVA URL QUE HAS CREADO
-        var URL_API = "https://script.google.com/macros/s/AKfycbybpGrI2fOfGvdmH0LUZXR0_6PDOtTC9MtM_6nPC6s1-g9DmEOqWDb50uCVYr0Izul8/exec";
+        // Google Apps Script seguro. Si cambia el despliegue, actualiza únicamente esta URL.
+        var URL_API = "https://script.google.com/macros/s/AKfycbwNxeKbkFEJeNSSOH62Wm6GpghdpuXHNFtwR2_p78n53XtM_1Nha0FACLytzm4oULAS/exec";
         
-        var user = null; var deviceId = "";
+        // La URL se mantiene según el HTML recibido: debe apuntar al despliegue seguro actual.
+        // Sesión temporal por pestaña: no reutilizar la sesión insegura anterior en localStorage.
+        var TOKEN_KEY = 'logistank_web_session_v2';
+        var user = null; var deviceId = ""; var sessionToken = "";
+        var pendingGas = [], pendingRoutes = [], adminEvents = [];
+        var stationSearch = "", routeSearch = "", selectedBrand = null;
+        var adminView = 'DRIVERS';
+        var collatorES = new Intl.Collator('es', {sensitivity:'base',numeric:true});
+
+        function el(id) {return document.getElementById(id);}
+        function txt(v) {return v == null ? '' : String(v);}
+        function esc(v) {return txt(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+        function clean(v) {return txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();}
+        function phone(v) {return txt(v).replace(/[^+0-9]/g,'');}
+        function geoUrl(lat,lon) {var a=Number(lat),b=Number(lon);return lat!==''&&lat!=null&&lon!==''&&lon!=null&&Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180?'https://www.google.com/maps?q='+encodeURIComponent(a+','+b):'';}
+        function idNew() {return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():'web-'+Date.now()+'-'+Math.random().toString(36).slice(2,12);}
+        function notify(message,isError) { el('app-message').textContent=message;el('app-message').className=isError?'lt-alert mb-3':'alert alert-success mb-3';el('app-message').style.display='block';el('app-message').scrollIntoView({block:'nearest',behavior:'smooth'}); }
+        function resetMessage(){el('app-message').style.display='none';el('app-message').textContent='';}
+        function resetSession(){ sessionToken='';user=null;sessionStorage.removeItem(TOKEN_KEY);localStorage.removeItem('logistank_sesion'); }
+        async function api(action,params) {
+            var payload=Object.assign({action:action},params||{});
+            if(action!=='login') {if(!sessionToken) throw new Error('Inicia sesión para continuar.');payload.token=sessionToken;}
+            var response=await fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow',cache:'no-store'});
+            if(!response.ok) throw new Error('No se pudo conectar con el servidor (HTTP '+response.status+').');
+            var data;try {data=await response.json();} catch(_) {throw new Error('Respuesta no válida de Google Apps Script. Comprueba el acceso al despliegue.');}
+            if(data && !Array.isArray(data) && data.success===false) {
+                var message=txt(data.message)||'Operación rechazada';
+                if(/sesi[oó]n inv[aá]lida|caducada/i.test(message)) { resetSession();location.reload(); }
+                throw new Error(message);
+            }
+            return data;
+        }
+        async function fetchList(action) {
+            var data=await api(action);if(!Array.isArray(data)) throw new Error('La respuesta de '+action+' no es una lista.');return data;
+        }
+        function handleError(error) {var msg=error&&error.message||'Error desconocido';notify(msg,true);return msg;}
+        var deviceId = "";
         var bdG = []; var bdR = []; var bdC = []; var bdD = [];
         var pst = "GAS";
         var vGas = null; var vRut = null; var vLad = "RIGHT"; var vZon = 1;
@@ -404,304 +517,283 @@
             return "";
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             initDeviceId();
+            // Las sesiones antiguas no contienen token y no se aceptan.
+            localStorage.removeItem('logistank_sesion');
             try {
-                var guardado = localStorage.getItem('logistank_sesion');
-                if (guardado) { var datosUser = JSON.parse(guardado); mostrarApp(datosUser.n, datosUser.r, datosUser.id); }
-            } catch(e) {}
+                var saved=sessionStorage.getItem(TOKEN_KEY);
+                if(!saved)return;
+                var data=JSON.parse(saved);
+                if(!data || !data.token || !data.id) {resetSession();return;}
+                sessionToken=data.token;
+                // La sesión se valida con el servidor, no con un rol declarado en el navegador.
+                await fetchList('getGasStations');
+                mostrarApp(data.n,data.r,data.id);
+            } catch(error) {
+                resetSession();
+                el('pantalla-login').style.display='flex';
+                el('pantalla-app').style.display='none';
+            }
         };
 
-        function mostrarApp(nombre, rol, id) {
-            user = { n: nombre, r: rol, id: id };
-            document.getElementById("pantalla-login").style.display = "none";
-            document.getElementById("pantalla-app").style.display = "flex";
-            document.getElementById("nombre-usuario").innerText = nombre + " (" + rol + ")";
+        function mostrarApp(nombre,rol,id) {
+            user={n:nombre,r:rol,id:id};
+            el('pantalla-login').style.display='none';
+            el('pantalla-app').style.display='flex';
+            el('nombre-usuario').innerText=nombre+' ('+rol+')';
+            el('btn-pendientes').style.display=rol==='ADMIN'?'block':'none';
             descargarDatos();
         }
 
-        function entrarInvitado() {
-            try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: "Invitado", r: "INVITADO", id: "invitado" })); } catch(e) {}
-            mostrarApp("Invitado", "INVITADO", "invitado");
+        // INVITADO es una cuenta del servidor, no un modo anónimo.
+        function entrarInvitado() {alert('Solicita las credenciales de invitado a administración.');}
+
+        async function hacerLogin() {
+            var username=el('login-user').value.trim(),password=el('login-pass').value;
+            if(!username || !password)return alert('Introduce usuario y contraseña.');
+            var btn=el('btn-login');btn.textContent='Conectando...';btn.disabled=true;
+            try {
+                var data=await api('login',{username:username,password:password,deviceId:deviceId});
+                if(!data || data.success!==true || !data.token || !data.id || !data.role)throw new Error('El servidor no ha devuelto una sesión válida.');
+                sessionToken=data.token;
+                sessionStorage.setItem(TOKEN_KEY,JSON.stringify({token:data.token,n:data.nombre,r:data.role,id:data.id}));
+                mostrarApp(data.nombre,data.role,data.id);
+                el('login-pass').value='';
+            } catch(error) {alert(error.message||'Error de conexión.');}
+            finally {btn.textContent='Iniciar Sesión';btn.disabled=false;}
         }
 
-        function hacerLogin() {
-            var u = document.getElementById("login-user").value.trim();
-            var p = document.getElementById("login-pass").value.trim();
-            if (u === "" || p === "") { alert("Faltan datos"); return; }
-            var btn = document.getElementById("btn-login"); btn.innerText = "Conectando..."; btn.disabled = true;
 
-            fetch(URL_API, {
-                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "login", username: u, password: p, deviceId: deviceId })
-            }).then(r => r.json()).then(datos => {
-                if (datos.success) {
-                    try { localStorage.setItem('logistank_sesion', JSON.stringify({ n: datos.nombre, r: datos.role, id: datos.id })); } catch(e) {}
-                    mostrarApp(datos.nombre, datos.role, datos.id);
-                } else { alert(datos.message); btn.innerText = "Iniciar Sesión"; btn.disabled = false; }
-            }).catch(e => { alert("Fallo de red"); btn.innerText = "Iniciar Sesión"; btn.disabled = false; });
+
+                function abrirAjustes() {
+            el('modal-ajustes').style.display='flex';
+            el('btn-abrir-admin').style.display=user&&user.r==='ADMIN'?'block':'none';
+        }
+        function cerrarAjustes(){el('modal-ajustes').style.display='none';}
+        async function cerrarSesion(){try {await api('logout');}catch(_){}resetSession();location.reload();}
+
+        async function cambiarMiContrasena(btn) {
+            if(!user || user.r==='INVITADO')return alert('Solo lectura.');
+            var oldPass=el('actual-pass').value,newPass=el('nueva-pass').value;
+            if(!oldPass || newPass.length<10 || newPass.length>128)return alert('Escribe la contraseña actual y una nueva de 10 a 128 caracteres.');
+            btn.disabled=true;btn.textContent='Guardando...';
+            try {
+                var data=await api('changePassword',{username:user.id,oldPass:oldPass,newPass:newPass});
+                if(data.success!==true)throw new Error(data.message||'Error');
+                el('actual-pass').value='';el('nueva-pass').value='';
+                alert(data.message||'Contraseña cambiada. Inicia sesión de nuevo.');
+                resetSession();location.reload();
+            }catch(e){alert(e.message||'Error de red');}
+            finally{btn.disabled=false;btn.textContent='Actualizar Contraseña';}
         }
 
-        function abrirAjustes() { 
-            document.getElementById("modal-ajustes").style.display = "flex"; 
-            document.getElementById("btn-abrir-admin").style.display = (user && user.r === "ADMIN") ? "block" : "none";
-        }
-        function cerrarAjustes() { document.getElementById("modal-ajustes").style.display = "none"; }
-        function cerrarSesion() { try { localStorage.removeItem('logistank_sesion'); } catch(e) {} location.reload(); }
-
-        function cambiarMiContrasena(btn) {
-            if (user.r === 'INVITADO') return alert("Solo lectura.");
-            var nuevaPass = document.getElementById("nueva-pass").value.trim();
-            if (nuevaPass === "") return alert("Escribe una contraseña.");
-            btn.innerText = "Guardando..."; btn.disabled = true;
-
-            fetch(URL_API, {
-                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'changePassword', username: user.id, oldPass: "", newPass: nuevaPass })
-            }).then(r => r.json()).then(datos => { alert(datos.message); document.getElementById("nueva-pass").value = ""; cerrarAjustes(); })
-            .catch(e => alert("Fallo de red")).finally(() => { btn.innerText = "Actualizar Contraseña"; btn.disabled = false; });
+        async function descargarDatos() {
+            el('zona-listas').innerHTML='<div class="text-center mt-5"><div class="spinner-border text-primary mb-3"></div><p>Descargando datos…</p></div>';
+            resetMessage();
+            try {
+                var request=[fetchList('getGasStations'),fetchList('getRoutes'),fetchList('getProducts')];
+                if(user&&user.r==='ADMIN')request.push(fetchList('getDrivers'),fetchList('getPendingGasStations'),fetchList('getPendingRoutes'));
+                var data=await Promise.all(request);
+                bdG=data[0];bdR=data[1];bdC=data[2];bdD=data[3]||[];
+                pendingGas=data[4]||[];pendingRoutes=data[5]||[];
+                el('badge-pendientes').textContent=String(pendingGas.length+pendingRoutes.length);
+                irPestana(pst==='ADMIN'||pst==='PENDING'?'GAS':pst);
+            }catch(error){
+                el('zona-listas').innerHTML='<div class="lt-empty">No se han podido descargar los datos.</div>';
+                handleError(error);
+            }
         }
 
-        function safeFetch(url) { return fetch(url).then(r => r.json()).catch(e => { return []; }); }
 
-        function descargarDatos() {
-            var zona = document.getElementById("zona-listas");
-            zona.innerHTML = "<div class='text-center mt-5 text-white'><div class='spinner-border text-primary mb-3'></div><br>Descargando base de datos...</div>";
 
-            var peticiones = [ safeFetch(URL_API + "?action=getGasStations"), safeFetch(URL_API + "?action=getRoutes"), safeFetch(URL_API + "?action=getProducts") ];
-            if (user && user.r === "ADMIN") { peticiones.push(safeFetch(URL_API + "?action=getDrivers")); } 
-            else { peticiones.push(Promise.resolve([])); }
-
-            Promise.all(peticiones).then(res => { bdG = res[0] || []; bdR = res[1] || []; bdC = res[2] || []; bdD = res[3] || []; irPestana(pst); });
-        }
-
-        function ocultarTodo() {
+                function ocultarTodo() {
             document.getElementById("zona-listas").style.display = "none";
             document.getElementById("zona-visor").style.display = "none";
             document.getElementById("zona-visor-ruta").style.display = "none";
             document.getElementById("zona-editor-gas").style.display = "none";
             document.getElementById("zona-editor-ruta").style.display = "none";
             document.getElementById("zona-admin-panel").style.display = "none";
+            document.getElementById("zona-pendientes").style.display = "none";
         }
 
         function volverInicio() { irPestana('GAS'); }
 
         function irPestana(p) {
-            pst = p;
-            ocultarTodo();
-            document.getElementById("zona-listas").style.display = "block";
-            var nav = document.getElementById("nav-superior");
-            nav.innerHTML = ""; nav.style.display = "flex";
-
-            if (p === "GAS") {
-                nav.innerHTML += `<button class="btn btn-purple flex-fill py-2" onclick="irPestana('CODIGOS')">Códigos</button>`;
-                nav.innerHTML += `<button class="btn btn-info-custom flex-fill py-2" onclick="irPestana('RUTAS')">Rutas</button>`;
-                pG();
-            } else if (p === "RUTAS") {
-                nav.innerHTML += `<button class="btn btn-purple flex-fill py-2" onclick="irPestana('CODIGOS')">Códigos</button>`;
-                nav.innerHTML += `<button class="btn btn-primary-custom flex-fill py-2" onclick="irPestana('GAS')">Gasolineras</button>`;
-                pR();
-            } else if (p === "CODIGOS") {
-                nav.innerHTML += `<button class="btn btn-primary-custom flex-fill py-2" onclick="irPestana('GAS')">Gasolineras</button>`;
-                nav.innerHTML += `<button class="btn btn-info-custom flex-fill py-2" onclick="irPestana('RUTAS')">Rutas</button>`;
-                pC();
-            }
-
-            var fab = document.getElementById("btn-fab");
-            if (user.r !== "INVITADO" && (p === "GAS" || p === "RUTAS" || p === "ADMIN")) fab.style.display = "flex"; 
-            else fab.style.display = "none";
+            pst=p;ocultarTodo();resetMessage();
+            el('zona-listas').style.display='block';
+            var nav=el('nav-superior');nav.style.display='flex';
+            nav.innerHTML='';
+            var options=[['GAS','Gasolineras','btn-primary-custom'],['RUTAS','Rutas','btn-info-custom'],['CODIGOS','Códigos','btn-purple']];
+            options.forEach(function(item){
+                var button=document.createElement('button');
+                button.className='btn flex-fill fw-bold py-2 '+(p===item[0]?'btn-purple':'btn-outline-secondary');
+                button.textContent=item[1];button.onclick=function(){irPestana(item[0]);};nav.appendChild(button);
+            });
+            if(p==='GAS')pG();else if(p==='RUTAS')pR();else if(p==='CODIGOS')pC();
+            el('btn-fab').style.display=user&&user.r!=='INVITADO'&&(p==='GAS'||p==='RUTAS')?'flex':'none';
         }
 
-        function btnFabClick() {
-            if (pst === "ADMIN") { abrirEditorConductor(null); } 
-            else if (pst === "GAS") { aEdG(null); } 
-            else if (pst === "RUTAS") { aEdR(null); }
+        function btnFabClick(){if(pst==='ADMIN'){abrirEditorConductor(null);}else if(pst==='GAS')aEdG(null);else if(pst==='RUTAS')aEdR(null);}
+
+        function setStationSearch(v){stationSearch=v;pG(true);}
+        function setRouteSearch(v){routeSearch=v;pR(true);}
+        function setBrand(v){selectedBrand=v===null?null:v;pG(true);}
+        function brandsAvailable() {
+            var choices=[];
+            bdG.forEach(function(s){if(!txt(s.nombre).trim())return;var brand=txt(getProp(s,['marca'])).trim();if(!choices.some(function(v){return clean(v)===clean(brand);})){choices.push(brand);}});
+            return choices.filter(Boolean).sort(collatorES.compare).concat(choices.filter(function(v){return !v;}));
         }
-
-        function pG() {
-            var h = "";
-            var l = bdG.slice().sort((a, b) => getProp(a, ["nombre"]).localeCompare(getProp(b, ["nombre"])));
-            for (var i = 0; i < l.length; i++) {
-                var s = l[i]; 
-                var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _marca = getProp(s, ["marca"]); var _direccion = getProp(s, ["direccion"]);
-                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]); var c = gCol(_marca);
-                
-                h += "<div class='card card-station' onclick='abrirVisor(\"" + _id + "\")' id='" + _id + "'><div class='brand-indicator " + c + "'></div>";
-                h += "<h5 class='fw-bold m-0 text-white'>" + _nombre + "</h5>";
-                if(_marca) h += "<small style='color: #aaa; font-weight:bold; display:block; margin-bottom:12px;'>" + _marca + "</small>"; else h += "<div style='margin-bottom:12px;'></div>";
-                
-                if(_direccion) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
-                    if (_lat && _lon) h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-                    h += "</div>";
-                }
-                
-                if(_tl) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a></div>";
-                }
-                
-                if(_wa) {
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div class='mt-2'><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold w-100 text-center' onclick='event.stopPropagation()'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
-                }
-                h += "</div>";
-            }
-            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
+        function stationsVisible() {
+            var term=clean(stationSearch);
+            return bdG.filter(function(s){
+                if(!txt(s.nombre).trim())return false;
+                if(selectedBrand!==null && clean(s.marca)!==clean(selectedBrand))return false;
+                return !term || [s.nombre,s.marca,s.direccion].some(function(v){return clean(v).includes(term);});
+            }).sort(function(a,b){return collatorES.compare(txt(a.nombre),txt(b.nombre))||collatorES.compare(txt(a.id),txt(b.id));});
         }
-
-        function pR() {
-            var h = "";
-            var l = bdR.slice().sort((a, b) => getProp(a, ["nombre"]).localeCompare(getProp(b, ["nombre"])));
-            for (var i = 0; i < l.length; i++) {
-                var s = l[i];
-                var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _direccion = getProp(s, ["direccion"]);
-                var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-                var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]);
-
-                h += "<div class='card card-station' onclick='abrirVisorRuta(\"" + _id + "\")' id='" + _id + "'><div class='brand-indicator brand-RUTA'></div><h5 class='fw-bold m-0 text-white mb-3'>" + _nombre + "</h5>";
-                
-                if(_direccion) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-geo-alt-fill text-danger me-2 mt-1'></i><span style='font-size:14px; word-break:break-word;'>" + _direccion + "</span></div>";
-                    if (_lat && _lon) h += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-                    h += "</div>";
-                }
-                
-                if(_tl) {
-                    h += "<div class='d-flex justify-content-between align-items-center mb-3'><div class='text-light pe-2 d-flex align-items-start'><i class='bi bi-telephone-fill text-primary me-2 mt-1'></i><span style='font-size:14px;'>" + _tl + "</span></div>";
-                    h += "<a href='tel:" + _tl + "' class='btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold flex-shrink-0' onclick='event.stopPropagation()'><i class='bi bi-telephone-fill'></i> Llamar</a></div>";
-                }
-                
-                if(_wa) {
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div class='mt-2'><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold w-100 text-center' onclick='event.stopPropagation()'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
-                }
-                h += "</div>";
-            }
-            document.getElementById("zona-listas").innerHTML = h || "<p class='text-center text-muted'>Lista vacía</p>";
+        function routesVisible() {
+            var term=clean(routeSearch);
+            return bdR.filter(function(s){return txt(s.nombre).trim()&&(!term||[s.nombre,s.direccion].some(function(v){return clean(v).includes(term);}));})
+                .sort(function(a,b){return collatorES.compare(txt(a.nombre),txt(b.nombre))||collatorES.compare(txt(a.id),txt(b.id));});
         }
-
+        function currentCounts(all,visible){return {total:all.filter(function(s){return txt(s.nombre).trim();}).length,visible:visible.length};}
+        function gasMarkup(g){
+            var id=esc(getProp(g,['id'])),name=esc(getProp(g,['nombre'])),brand=txt(getProp(g,['marca'])),address=txt(getProp(g,['direccion']));
+            var tel=phone(getProp(g,['telefono','fijo'])),wa=phone(getProp(g,['telefonoEncargado','movil','whatsapp']));
+            var map=geoUrl(getProp(g,['latitud']),getProp(g,['longitud']));
+            var h='<article class="card-station" role="button" tabindex="0" data-id="'+id+'" onclick="abrirVisor(this.dataset.id)" onkeydown="if(event.key===&quot;Enter&quot;){abrirVisor(this.dataset.id)}">';
+            h+='<div class="brand-indicator '+gCol(brand)+'"></div><h5 class="fw-bold m-0">'+name+'</h5>';
+            if(brand)h+='<small class="d-block mb-3" style="color:#697386;font-weight:700">'+esc(brand)+'</small>';
+            if(address)h+='<div class="d-flex justify-content-between align-items-start mb-3"><div class="pe-2"><i class="bi bi-geo-alt-fill text-danger me-2"></i><span style="font-size:14px">'+esc(address)+'</span></div>'+(map?'<a class="btn btn-danger btn-sm flex-shrink-0" href="'+esc(map)+'" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Mapa</a>':'')+'</div>';
+            if(tel)h+='<div class="d-flex justify-content-between align-items-center mb-2"><span><i class="bi bi-telephone-fill text-primary me-2"></i>'+esc(tel)+'</span><a class="btn btn-primary btn-sm" href="tel:'+esc(tel)+'" onclick="event.stopPropagation()">Llamar</a></div>';
+            if(wa){var number=wa.replace(/[^0-9]/g,'');number=number.startsWith('34')?number:'34'+number;h+='<a class="btn btn-success btn-sm mt-2 w-100 fw-bold" href="https://wa.me/'+number+'" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>';}
+            return h+'</article>';
+        }
+        function routeMarkup(r) {
+            var id=esc(getProp(r,['id'])),name=esc(getProp(r,['nombre'])),address=txt(getProp(r,['direccion']));
+            var tel=phone(getProp(r,['telefono','fijo'])),wa=phone(getProp(r,['telefonoEncargado','movil','whatsapp']));
+            var map=geoUrl(getProp(r,['latitud']),getProp(r,['longitud']));
+            var h='<article class="card-station" tabindex="0" role="button" data-id="'+id+'" onclick="abrirVisorRuta(this.dataset.id)" onkeydown="if(event.key===&quot;Enter&quot;){abrirVisorRuta(this.dataset.id)}"><div class="brand-indicator brand-RUTA"></div><h5 class="fw-bold mb-3">'+name+'</h5>';
+            if(address)h+='<div class="d-flex justify-content-between align-items-center mb-3"><span class="pe-2"><i class="bi bi-geo-alt-fill text-danger me-2"></i>'+esc(address)+'</span>'+(map?'<a class="btn btn-danger btn-sm" href="'+esc(map)+'" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Mapa</a>':'')+'</div>';
+            if(tel)h+='<div class="d-flex justify-content-between align-items-center mb-2"><span><i class="bi bi-telephone-fill text-primary me-2"></i>'+esc(tel)+'</span><a class="btn btn-primary btn-sm" href="tel:'+esc(tel)+'" onclick="event.stopPropagation()">Llamar</a></div>';
+            if(wa){var num=wa.replace(/[^0-9]/g,'');num=num.startsWith('34')?num:'34'+num;h+='<a class="btn btn-success btn-sm mt-2 w-100 fw-bold" href="https://wa.me/'+num+'" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">WhatsApp</a>';}
+            return h+'</article>';
+        }
+        function pG(preserveFocus) {
+            var brands=brandsAvailable();if(selectedBrand!==null&&!brands.some(function(v){return clean(v)===clean(selectedBrand);}))selectedBrand=null;
+            var list=stationsVisible(),counts=currentCounts(bdG,list);
+            var h='<section class="lt-search-panel"><div class="d-flex align-items-center gap-2 mb-3"><h2>Gasolineras</h2><span class="lt-counter">'+counts.visible+'</span></div>';
+            h+='<input id="busqueda-gas" class="form-control" type="search" autocomplete="off" placeholder="Buscar gasolinera, marca o dirección" aria-label="Buscar gasolineras" oninput="setStationSearch(this.value)" value="'+esc(stationSearch)+'">';
+            h+='<div class="mt-3" style="font-size:13px;opacity:.85">Filtrar por marca</div><div class="lt-chips" id="chips-gas">';
+            h+='<button class="lt-chip '+(selectedBrand===null?'active':'')+'" data-brand="" data-all="yes" onclick="setBrand(null)">Todas ('+counts.total+')</button>';
+            brands.forEach(function(brand){
+                var count=bdG.filter(function(x){return txt(x.nombre).trim()&&clean(x.marca)===clean(brand);}).length;
+                h+='<button class="lt-chip '+(selectedBrand!==null&&clean(selectedBrand)===clean(brand)?'active':'')+'" onclick="setBrand(this.dataset.brand)" data-brand="'+esc(brand)+'">'+esc(brand||'Sin marca')+' ('+count+')</button>';
+            });
+            h+='</div></section><div class="lt-summary"><span>'+counts.visible+' de '+counts.total+' gasolineras</span><span>Orden alfabético · A-Z</span></div>';
+            h+=list.length?list.map(gasMarkup).join(''):'<div class="lt-empty">'+(counts.total?'No hay gasolineras con estos filtros.':'Todavía no hay gasolineras.')+'</div>';
+            var focus=preserveFocus&&document.activeElement&&document.activeElement.id==='busqueda-gas';
+            var start=focus?document.activeElement.selectionStart:null;
+            el('zona-listas').innerHTML=h;
+            if(focus){var input=el('busqueda-gas');input.focus();try{input.setSelectionRange(start,start);}catch(_){}}
+        }
+        function pR(preserveFocus) {
+            var list=routesVisible(),counts=currentCounts(bdR,list);
+            var h='<section class="lt-search-panel" style="background:#087E9B"><div class="d-flex align-items-center gap-2 mb-3"><h2>Rutas / Clientes</h2><span class="lt-counter">'+counts.visible+'</span></div>';
+            h+='<input id="busqueda-rutas" class="form-control" type="search" placeholder="Buscar cliente o dirección" aria-label="Buscar rutas" oninput="setRouteSearch(this.value)" value="'+esc(routeSearch)+'"></section>';
+            h+='<div class="lt-summary"><span>'+counts.visible+' de '+counts.total+' rutas</span><span>Orden alfabético · A-Z</span></div>';
+            h+=list.length?list.map(routeMarkup).join(''):'<div class="lt-empty">'+(counts.total?'No hay rutas con esta búsqueda.':'Todavía no hay rutas.')+'</div>';
+            var focus=preserveFocus&&document.activeElement&&document.activeElement.id==='busqueda-rutas';
+            var start=focus?document.activeElement.selectionStart:null;
+            el('zona-listas').innerHTML=h;
+            if(focus){var input=el('busqueda-rutas');input.focus();try{input.setSelectionRange(start,start);}catch(_){}}
+        }
         function pC() {
-            var h = "<div class='row m-0 pt-2'>";
-            if(bdC.length === 0) h += "<div class='text-center text-muted w-100 mt-4'>No códigos.</div>";
-            for (var i = 0; i < bdC.length; i++) {
-                var p = bdC[i]; 
-                var cBg = getProp(p, ["colorFondo", "fondo"]) || "#333333"; var cTxt = getProp(p, ["colorTexto", "texto"]) || "#FFFFFF";
-                var nombreCorto = getProp(p, ["codigo", "id"]) || "??"; var nombreLargo = getProp(p, ["nombreApp", "nombreOficial", "nombre", "producto"]) || "";
-                
-                h += "<div class='col-6 p-2'><div class='shadow-sm' style='background:" + cBg + "; color:" + cTxt + "; border-radius:12px; padding:20px; text-align:center;'>";
-                h += "<h3 class='fw-bold m-0'>" + nombreCorto + "</h3>";
-                if (nombreLargo !== "" && nombreLargo !== nombreCorto) h += "<small style='display:block; margin-top:5px; opacity:0.9; font-weight:bold;'>" + nombreLargo.toUpperCase() + "</small>";
-                h += "</div></div>";
-            }
-            document.getElementById("zona-listas").innerHTML = h + "</div>";
+            var h='<div class="row m-0 pt-2">';
+            if(!bdC.length)h+='<div class="lt-empty w-100">No hay códigos disponibles.</div>';
+            bdC.forEach(function(p){
+                var bg=txt(getProp(p,['colorFondo','fondo']))||'#2A2A2A';var fg=txt(getProp(p,['colorTexto','texto']))||'#FFFFFF';
+                // Los colores proceden del servidor: no aceptar contenido de estilo arbitrario.
+                if(!/^#[0-9a-fA-F]{6}$/.test(bg))bg='#2A2A2A';if(!/^#[0-9a-fA-F]{6}$/.test(fg))fg='#FFFFFF';
+                var code=getProp(p,['codigo','id']),name=getProp(p,['nombreApp','nombreOficial','nombre','producto']);
+                h+='<div class="col-6 p-2"><div class="shadow-sm" style="background:'+bg+';color:'+fg+';border-radius:12px;padding:18px;text-align:center"><h3 class="fw-bold m-0">'+esc(code)+'</h3>'+(name&&name!==code?'<small style="display:block;margin-top:5px">'+esc(txt(name).toUpperCase())+'</small>':'')+'</div></div>';
+            });
+            el('zona-listas').innerHTML=h+'</div>';
         }
 
-        function abrirVisor(id) {
-            vGas = bdG.find(x => getProp(x, ["id"]) === id); if (!vGas) return;
-            var ladoDescarga = getProp(vGas, ["ladoDescarga", "lado"]);
-            vZon = 1; vLad = ladoDescarga === "BOTH" ? "LEFT" : (ladoDescarga || "RIGHT");
-            ocultarTodo(); document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-visor").style.display = "block"; dVis();
-        }
 
+
+                function abrirVisor(id) {
+            vGas=bdG.find(function(x){return txt(getProp(x,['id']))===txt(id);});if(!vGas)return;
+            var side=getProp(vGas,['ladoDescarga','lado']);vZon=1;vLad=side==='BOTH'?'LEFT':(side||'RIGHT');
+            ocultarTodo();el('nav-superior').style.display='none';el('btn-fab').style.display='none';el('zona-visor').style.display='block';dVis();
+        }
         function abrirVisorRuta(id) {
-            vRut = bdR.find(x => getProp(x, ["id"]) === id); if (!vRut) return;
-            ocultarTodo(); document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-visor-ruta").style.display = "block"; dVisRut();
+            vRut=bdR.find(function(x){return txt(getProp(x,['id']))===txt(id);});if(!vRut)return;
+            ocultarTodo();el('nav-superior').style.display='none';el('btn-fab').style.display='none';el('zona-visor-ruta').style.display='block';dVisRut();
         }
-
+        function contactDetails(s) {
+            var phoneNum=phone(getProp(s,['telefono','fijo'])),whats=phone(getProp(s,['telefonoEncargado','movil','whatsapp']));
+            var address=getProp(s,['direccion']),map=geoUrl(getProp(s,['latitud']),getProp(s,['longitud'])),name=getProp(s,['nombreEncargado','encargado']);
+            var h='<div class="card p-3 mb-3"><div class="d-flex flex-column gap-2">';
+            if(address)h+='<div><i class="bi bi-geo-alt-fill text-danger me-2"></i>'+esc(address)+'</div>';
+            if(phoneNum)h+='<div><i class="bi bi-telephone-fill text-primary me-2"></i>'+esc(phoneNum)+'</div>';
+            h+='<div class="d-flex gap-2 flex-wrap mt-1">';
+            if(phoneNum)h+='<a class="btn btn-primary fw-bold" href="tel:'+esc(phoneNum)+'">Llamar</a>';
+            if(map)h+='<a class="btn btn-danger fw-bold" href="'+esc(map)+'" target="_blank" rel="noopener noreferrer">Mapa</a>';
+            h+='</div></div></div>';
+            if(name||whats){h+='<div class="card p-3 mb-3"><small style="color:#388E3C;font-weight:800">Encargado / Contacto</small><h5 class="fw-bold mt-1">'+esc(name||'Sin registrar')+'</h5>';
+                if(whats){var cleanNum=whats.replace(/[^0-9]/g,'');cleanNum=cleanNum.startsWith('34')?cleanNum:'34'+cleanNum;h+='<div class="mb-2">'+esc(whats)+'</div><a class="btn btn-success fw-bold" href="https://wa.me/'+cleanNum+'" target="_blank" rel="noopener noreferrer">WhatsApp</a>';}
+                h+='</div>';
+            }
+            return h;
+        }
         function dVis() {
-            var s = vGas;
-            var _id = getProp(s, ["id"]); var _nombre = getProp(s, ["nombre"]); var _marca = getProp(s, ["marca"]); var _direccion = getProp(s, ["direccion"]);
-            var _tl = getProp(s, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(s, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-            var _lat = getProp(s, ["latitud"]); var _lon = getProp(s, ["longitud"]); var _nEnc = getProp(s, ["nombreEncargado", "encargado"]);
-            var _lado = getProp(s, ["ladoDescarga", "lado"]); var _zonas = parseInt(getProp(s, ["zonasDescarga", "zonas"])) || 1;
-            var _comentarios = getProp(s, ["comentarios"]); var _productos = getProp(s, ["productos", "tanques"]);
-            if(typeof _productos === "string") { try{ _productos = JSON.parse(_productos); }catch(e){ _productos = []; } }
-
-            var hx = gHx(_marca); var h = "";
-            var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdG(this.value)' value='" + _id + "'>Editar</button>" : "";
-            
-            h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"GAS\")'>← Volver</button>" + bE + "</div>";
-            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid " + hx + "; cursor:default'>";
-            h += "<h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:" + hx + ";font-weight:bold'>" + _marca + "</small><div class='mt-3'>";
-            if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
-            if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
-            var btnHtml = "<div class='d-flex gap-3'>";
-            if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
-            if (_lat && _lon) btnHtml += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-            btnHtml += "</div>"; if (_tl !== "" || (_lat && _lon)) h += btnHtml; h += "</div></div>";
-            
-            if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'><small class='text-success fw-bold'>Encargado / Contacto</small><h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
-                if (_wa !== "") {
-                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
-                }
-                h += "</div>";
-            }
-            
-            h += "<h5 class='text-center text-white fw-bold my-3'>Esquema de Descarga</h5>";
-            if (_lado === "BOTH") h += "<div class='d-flex justify-content-center gap-2 mb-3'><button class='btn btn-sm " + (vLad === "LEFT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='LEFT'>IZQUIERDA</button><button class='btn btn-sm " + (vLad === "RIGHT" ? "btn-purple" : "btn-outline-light") + "' onclick='cLad(this.value)' value='RIGHT'>DERECHA</button></div>";
-            if (_zonas > 1) {
-                h += "<div class='d-flex justify-content-center gap-2 mb-3'>";
-                for (var i = 1; i <= _zonas; i++) h += "<button class='btn btn-sm " + (i === vZon ? "btn-purple" : "btn-outline-light") + "' onclick='cZon(this.value)' value='" + i + "'>ZONA " + i + "</button>";
-                h += "</div>";
-            }
-            var iM = (vLad === "LEFT"); var pZ = gL(_productos || [], vZon, iM); var dC = gC();
-            h += "<div class='d-flex justify-content-center align-items-center mt-4'>" + (iM ? pZ + "<div style='width:16px'></div>" + dC : dC + "<div style='width:16px'></div>" + pZ) + "</div>";
-            
-            if(_comentarios && _comentarios.trim() !== "") h += "<div class='mt-4 p-3 rounded' style='background:#FFF3E0; color:#E65100'><strong>Comentarios:</strong><br>" + _comentarios + "</div>";
-            document.getElementById("zona-visor").innerHTML = h;
+            var s=vGas;if(!s)return;
+            var id=esc(getProp(s,['id'])),marca=getProp(s,['marca']),lado=getProp(s,['ladoDescarga','lado']);
+            var zonas=Math.max(1,Math.min(10,parseInt(getProp(s,['zonasDescarga','zonas']),10)||1));
+            var productos=getProp(s,['productos','tanques']);if(typeof productos==='string'){try{productos=JSON.parse(productos);}catch(_){productos=[];}}if(!Array.isArray(productos))productos=[];
+            var h='<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-secondary btn-sm" onclick="irPestana(&quot;GAS&quot;)">← Volver</button>';
+            if(user.r!=='INVITADO')h+='<button class="btn btn-warning btn-sm fw-bold" data-id="'+id+'" onclick="aEdG(this.dataset.id)">Editar</button>';
+            h+='</div><div class="card p-3 mb-3" style="border-top:6px solid '+gHx(marca)+' !important"><h4 class="fw-bold m-0">'+esc(s.nombre)+'</h4><small style="color:'+gHx(marca)+';font-weight:700">'+esc(marca)+'</small></div>';
+            h+=contactDetails(s);
+            h+='<h5 class="text-center fw-bold my-3">Esquema de descarga</h5>';
+            if(lado==='BOTH')h+='<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm '+(vLad==='LEFT'?'btn-purple':'btn-outline-secondary')+'" onclick="cLad(&quot;LEFT&quot;)">Izquierda</button><button class="btn btn-sm '+(vLad==='RIGHT'?'btn-purple':'btn-outline-secondary')+'" onclick="cLad(&quot;RIGHT&quot;)">Derecha</button></div>';
+            if(zonas>1){h+='<div class="d-flex justify-content-center gap-2 flex-wrap mb-3">';for(var z=1;z<=zonas;z++)h+='<button class="btn btn-sm '+(z===vZon?'btn-purple':'btn-outline-secondary')+'" onclick="cZon('+z+')">Zona '+z+'</button>';h+='</div>';}
+            var left=vLad==='LEFT',list=gL(productos,vZon,left),truck=gC();
+            h+='<div class="lt-scheme-wrap"><div class="lt-scheme-inner">'+(left?list+truck:truck+list)+'</div></div>';
+            if(s.comentarios)h+='<div class="lt-alert mt-3"><b>Comentarios:</b><div style="white-space:pre-wrap">'+esc(s.comentarios)+'</div></div>';
+            el('zona-visor').innerHTML=h;
         }
-
         function dVisRut() {
-            var c = vRut;
-            var _id = getProp(c, ["id"]); var _nombre = getProp(c, ["nombre"]); var _direccion = getProp(c, ["direccion"]);
-            var _tl = getProp(c, ["telefono", "fijo"]).toString().replace(/'/g, ""); var _wa = getProp(c, ["telefonoEncargado", "movil", "whatsapp"]).toString().replace(/'/g, "").replace(/\s+/g, '');
-            var _lat = getProp(c, ["latitud"]); var _lon = getProp(c, ["longitud"]); var _nEnc = getProp(c, ["nombreEncargado", "encargado"]); var _comentarios = getProp(c, ["comentarios"]);
-
-            var h = ""; var bE = user.r !== "INVITADO" ? "<button class='btn btn-warning btn-sm fw-bold' onclick='aEdR(this.value)' value='" + _id + "'>Editar</button>" : "";
-            
-            h += "<div class='d-flex justify-content-between mb-3'><button class='btn btn-outline-light btn-sm' onclick='irPestana(\"RUTAS\")'>← Volver</button>" + bE + "</div>";
-            h += "<div class='card p-3 mb-3' style='background:#1E1E1E; border-radius:12px; border-top:6px solid #00BCD4; cursor:default'><h4 class='text-white fw-bold m-0'>" + _nombre + "</h4><small style='color:#00BCD4;font-weight:bold'>Datos de la Ruta</small><div class='mt-3'>";
-            if (_direccion) h += "<div class='text-light mb-2'><i class='bi bi-geo-alt-fill text-danger me-2'></i> " + _direccion + "</div>";
-            if (_tl !== "") h += "<div class='text-light mb-3'><i class='bi bi-telephone-fill text-primary me-2'></i> " + _tl + "</div>";
-            var btnHtml = "<div class='d-flex gap-3'>";
-            if (_tl !== "") btnHtml += "<a href='tel:" + _tl + "' class='btn btn-primary fw-bold'><i class='bi bi-telephone-fill'></i> Llamar</a>";
-            if (_lat && _lon) btnHtml += "<a href='https://www.google.com/maps?q=" + _lat + "," + _lon + "' target='_blank' class='btn btn-danger fw-bold'><i class='bi bi-geo-alt-fill'></i> Mapa</a>";
-            btnHtml += "</div>"; if (_tl !== "" || (_lat && _lon)) h += btnHtml; h += "</div></div>";
-            
-            if (_nEnc !== "" || _wa !== "") {
-                h += "<div class='card p-3 mb-3' style='background:#252525; border-radius:12px; border-left:4px solid #4CAF50;'><small class='text-success fw-bold'>Encargado / Contacto</small><h5 class='text-white m-0 mt-1'>" + (_nEnc !== "" ? _nEnc : "Sin registrar") + "</h5>";
-                if (_wa !== "") {
-                    h += "<div class='text-light mt-2 mb-3'><i class='bi bi-whatsapp text-success me-2'></i> +" + _wa.replace('+', '') + "</div>";
-                    var finalWa = _wa.startsWith("34") || _wa.startsWith("+") ? _wa : "34" + _wa;
-                    h += "<div><a href='https://wa.me/" + finalWa + "' target='_blank' class='btn btn-success fw-bold'><i class='bi bi-whatsapp'></i> WhatsApp</a></div>";
-                }
-                h += "</div>";
-            }
-            if(_comentarios && _comentarios.trim() !== "") h += "<div class='mt-4 p-3 rounded' style='background:#E0F7FA; color:#006064'><strong>Comentarios:</strong><br>" + _comentarios + "</div>";
-            document.getElementById("zona-visor-ruta").innerHTML = h;
+            var s=vRut;if(!s)return;
+            var id=esc(getProp(s,['id']));var h='<div class="d-flex justify-content-between mb-3"><button class="btn btn-outline-secondary btn-sm" onclick="irPestana(&quot;RUTAS&quot;)">← Volver</button>';
+            if(user.r!=='INVITADO')h+='<button class="btn btn-warning btn-sm fw-bold" data-id="'+id+'" onclick="aEdR(this.dataset.id)">Editar</button>';
+            h+='</div><div class="card p-3 mb-3" style="border-top:6px solid #00BCD4 !important"><h4 class="fw-bold">'+esc(s.nombre)+'</h4><small style="color:#087E9B;font-weight:700">Datos de la ruta</small></div>';
+            h+=contactDetails(s);
+            if(s.comentarios)h+='<div class="lt-alert"><b>Comentarios:</b><div style="white-space:pre-wrap">'+esc(s.comentarios)+'</div></div>';
+            el('zona-visor-ruta').innerHTML=h;
         }
 
-        function cLad(l) { vLad = l; dVis(); }
+
+
+                function cLad(l) { vLad = l; dVis(); }
         function cZon(z) { vZon = parseInt(z, 10); dVis(); }
-        function cerrarEditor() { if (vGas) abrirVisor(getProp(vGas, ["id"])); else irPestana(pst); }
-        function cerrarEditorRuta() { if (vRut) abrirVisorRuta(getProp(vRut, ["id"])); else irPestana(pst); }
+        function cerrarEditor() { if (vGas && eId===getProp(vGas,['id'])) abrirVisor(getProp(vGas,['id'])); else irPestana('GAS'); }
+        function cerrarEditorRuta() { if (vRut && eId===getProp(vRut,['id'])) abrirVisorRuta(getProp(vRut,['id'])); else irPestana('RUTAS'); }
 
         function aEdG(val) {
             ocultarTodo(); document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-editor-gas").style.display = "block";
             var bd = document.getElementById("b-del-gas");
             if (typeof val === "string" && val.length > 3) {
-                var s = bdG.find(x => getProp(x, ["id"]) === val); eId = val; 
+                var s = bdG.find(x => txt(getProp(x, ["id"])) === txt(val)); if(!s)return alert('Gasolinera no encontrada');eId = val; 
                 var rawProds = getProp(s, ["productos"]); if(typeof rawProds === "string") { try{ ePr = JSON.parse(rawProds); }catch(e){ePr = [];} } else { ePr = JSON.parse(JSON.stringify(rawProds || [])); }
                 document.getElementById("ttl-e-g").innerText = "Editar Gasolinera"; document.getElementById("eg-marca").value = getProp(s, ["marca"]); document.getElementById("eg-nom").value = getProp(s, ["nombre"]); document.getElementById("eg-dir").value = getProp(s, ["direccion"]); document.getElementById("eg-lad").value = getProp(s, ["ladoDescarga"]) || "RIGHT"; document.getElementById("eg-zon").value = parseInt(getProp(s, ["zonasDescarga"])) || 1;
                 document.getElementById("eg-tel").value = getProp(s, ["telefono"]).toString().replace(/'/g, ""); document.getElementById("eg-enc-nom").value = getProp(s, ["nombreEncargado"]); document.getElementById("eg-wa").value = getProp(s, ["telefonoEncargado"]).toString().replace(/'/g, ""); document.getElementById("eg-lat").value = getProp(s, ["latitud"]); document.getElementById("eg-lon").value = getProp(s, ["longitud"]); document.getElementById("eg-com").value = getProp(s, ["comentarios"]);
-                if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
+                if (user.r !== "INVITADO") bd.style.display = "block"; else bd.style.display = "none";
             } else {
-                eId = "w-" + Math.random().toString(36).substr(2, 9); ePr = [];
+                vGas=null;eId = idNew(); ePr = [];
                 document.getElementById("ttl-e-g").innerText = "Nueva Estación"; document.getElementById("eg-marca").value = "REPSOL"; document.getElementById("eg-nom").value = ""; document.getElementById("eg-dir").value = ""; document.getElementById("eg-lad").value = "RIGHT"; document.getElementById("eg-zon").value = 1; document.getElementById("eg-tel").value = ""; document.getElementById("eg-enc-nom").value = ""; document.getElementById("eg-wa").value = ""; document.getElementById("eg-lat").value = ""; document.getElementById("eg-lon").value = ""; document.getElementById("eg-com").value = ""; bd.style.display = "none";
             }
             eZon = 1; gBotC(); dCamEd();
@@ -711,12 +803,12 @@
             ocultarTodo(); document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "none"; document.getElementById("zona-editor-ruta").style.display = "block";
             var bd = document.getElementById("b-del-rut");
             if (typeof val === "string" && val.length > 3) {
-                var c = bdR.find(x => getProp(x, ["id"]) === val); eId = val; 
+                var c = bdR.find(x => txt(getProp(x, ["id"])) === txt(val)); if(!c)return alert('Ruta no encontrada'); eId = val; 
                 document.getElementById("ttl-e-r").innerText = "Editar Cliente"; document.getElementById("er-nom").value = getProp(c, ["nombre"]); document.getElementById("er-dir").value = getProp(c, ["direccion"]);
                 document.getElementById("er-tel").value = getProp(c, ["telefono"]).toString().replace(/'/g, ""); document.getElementById("er-enc-nom").value = getProp(c, ["nombreEncargado"]); document.getElementById("er-wa").value = getProp(c, ["telefonoEncargado"]).toString().replace(/'/g, ""); document.getElementById("er-lat").value = getProp(c, ["latitud"]); document.getElementById("er-lon").value = getProp(c, ["longitud"]); document.getElementById("er-com").value = getProp(c, ["comentarios"]);
-                if (user.r === "ADMIN") bd.style.display = "block"; else bd.style.display = "none";
+                if (user.r !== "INVITADO") bd.style.display = "block"; else bd.style.display = "none";
             } else {
-                eId = "w-" + Math.random().toString(36).substr(2, 9);
+                vRut=null;eId = idNew();
                 document.getElementById("ttl-e-r").innerText = "Nuevo Cliente"; document.getElementById("er-nom").value = ""; document.getElementById("er-dir").value = ""; document.getElementById("er-tel").value = ""; document.getElementById("er-enc-nom").value = ""; document.getElementById("er-wa").value = ""; document.getElementById("er-lat").value = ""; document.getElementById("er-lon").value = ""; document.getElementById("er-com").value = ""; bd.style.display = "none";
             }
         }
@@ -729,21 +821,24 @@
             var ch = "<div class='zone-canvas' style='background:#222;border-radius:12px;border:2px dashed #444'>";
             for (var j = 0; j < ePr.length; j++) {
                 var p = ePr[j]; if (p.zonaIndex !== eZon) continue;
-                var tx = iM ? -p.nx : p.nx; var ty = iM ? -p.ny : p.ny; var ci = gComb(p.codigoProducto);
-                ch += "<div class='fuel-circle draggable shadow' data-idx='" + j + "' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + ci.b + ";color:" + ci.t + "'>" + ci.s + "</div>";
+                var px=Number(p.nx)||0,py=Number(p.ny)||0;
+                var tx=iM?-px:px,ty=iM?-py:py,ci=gComb(p.codigoProducto);
+                ch += "<div class='fuel-circle draggable shadow' data-idx='" + j + "' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + ci.b + ";color:" + ci.t + "'>" + esc(ci.s) + "<button class='lt-remove-fuel' type='button' aria-label='Eliminar producto' data-idx='"+j+"' onpointerdown='event.stopPropagation()' onclick='event.stopPropagation(); quitarProducto(Number(this.dataset.idx))'>×</button></div>";
             }
             ch += "<button class='btn-add-fuel shadow' onclick='aMod()'>+</button></div>";
             var dc = gC(); var ce = iM ? ch + "<div style='width:16px'></div>" + dc : dc + "<div style='width:16px'></div>" + ch;
-            area.innerHTML = zh + "<div class='d-flex justify-content-center align-items-center'>" + ce + "</div>"; actArr(iM);
+            area.innerHTML = zh + "<div class='lt-scheme-wrap'><div class='lt-scheme-inner'>" + ce + "</div></div>"; actArr(iM);
         }
 
+        function quitarProducto(index){if(!Number.isInteger(index)||index<0||index>=ePr.length)return;if(confirm('¿Eliminar este producto del esquema?')){ePr.splice(index,1);dCamEd();}}
         function actArr(iM) {
             var c = document.querySelectorAll(".draggable");
             for (var i = 0; i < c.length; i++) {
                 var cr = c[i];
                 cr.onpointerdown = function(e) { var id = parseInt(this.getAttribute("data-idx"), 10); this.setAttribute("d-dg", "1"); this.setAttribute("d-sx", e.clientX); this.setAttribute("d-sy", e.clientY); this.setAttribute("d-ox", ePr[id].nx); this.setAttribute("d-oy", ePr[id].ny); this.setPointerCapture(e.pointerId); };
                 cr.onpointermove = function(e) { if (this.getAttribute("d-dg") !== "1") return; var id = parseInt(this.getAttribute("data-idx"), 10); var dx = e.clientX - parseFloat(this.getAttribute("d-sx")); var dy = e.clientY - parseFloat(this.getAttribute("d-sy")); ePr[id].nx = parseFloat(this.getAttribute("d-ox")) + (iM ? -dx : dx); ePr[id].ny = parseFloat(this.getAttribute("d-oy")) + (iM ? -dy : dy); this.style.left = (7 + (iM ? -ePr[id].nx : ePr[id].nx)) + "px"; this.style.top = (131 + (iM ? -ePr[id].ny : ePr[id].ny)) + "px"; };
-                cr.onpointerup = function(e) { this.setAttribute("d-dg", "0"); this.releasePointerCapture(e.pointerId); };
+                cr.onpointerup = function(e) { this.setAttribute("d-dg", "0");if(this.hasPointerCapture(e.pointerId))this.releasePointerCapture(e.pointerId); };
+                cr.onpointercancel=function(){this.setAttribute("d-dg","0");};
                 cr.ondblclick = function() { var id = parseInt(this.getAttribute("data-idx"), 10); if (confirm("¿Eliminar producto?")) { ePr.splice(id, 1); dCamEd(); } };
             }
         }
@@ -760,70 +855,157 @@
         function mostrarLeyenda() { document.getElementById("m-leyenda").style.display = "flex"; }
         function ocultarLeyenda() { document.getElementById("m-leyenda").style.display = "none"; }
 
-        function gGas() {
-            var b = document.getElementById("btn-s-gas"); b.innerText = "Guardando..."; b.disabled = true;
-            var latFinal = parseFloat(document.getElementById("eg-lat").value) || "";
-            var lonFinal = parseFloat(document.getElementById("eg-lon").value) || "";
-            var d = { id: eId, marca: document.getElementById("eg-marca").value, nombre: document.getElementById("eg-nom").value.toUpperCase(), direccion: document.getElementById("eg-dir").value.toUpperCase(), telefono: document.getElementById("eg-tel").value.trim(), nombreEncargado: document.getElementById("eg-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("eg-wa").value.trim(), latitud: latFinal, longitud: lonFinal, ladoDescarga: document.getElementById("eg-lad").value, zonasDescarga: parseInt(document.getElementById("eg-zon").value, 10), productos: ePr, comentarios: document.getElementById("eg-com").value.toUpperCase() };
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveGasStation", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditor(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Gasolinera"; b.disabled = false; });
+        function gasEditorData(){
+            var lat=el('eg-lat').value.trim(),lon=el('eg-lon').value.trim();
+            return {id:eId,marca:el('eg-marca').value,nombre:el('eg-nom').value.trim().toUpperCase(),direccion:el('eg-dir').value.trim().toUpperCase(),
+                telefono:el('eg-tel').value.trim(),nombreEncargado:el('eg-enc-nom').value.trim().toUpperCase(),telefonoEncargado:el('eg-wa').value.trim(),
+                latitud:lat?Number(lat):null,longitud:lon?Number(lon):null,ladoDescarga:el('eg-lad').value,
+                zonasDescarga:Number(el('eg-zon').value),productos:ePr,comentarios:el('eg-com').value.trim().toUpperCase()};
         }
-
-        function gRut() {
-            var b = document.getElementById("btn-s-rut"); b.innerText = "Guardando..."; b.disabled = true;
-            var latFinal = parseFloat(document.getElementById("er-lat").value) || "";
-            var lonFinal = parseFloat(document.getElementById("er-lon").value) || "";
-            var d = { id: eId, nombre: document.getElementById("er-nom").value.toUpperCase(), direccion: document.getElementById("er-dir").value.toUpperCase(), telefono: document.getElementById("er-tel").value.trim(), nombreEncargado: document.getElementById("er-enc-nom").value.toUpperCase(), telefonoEncargado: document.getElementById("er-wa").value.trim(), latitud: latFinal, longitud: lonFinal, comentarios: document.getElementById("er-com").value.toUpperCase() };
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveRoute", data: d, userRole: user.r, username: user.n }) }).then(() => { alert("Guardado"); descargarDatos(); cerrarEditorRuta(); }).catch(() => alert("Fallo")).finally(() => { b.innerText = "Guardar Cliente"; b.disabled = false; });
+        function routeEditorData(){
+            var lat=el('er-lat').value.trim(),lon=el('er-lon').value.trim();
+            return {id:eId,nombre:el('er-nom').value.trim().toUpperCase(),direccion:el('er-dir').value.trim().toUpperCase(),telefono:el('er-tel').value.trim(),
+                nombreEncargado:el('er-enc-nom').value.trim().toUpperCase(),telefonoEncargado:el('er-wa').value.trim(),latitud:lat?Number(lat):null,longitud:lon?Number(lon):null,
+                comentarios:el('er-com').value.trim().toUpperCase()};
         }
-
-        function bGas() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteGasStation", id: eId }) }).then(() => { alert("Borrado"); vGas = null; descargarDatos(); cerrarEditor(); }); }
-        function bRut() { if (!confirm("¿Borrar?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteRoute", id: eId }) }).then(() => { alert("Borrado"); vRut = null; descargarDatos(); cerrarEditorRuta(); }); }
-
-        function abrirPanelAdmin() {
-            pst = "ADMIN"; cerrarAjustes(); ocultarTodo();
-            document.getElementById("nav-superior").style.display = "none"; document.getElementById("btn-fab").style.display = "flex"; document.getElementById("zona-admin-panel").style.display = "block";
-            renderAdminPanel();
+        async function performMutation(button,action,payload,onSuccess){
+            var label=button?button.textContent:'';
+            if(button){button.disabled=true;button.textContent='Procesando…';}
+            try{
+                var data=await api(action,payload);
+                if(!data||data.success!==true)throw new Error(data&&data.message||'Operación no confirmada por el servidor.');
+                alert(data.message||'Operación realizada.');
+                if(onSuccess)await onSuccess(data);
+                return true;
+            }catch(e){alert(e.message||'No se pudo completar la operación.');return false;}
+            finally{if(button){button.disabled=false;button.textContent=label;}}
         }
-
-        function renderAdminPanel() {
-            var h = "";
-            for(var i=0; i<bdD.length; i++) {
-                var d = bdD[i]; var _usr = d.usuario; var _nom = d.nombre; var _rol = d.role; var _dev = d.deviceId; var _acc = d.ultimoAcceso;
-                var hasDevice = _dev !== ""; var roleCol = _rol === "ADMIN" ? "#673AB7" : (_rol === "INVITADO" ? "#FF9800" : "#0288D1");
-                h += "<div class='card card-station' style='cursor:default'><div class='d-flex justify-content-between align-items-center mb-2'><div><h5 class='fw-bold m-0 text-white'>" + _nom + "</h5><small class='text-muted'>ID: " + _usr + "</small></div><span class='badge' style='background:" + roleCol + "'>" + _rol + "</span></div><div style='border-top: 1px solid #444; margin: 8px 0;'></div><div class='mb-2'>";
-                if(hasDevice) h += "<span style='color:#D32F2F; font-weight:bold;'>🔒 Vinculado a un móvil / navegador</span>"; else h += "<span style='color:#2E7D32; font-weight:bold;'>🔓 Libre (Sin vincular)</span>";
-                if(_acc) h += "<br><small style='color:#aaa'>⏱️ Último login: " + _acc + "</small>";
-                h += "</div><div class='d-flex justify-content-end gap-2 mt-2'>";
-                if(hasDevice && _rol !== "ADMIN") h += "<button class='btn btn-outline-danger btn-sm' onclick='liberarMovil(\"" + _usr + "\")'>Liberar</button>";
-                h += "<button class='btn btn-outline-primary btn-sm' onclick='abrirEditorConductor(\"" + _usr + "\")'><i class='bi bi-pencil-fill'></i></button><button class='btn btn-danger btn-sm' onclick='borrarConductor(\"" + _usr + "\")'><i class='bi bi-trash-fill'></i></button></div></div>";
+        async function gGas(){
+            if(!user||user.r==='INVITADO')return alert('No tienes permiso para guardar.');
+            var data=gasEditorData();
+            if(!data.nombre)return alert('Introduce el nombre de la gasolinera.');
+            if(!Number.isInteger(data.zonasDescarga)||data.zonasDescarga<1||data.zonasDescarga>10)return alert('Las zonas deben estar entre 1 y 10.');
+            await performMutation(el('btn-s-gas'),'saveGasStation',{data:data},async function(){vGas=null;await descargarDatos();irPestana('GAS');});
+        }
+        async function gRut(){
+            if(!user||user.r==='INVITADO')return alert('No tienes permiso para guardar.');
+            var data=routeEditorData();if(!data.nombre)return alert('Introduce el nombre del cliente.');
+            await performMutation(el('btn-s-rut'),'saveRoute',{data:data},async function(){vRut=null;await descargarDatos();irPestana('RUTAS');});
+        }
+        async function bGas(){
+            if(!confirm('¿Solicitar la eliminación de esta gasolinera?'))return;
+            await performMutation(el('b-del-gas'),'deleteGasStation',{id:eId},async function(){vGas=null;await descargarDatos();irPestana('GAS');});
+        }
+        async function bRut(){
+            if(!confirm('¿Solicitar la eliminación de esta ruta?'))return;
+            await performMutation(el('b-del-rut'),'deleteRoute',{id:eId},async function(){vRut=null;await descargarDatos();irPestana('RUTAS');});
+        }
+        async function abrirPanelAdmin(){
+            if(!user||user.r!=='ADMIN')return;
+            pst='ADMIN';cerrarAjustes();ocultarTodo();el('nav-superior').style.display='none';el('btn-fab').style.display='flex';el('zona-admin-panel').style.display='block';
+            el('lista-conductores').innerHTML='<div class="lt-empty">Cargando conductores…</div>';
+            try{bdD=await fetchList('getDrivers');renderAdminPanel();}
+            catch(e){el('lista-conductores').innerHTML='<div class="lt-alert">'+esc(e.message)+'</div>';}
+        }
+        function renderAdminPanel(){
+            var h='';
+            bdD.forEach(function(d){
+                var id=esc(d.usuario),name=esc(d.nombre),role=txt(d.role),linked=Boolean(d.deviceId);
+                var col=role==='ADMIN'?'#45318C':role==='INVITADO'?'#F59E0B':'#0288D1';
+                h+='<div class="card-station" style="cursor:default"><div class="d-flex justify-content-between align-items-center gap-2"><div><h5 class="fw-bold mb-1">'+name+'</h5><small style="color:#697386">ID: '+id+'</small></div><span class="badge" style="background:'+col+'">'+esc(role)+'</span></div>';
+                h+='<hr><div class="mb-2">'+(linked?'🔒 Vinculado a un dispositivo':'🔓 Libre, sin vincular')+'</div>';
+                if(d.ultimoAcceso)h+='<small style="color:#697386">Último acceso: '+esc(d.ultimoAcceso)+'</small>';
+                h+='<div class="d-flex gap-2 justify-content-end mt-3">';
+                if(linked && role!=='ADMIN')h+='<button class="btn btn-outline-danger btn-sm" data-user="'+id+'" onclick="liberarMovil(this.dataset.user)">Liberar</button>';
+                h+='<button class="btn btn-outline-primary btn-sm" data-user="'+id+'" onclick="abrirEditorConductor(this.dataset.user)">Editar</button>';
+                h+='<button class="btn btn-danger btn-sm" data-user="'+id+'" onclick="borrarConductor(this.dataset.user)">Borrar</button></div></div>';
+            });
+            el('lista-conductores').innerHTML=h||'<div class="lt-empty">No hay conductores registrados.</div>';
+        }
+        function abrirEditorConductor(username){
+            if(!user||user.r!=='ADMIN')return;
+            el('modal-driver').style.display='flex';
+            if(username){
+                var d=bdD.find(function(x){return x.usuario===username;});if(!d)return;
+                el('md-ttl').textContent='Editar conductor';el('md-user').value=d.usuario;el('md-user').disabled=true;
+                el('md-name').value=d.nombre;el('md-pass').value='';el('md-pass').placeholder='Dejar en blanco para conservar';el('md-role').value=d.role;
+            }else{
+                el('md-ttl').textContent='Nuevo conductor';el('md-user').value='';el('md-user').disabled=false;el('md-name').value='';el('md-pass').value='';
+                el('md-pass').placeholder='Mínimo 10 caracteres';el('md-role').value='CHOFER';
             }
-            document.getElementById("lista-conductores").innerHTML = h || "<p class='text-center text-muted'>No hay conductores</p>";
+        }
+        function cerrarModalDriver(){el('modal-driver').style.display='none';}
+        async function guardarConductor(){
+            var username=el('md-user').value.trim(),nombre=el('md-name').value.trim().toUpperCase(),password=el('md-pass').value,role=el('md-role').value;
+            if(!username||!nombre)return alert('Introduce usuario y nombre.');
+            if(password&&(password.length<10||password.length>128))return alert('La contraseña debe tener entre 10 y 128 caracteres.');
+            if(!el('md-user').disabled&&!password)return alert('La nueva cuenta necesita una contraseña.');
+            await performMutation(el('btn-s-drv'),'saveDriver',{usuario:username,nombre:nombre,password:password,role:role},async function(){cerrarModalDriver();bdD=await fetchList('getDrivers');renderAdminPanel();});
+        }
+        async function borrarConductor(username){
+            if(!confirm('¿Eliminar el conductor '+username+'?'))return;
+            await performMutation(null,'deleteDriver',{username:username},async function(){bdD=await fetchList('getDrivers');renderAdminPanel();});
+        }
+        async function liberarMovil(username){
+            if(!confirm('¿Liberar el dispositivo asociado a '+username+'?'))return;
+            await performMutation(null,'resetDriverDevice',{username:username},async function(){bdD=await fetchList('getDrivers');renderAdminPanel();});
         }
 
-        function abrirEditorConductor(username) {
-            document.getElementById("modal-driver").style.display = "flex";
-            if(username) {
-                var d = bdD.find(x => x.usuario === username); document.getElementById("md-ttl").innerText = "Editar Conductor"; document.getElementById("md-user").value = d.usuario; document.getElementById("md-user").disabled = true; document.getElementById("md-name").value = d.nombre; document.getElementById("md-pass").value = ""; document.getElementById("md-pass").placeholder = "(Dejar en blanco si no cambia)"; document.getElementById("md-role").value = d.role;
-            } else {
-                document.getElementById("md-ttl").innerText = "Nuevo Conductor"; document.getElementById("md-user").value = ""; document.getElementById("md-user").disabled = false; document.getElementById("md-name").value = ""; document.getElementById("md-pass").value = ""; document.getElementById("md-pass").placeholder = "Escribe una contraseña"; document.getElementById("md-role").value = "CHOFER";
-            }
+        function compareRecords(oldItem,newItem,type){
+            if(!oldItem)return ['Registro nuevo: se añadirán todos sus datos.'];
+            var keys=type==='GAS'?[['nombre','Nombre'],['marca','Marca'],['direccion','Dirección'],['telefono','Teléfono'],['nombreEncargado','Encargado'],['telefonoEncargado','WhatsApp'],['ladoDescarga','Lado de descarga'],['zonasDescarga','Zonas'],['comentarios','Comentarios']]:[['nombre','Nombre'],['direccion','Dirección'],['telefono','Teléfono'],['nombreEncargado','Encargado'],['telefonoEncargado','WhatsApp'],['comentarios','Comentarios']];
+            var changes=[];keys.forEach(function(item){var key=item[0],label=item[1];if(txt(oldItem[key])!==txt(newItem[key]))changes.push(label+': '+txt(oldItem[key])+' → '+txt(newItem[key]));});
+            if(txt(oldItem.latitud)!==txt(newItem.latitud)||txt(oldItem.longitud)!==txt(newItem.longitud))changes.push('Ubicación GPS modificada');
+            if(type==='GAS'&&JSON.stringify(oldItem.productos||[])!==JSON.stringify(newItem.productos||[]))changes.push('Esquema de productos modificado');
+            return changes.length?changes:['Solicitud sin diferencias visibles.'];
+        }
+        async function abrirPendientes(){
+            if(!user||user.r!=='ADMIN')return;
+            pst='PENDING';ocultarTodo();el('nav-superior').style.display='none';el('btn-fab').style.display='none';el('zona-pendientes').style.display='block';
+            el('contenido-pendientes').innerHTML='<div class="lt-empty">Actualizando solicitudes…</div>';
+            try{
+                var lists=await Promise.all([fetchList('getPendingGasStations'),fetchList('getPendingRoutes'),fetchList('getAdminEvents')]);
+                pendingGas=lists[0];pendingRoutes=lists[1];adminEvents=lists[2];el('badge-pendientes').textContent=pendingGas.length+pendingRoutes.length;
+                renderPendientes();
+            }catch(e){el('contenido-pendientes').innerHTML='<div class="lt-alert">'+esc(e.message)+'</div>';}
+        }
+        function pendingSection(title,type,list,official){
+            var h='<h5 class="fw-bold mt-3 mb-3">'+esc(title)+' <span class="badge bg-secondary">'+list.length+'</span></h5>';
+            if(!list.length)return h+'<p class="lt-empty">No hay solicitudes pendientes.</p>';
+            list.forEach(function(record){
+                var original=official.find(function(x){return txt(x.id)===txt(record.id);});
+                var deletion=record.accion==='ELIMINAR';
+                var status=deletion?'ELIMINACIÓN':original?'EDICIÓN':'NUEVO';
+                var description=deletion?['Se solicita borrar el registro oficial.']:compareRecords(original,record,type);
+                h+='<div class="lt-pending"><div class="d-flex justify-content-between align-items-start gap-2"><h6 class="fw-bold">'+esc(record.nombre||'Sin nombre')+'</h6><span class="badge '+(deletion?'bg-danger':original?'bg-warning text-dark':'bg-success')+'">'+status+'</span></div>';
+                h+='<div class="text-muted small mb-2">'+esc(record.solicitante||'Solicitante desconocido')+'</div>';
+                h+='<div class="lt-detail mb-3">'+description.map(function(x){return '• '+esc(x);}).join('\n')+'</div>';
+                h+='<div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-danger btn-sm" data-type="'+type+'" data-id="'+esc(record.id)+'" onclick="resolverPendiente(this.dataset.type,this.dataset.id,false)">Rechazar</button>';
+                h+='<button class="btn btn-success btn-sm" data-type="'+type+'" data-id="'+esc(record.id)+'" onclick="resolverPendiente(this.dataset.type,this.dataset.id,true)">Aprobar</button></div></div>';
+            });return h;
+        }
+        function renderPendientes(){
+            var h=pendingSection('Gasolineras en espera','GAS',pendingGas,bdG)+pendingSection('Rutas en espera','ROUTE',pendingRoutes,bdR);
+            h+='<h5 class="fw-bold mt-4 mb-3">Historial de actividad</h5>';
+            h+='<div class="card p-3">';
+            if(!adminEvents.length)h+='<div class="lt-empty">Todavía no hay eventos.</div>';
+            adminEvents.slice().reverse().slice(0,35).forEach(function(e){h+='<div class="border-bottom py-2"><small style="color:#697386">'+esc(e.fecha)+'</small><div><b>'+esc(e.accion)+'</b> · '+esc(e.nombre)+' ('+esc(e.tipo)+')</div><small>Usuario: '+esc(e.autor)+'</small></div>';});
+            h+='</div>';el('contenido-pendientes').innerHTML=h;
+        }
+        async function resolverPendiente(type,id,approve){
+            if(!confirm((approve?'¿Aprobar':'¿Rechazar')+' este cambio?'))return;
+            await performMutation(null,approve?'approveChange':'rejectChange',{type:type,id:id},async function(){
+                var requests=await Promise.all([fetchList('getGasStations'),fetchList('getRoutes')]);bdG=requests[0];bdR=requests[1];await abrirPendientes();
+            });
         }
 
-        function cerrarModalDriver() { document.getElementById("modal-driver").style.display = "none"; }
-        function guardarConductor() {
-            var u = document.getElementById("md-user").value.trim(); var n = document.getElementById("md-name").value.trim().toUpperCase(); var p = document.getElementById("md-pass").value.trim(); var r = document.getElementById("md-role").value;
-            if(u==="" || n==="") return alert("Faltan datos"); var btn = document.getElementById("btn-s-drv"); btn.innerText = "..."; btn.disabled = true;
-            fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "saveDriver", usuario: u, nombre: n, password: p, role: r }) }).then(() => { alert("Guardado"); cerrarModalDriver(); descargarDatos(); }).finally(() => { btn.innerText = "Guardar Conductor"; btn.disabled = false; });
-        }
 
-        function borrarConductor(username) { if(!confirm("¿Eliminar usuario?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteDriver", username: username }) }).then(() => { alert("Eliminado"); descargarDatos(); }); }
-        function liberarMovil(username) { if(!confirm("¿Liberar dispositivo?")) return; fetch(URL_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "resetDriverDevice", username: username }) }).then(() => { alert("Liberado"); descargarDatos(); }); }
 
-        function gC() { return "<div class='d-flex align-items-center'><div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div></div></div><div style='margin-left: 16px; cursor: pointer;' onclick='mostrarLeyenda()'><i class='bi bi-info-circle-fill fs-3 text-secondary'></i></div></div>"; }
-        function gL(p, z, m) { var h = "<div class='zone-canvas'>"; var l = []; for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); } if (m) l.reverse(); for (var j = 0; j < l.length; j++) { var t = l[j]; var tx = m ? -t.nx : t.nx; var ty = m ? -t.ny : t.ny; var c = gComb(t.codigoProducto); h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + c.b + ";color:" + c.t + "'>" + c.s + "</div>"; } return h + "</div>"; }
-        function gCol(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "brand-REPSOL"; if (x.indexOf("BP") > -1) return "brand-BP"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE"; if (x.indexOf("SHELL") > -1) return "brand-SHELL"; if (x.indexOf("GALP") > -1) return "brand-GALP"; return "brand-DEFAULT"; }
-        function gHx(m) { var x = (m || "").toUpperCase(); if (x.indexOf("REPSOL") > -1) return "#FF9800"; if (x.indexOf("BP") > -1) return "#4CAF50"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6"; if (x.indexOf("SHELL") > -1) return "#FFC107"; if (x.indexOf("GALP") > -1) return "#FF5000"; return "#673AB7"; }
-        function gComb(c) { var n = (c || "").toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n; switch(n) { case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break; case "MARDIESEL": b = "#455A64"; s = "MDS"; break; } return { b: b, t: t, s: s }; }
+                function gC() { return "<div class='d-flex align-items-center'><div class='d-flex flex-column align-items-center'><div class='truck-head'></div><div class='truck-neck'></div><div class='truck-body'><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div><div class='truck-hatch'></div></div></div><div style='margin-left: 16px; cursor: pointer;' onclick='mostrarLeyenda()'><i class='bi bi-info-circle-fill fs-3 text-secondary'></i></div></div>"; }
+        function gL(p, z, m) { var h = "<div class='zone-canvas'>"; var l = []; for (var i = 0; i < p.length; i++) { if (p[i].zonaIndex === z) l.push(p[i]); } if (m) l.reverse();             for (var j = 0; j < l.length; j++) { var t = l[j]; var px=Number(t.nx)||0,py=Number(t.ny)||0;var tx = m ? -px : px; var ty = m ? -py : py; var c = gComb(t.codigoProducto); h += "<div class='fuel-circle' style='left:" + (7 + tx) + "px;top:" + (131 + ty) + "px;background:" + c.b + ";color:" + c.t + "'>" + esc(c.s) + "</div>"; } return h + "</div>"; }
+        function gCol(m) { var x = txt(m).toUpperCase(); if (x.indexOf("REPSOL") > -1) return "brand-REPSOL"; if (x.indexOf("BP") > -1) return "brand-BP"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "brand-MOEVE"; if (x.indexOf("SHELL") > -1) return "brand-SHELL"; if (x.indexOf("GALP") > -1) return "brand-GALP"; return "brand-DEFAULT"; }
+        function gHx(m) { var x = txt(m).toUpperCase(); if (x.indexOf("REPSOL") > -1) return "#FF9800"; if (x.indexOf("BP") > -1) return "#4CAF50"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6"; if (x.indexOf("SHELL") > -1) return "#FFC107"; if (x.indexOf("GALP") > -1) return "#FF5000"; return "#673AB7"; }
+        function gComb(c) { var n = txt(c).toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n; switch(n) { case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break; case "MARDIESEL": b = "#455A64"; s = "MDS"; break; } return { b: b, t: t, s: s }; }
     </script>
 </body>
 </html>
