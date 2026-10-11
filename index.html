@@ -395,21 +395,66 @@
         function notify(message,isError) { el('app-message').textContent=message;el('app-message').className=isError?'lt-alert mb-3':'alert alert-success mb-3';el('app-message').style.display='block';el('app-message').scrollIntoView({block:'nearest',behavior:'smooth'}); }
         function resetMessage(){el('app-message').style.display='none';el('app-message').textContent='';}
         function resetSession(){ sessionToken='';user=null;sessionStorage.removeItem(TOKEN_KEY);localStorage.removeItem('logistank_sesion'); }
+        // Las lecturas privadas siempre van por POST, con token dentro del JSON.
+        // Algunos despliegues de Apps Script presentan fallos transitorios al
+        // redirigir respuestas ContentService. Solamente se reintentan lecturas.
+        var READ_ACTIONS = new Set([
+            'getGasStations','getRoutes','getProducts','getDrivers',
+            'getPendingGasStations','getPendingRoutes','getAdminEvents'
+        ]);
+        function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
         async function api(action,params) {
             var payload=Object.assign({action:action},params||{});
-            if(action!=='login') {if(!sessionToken) throw new Error('Inicia sesión para continuar.');payload.token=sessionToken;}
-            var response=await fetch(URL_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow',cache:'no-store'});
-            if(!response.ok) throw new Error('No se pudo conectar con el servidor (HTTP '+response.status+').');
-            var data;try {data=await response.json();} catch(_) {throw new Error('Respuesta no válida de Google Apps Script. Comprueba el acceso al despliegue.');}
-            if(data && !Array.isArray(data) && data.success===false) {
-                var message=txt(data.message)||'Operación rechazada';
-                if(/sesi[oó]n inv[aá]lida|caducada/i.test(message)) { resetSession();location.reload(); }
-                throw new Error(message);
+            if(action!=='login') {
+                if(!sessionToken) throw new Error('Inicia sesión para continuar.');
+                payload.token=sessionToken;
             }
-            return data;
+            var isRead=READ_ACTIONS.has(action);
+            var attempts=isRead?3:1;
+            var lastError=null;
+            for(var attempt=1;attempt<=attempts;attempt++) {
+                try {
+                    var response=await fetch(URL_API,{
+                        method:'POST',
+                        headers:{'Content-Type':'text/plain;charset=utf-8'},
+                        body:JSON.stringify(payload),
+                        mode:'cors',credentials:'omit',redirect:'follow',cache:'no-store'
+                    });
+                    if(!response.ok) {
+                        var httpError=new Error('Error HTTP '+response.status+' al consultar '+action+'.');
+                        httpError.retryable=response.status===429 || response.status===502 || response.status===503 || response.status===504;
+                        throw httpError;
+                    }
+                    var data;
+                    try {data=await response.json();}
+                    catch(_) {throw new Error('Respuesta no válida en '+action+'. Comprueba la implementación de Google Apps Script.');}
+                    if(data && !Array.isArray(data) && data.success===false) {
+                        var message=txt(data.message)||'Operación rechazada';
+                        if(/sesi[oó]n inv[aá]lida|caducada/i.test(message)) {
+                            resetSession();location.reload();
+                            throw new Error('Tu sesión ha caducado. Inicia sesión de nuevo.');
+                        }
+                        if(/acci[oó]n no disponible por GET/i.test(message)) {
+                            var redirectError=new Error('Google Apps Script ha contestado a '+action+' como GET, aunque LogisTank ha enviado POST. Comprueba la implementación publicada.');
+                            redirectError.retryable=true;
+                            throw redirectError;
+                        }
+                        throw new Error(action+': '+message);
+                    }
+                    return data;
+                } catch(error) {
+                    lastError=error;
+                    if(!isRead || attempt===attempts || (error && error.retryable===false)) break;
+                    // No repetir una operación de escritura, cambio de contraseña ni login.
+                    await wait(attempt*500);
+                }
+            }
+            throw lastError||new Error('No se pudo completar '+action+'.');
         }
         async function fetchList(action) {
-            var data=await api(action);if(!Array.isArray(data)) throw new Error('La respuesta de '+action+' no es una lista.');return data;
+            var data=await api(action);
+            if(!Array.isArray(data)) throw new Error('La respuesta de '+action+' no es una lista.');
+            return data;
         }
         function handleError(error) {var msg=error&&error.message||'Error desconocido';notify(msg,true);return msg;}
         var deviceId = "";
@@ -528,8 +573,8 @@
                 if(!data || !data.token || !data.id) {resetSession();return;}
                 sessionToken=data.token;
                 // La sesión se valida con el servidor, no con un rol declarado en el navegador.
-                await fetchList('getGasStations');
-                mostrarApp(data.n,data.r,data.id);
+                var gasolineras=await fetchList('getGasStations');
+                mostrarApp(data.n,data.r,data.id,gasolineras);
             } catch(error) {
                 resetSession();
                 el('pantalla-login').style.display='flex';
@@ -537,13 +582,13 @@
             }
         };
 
-        function mostrarApp(nombre,rol,id) {
+        function mostrarApp(nombre,rol,id,initialGasolineras) {
             user={n:nombre,r:rol,id:id};
             el('pantalla-login').style.display='none';
             el('pantalla-app').style.display='flex';
             el('nombre-usuario').innerText=nombre+' ('+rol+')';
             el('btn-pendientes').style.display=rol==='ADMIN'?'block':'none';
-            descargarDatos();
+            descargarDatos(initialGasolineras);
         }
 
         // INVITADO es una cuenta del servidor, no un modo anónimo.
@@ -588,26 +633,35 @@
             finally{btn.disabled=false;btn.textContent='Actualizar Contraseña';}
         }
 
-        async function descargarDatos() {
+        async function descargarDatos(initialGasolineras) {
             el('zona-listas').innerHTML='<div class="text-center mt-5"><div class="spinner-border text-primary mb-3"></div><p>Descargando datos…</p></div>';
             resetMessage();
-            try {
-                var request=[fetchList('getGasStations'),fetchList('getRoutes'),fetchList('getProducts')];
-                if(user&&user.r==='ADMIN')request.push(fetchList('getDrivers'),fetchList('getPendingGasStations'),fetchList('getPendingRoutes'));
-                var data=await Promise.all(request);
-                bdG=data[0];bdR=data[1];bdC=data[2];bdD=data[3]||[];
-                pendingGas=data[4]||[];pendingRoutes=data[5]||[];
-                el('badge-pendientes').textContent=String(pendingGas.length+pendingRoutes.length);
-                irPestana(pst==='ADMIN'||pst==='PENDING'?'GAS':pst);
-            }catch(error){
-                el('zona-listas').innerHTML='<div class="lt-empty">No se han podido descargar los datos.</div>';
-                handleError(error);
+            var warnings=[];
+            // Evitar seis respuestas simultáneas de Apps Script y no perder las
+            // listas correctas si falla una consulta administrativa independiente.
+            async function load(action){
+                try {return await fetchList(action);}
+                catch(error){warnings.push(error&&error.message||'Error en '+action);return null;}
             }
+            bdG=Array.isArray(initialGasolineras)?initialGasolineras:(await load('getGasStations')||[]);
+            bdR=await load('getRoutes')||[];
+            bdC=await load('getProducts')||[];
+            if(user&&user.r==='ADMIN') {
+                bdD=await load('getDrivers')||[];
+                var gasPending=await load('getPendingGasStations');
+                var routePending=await load('getPendingRoutes');
+                pendingGas=gasPending||[];
+                pendingRoutes=routePending||[];
+                el('badge-pendientes').textContent=gasPending===null||routePending===null?'?':String(pendingGas.length+pendingRoutes.length);
+            } else {
+                bdD=[];pendingGas=[];pendingRoutes=[];
+            }
+            irPestana(pst==='ADMIN'||pst==='PENDING'?'GAS':pst);
+            if(warnings.length) notify('Algunas consultas al servidor fallaron: '+warnings.join(' · '),true);
         }
 
 
-
-                function ocultarTodo() {
+        function ocultarTodo() {
             document.getElementById("zona-listas").style.display = "none";
             document.getElementById("zona-visor").style.display = "none";
             document.getElementById("zona-visor-ruta").style.display = "none";
