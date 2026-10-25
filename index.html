@@ -107,6 +107,7 @@
             .lt-scheme-inner{justify-content:flex-start;}
         }
     </style>
+    <link rel="stylesheet" href="web/logistank-v1.8.css">
 </head>
 <body>
 
@@ -142,6 +143,8 @@
             <div id="nav-superior" class="d-flex gap-2 mb-3"></div>
             <div id="app-message" role="alert" style="display:none;"></div>
             <div id="zona-listas" class="mt-2" style="display: block;"></div>
+            <section id="zona-cisternas" aria-label="Cisternas"></section>
+            <section id="zona-carga" aria-label="Preparar carga"></section>
             <div id="zona-visor" style="display: none; padding-bottom: 50px;"></div>
             <div id="zona-visor-ruta" style="display: none; padding-bottom: 50px;"></div>
 
@@ -282,6 +285,7 @@
 
         </main>
 
+        <button id="lt-backtotop" class="lt-web-backtotop" type="button" title="Volver arriba" aria-label="Volver al principio de la lista" onclick="LTWeb.backToTop()">↑</button>
         <button id="btn-fab" onclick="btnFabClick()" class="shadow-lg" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background-color: #673AB7; color: white; border: none; font-size: 32px; justify-content: center; align-items: center; z-index: 1000;">+</button>
     </div>
 
@@ -669,16 +673,19 @@
             document.getElementById("zona-editor-ruta").style.display = "none";
             document.getElementById("zona-admin-panel").style.display = "none";
             document.getElementById("zona-pendientes").style.display = "none";
+            document.getElementById("zona-cisternas").style.display = "none";
+            document.getElementById("zona-carga").style.display = "none";
         }
 
         function volverInicio() { irPestana('GAS'); }
 
         function irPestana(p) {
+            if(p==='CISTERNAS'){LTWeb.openTankers();return;}
             pst=p;ocultarTodo();resetMessage();
             el('zona-listas').style.display='block';
             var nav=el('nav-superior');nav.style.display='flex';
             nav.innerHTML='';
-            var options=[['GAS','Gasolineras','btn-primary-custom'],['RUTAS','Rutas','btn-info-custom'],['CODIGOS','Códigos','btn-purple']];
+            var options=[['GAS','Gasolineras','btn-primary-custom'],['RUTAS','Rutas','btn-info-custom'],['CODIGOS','Códigos','btn-purple'],['CISTERNAS','Cisternas','btn-purple']];
             options.forEach(function(item){
                 var button=document.createElement('button');
                 button.className='btn flex-fill fw-bold py-2 '+(p===item[0]?'btn-purple':'btn-outline-secondary');
@@ -812,6 +819,7 @@
             if(user.r!=='INVITADO')h+='<button class="btn btn-warning btn-sm fw-bold" data-id="'+id+'" onclick="aEdG(this.dataset.id)">Editar</button>';
             h+='</div><div class="card p-3 mb-3" style="border-top:6px solid '+gHx(marca)+' !important"><h4 class="fw-bold m-0">'+esc(s.nombre)+'</h4><small style="color:'+gHx(marca)+';font-weight:700">'+esc(marca)+'</small></div>';
             h+=contactDetails(s);
+            h+='<button class="btn btn-purple fw-bold w-100 mb-3" type="button" onclick="LTWeb.openLoad()"><i class="bi bi-truck me-2"></i>Cargar</button>';
             h+='<h5 class="text-center fw-bold my-3">Esquema de descarga</h5>';
             if(lado==='BOTH')h+='<div class="d-flex justify-content-center gap-2 mb-3"><button class="btn btn-sm '+(vLad==='LEFT'?'btn-purple':'btn-outline-secondary')+'" onclick="cLad(&quot;LEFT&quot;)">Izquierda</button><button class="btn btn-sm '+(vLad==='RIGHT'?'btn-purple':'btn-outline-secondary')+'" onclick="cLad(&quot;RIGHT&quot;)">Derecha</button></div>';
             if(zonas>1){h+='<div class="d-flex justify-content-center gap-2 flex-wrap mb-3">';for(var z=1;z<=zonas;z++)h+='<button class="btn btn-sm '+(z===vZon?'btn-purple':'btn-outline-secondary')+'" onclick="cZon('+z+')">Zona '+z+'</button>';h+='</div>';}
@@ -1061,5 +1069,7 @@
         function gHx(m) { var x = txt(m).toUpperCase(); if (x.indexOf("REPSOL") > -1) return "#FF9800"; if (x.indexOf("BP") > -1) return "#4CAF50"; if (x.indexOf("MOEVE") > -1 || x.indexOf("CEPSA") > -1) return "#005CE6"; if (x.indexOf("SHELL") > -1) return "#FFC107"; if (x.indexOf("GALP") > -1) return "#FF5000"; return "#673AB7"; }
         function gComb(c) { var n = txt(c).toUpperCase().trim(); var b = "#424242"; var t = "#FFF"; var s = n; switch(n) { case "A": b = "#FFB300"; break; case "A+5": b = "#F57C00"; break; case "A+": b = "#FF8F00"; break; case "NEXA": b = "#00838F"; s = "NEX"; break; case "B": b = "#D32F2F"; break; case "B MAR PRO": b = "#880E4F"; s = "BPR"; break; case "C": b = "#0288D1"; break; case "BIENERGI 10": b = "#6A1B9A"; s = "B10"; break; case "95": b = "#388E3C"; break; case "95+": b = "#1B5E20"; break; case "95 MAR SPORT": b = "#00E676"; t = "#000"; s = "95S"; break; case "98": b = "#1565C0"; break; case "MARBIDIESEL": b = "#5D4037"; s = "MBD"; break; case "MARDIESEL": b = "#455A64"; s = "MDS"; break; } return { b: b, t: t, s: s }; }
     </script>
+    <script src="web/load-planner.js"></script>
+    <script src="web/tankers-and-load.js"></script>
 </body>
 </html>
